@@ -42,42 +42,39 @@ motor-imagery decoding when compared against properly tuned classical
 baselines under matched conditions, and---if they do not---why.
 
 \textit{Approach.}
-We observe that a trace-normalised EEG spatial covariance matrix is formally a
-quantum density matrix on $\log_2 n_{\mathrm{ch}}$ qubits, which makes quantum
-information geometry applicable to EEG without any dimensionality reduction or
-ad-hoc angle encoding. On this basis we define Hilbert--Schmidt overlap,
-Uhlmann fidelity and Bures kernels, alongside conventional parameterised-circuit
-embedding kernels. We benchmark \NPipelines{} pipelines on PhysioNet EEGMMIDB
-left- versus right-hand motor imagery (\NSubjects{} subjects, \NTrials{} trials
-each, \NFoldScores{} fold scores) using nested cross-validation in which every
-pipeline---classical baselines included---receives an identical hyperparameter
-search budget. The design includes two decisive controls: an entanglement
-ablation, in which the entangling gates are deleted from an otherwise identical
-circuit, and dimension-matched classical kernels that operate on exactly the
-features the circuit kernels see.
+A trace-normalised EEG spatial covariance matrix is formally a quantum density
+matrix on $\log_2 n_{\mathrm{ch}}$ qubits, making quantum information geometry
+applicable without dimensionality reduction or ad-hoc angle encoding. We define
+Hilbert--Schmidt overlap, Uhlmann fidelity and Bures kernels alongside
+conventional circuit embedding kernels, and benchmark \NPipelines{} pipelines
+on PhysioNet EEGMMIDB left- versus right-hand motor imagery (\NSubjects{}
+subjects, \NFoldScores{} fold scores) using nested cross-validation in which
+every pipeline---classical baselines included---receives an identical tuning
+budget. Two controls are decisive: an entanglement ablation, and
+dimension-matched classical kernels operating on exactly the features the
+circuit kernels see.
 
 \textit{Main results.}
-The best classical pipeline (\BestClassicalName, \BestClassicalAcc{})
-significantly outperformed the best quantum kernel (\BestQuantumName,
-\BestQuantumAcc{}): $\Delta=\PrimaryDelta$, $p=\PrimaryP$, $d_z=\PrimaryDz$,
-superior in \PrimaryBetter{} subjects. Of \NFamilyTests{} paired comparisons
-against a Riemannian tangent-space reference, \NSurviveHolm{} survived
-Holm correction, and no quantum kernel exceeded the reference at any
-significance level. We further show that quantum overlap kernels concentrate
-severely on EEG---pairwise values $0.99\pm0.01$, yielding a near rank-one Gram
-matrix---and that entanglement \emph{accelerates} this collapse, reducing
-kernel variance by a factor of $0.428$ per qubit versus $0.716$ for the same
-circuit without entanglers. Quantum kernels were 2--\SpeedRatio$\times$ more
-expensive for no accuracy gain, under noiseless infinite-shot simulation.
+The best classical pipeline (\BestClassicalAcc{}) significantly outperformed
+the best quantum kernel (\BestQuantumAcc{}): $\Delta=\PrimaryDelta$,
+$p=\PrimaryP$, $d_z=\PrimaryDz$, superior in \PrimaryBetter{} subjects. Of
+\NFamilyTests{} paired comparisons against a Riemannian tangent-space
+reference, \NSurviveHolm{} survived Holm correction, and no quantum kernel
+exceeded the reference at any significance level. Quantum overlap kernels
+concentrated severely---pairwise values $0.99\pm0.01$, a near rank-one Gram
+matrix---and entanglement \emph{accelerated} the collapse, reducing kernel
+variance by a factor of $0.428$ per qubit versus $0.716$ without entanglers.
+Quantum kernels cost 2--\SpeedRatio$\times$ more for no gain, under noiseless
+infinite-shot simulation.
 
 \textit{Significance.}
 We find no evidence of quantum advantage for within-subject motor-imagery
-decoding, and we identify the mechanism: kernel concentration, arising from two
-distinct causes---register size for circuit kernels, and the intrinsic
-similarity of EEG covariance matrices for density-matrix kernels. The latter is
-dimension-independent and is \emph{relieved} by adding channels, which inverts
-the standard practice of aggressive dimensionality reduction before quantum
-encoding. All code, data splits and results are released to support replication.
+decoding, and identify the mechanism: kernel concentration from two distinct
+causes---register size for circuit kernels, and the intrinsic similarity of EEG
+covariance matrices for density-matrix kernels. The latter is
+dimension-independent and is \emph{relieved} by adding channels, inverting the
+standard practice of aggressive dimensionality reduction before quantum
+encoding. All code and results are released to support replication.
 \end{abstract}
 
 \noindent{\it Keywords}: quantum machine learning, brain--computer interface,

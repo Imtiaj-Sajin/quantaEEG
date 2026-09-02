@@ -66,8 +66,41 @@ src/qeeg/
   merge.py          combine batched runs
   figures.py        publication figures (validated palette)
 results/            CSV/JSON outputs + figures/
+paper/              journal manuscript (see below)
 RESEARCH.md         the actual research document
 ```
+
+## The manuscript
+
+`paper/` holds a full draft targeting **Journal of Neural Engineering** (IOP,
+Q1) in `iopart` format with JNE's required structured abstract.
+
+**The one rule: no number is ever typed into `main.tex` by hand.** Every figure
+quoted in the prose is a LaTeX macro (`\PrimaryDelta`, `\BestClassicalAcc`, …)
+and all four tables are generated from the result CSVs by
+`python paper/make_tables.py`. After any new benchmark run, re-run it and the
+manuscript is consistent by construction. This is deliberate: the study is
+ongoing, numbers will change, and a hand-transcribed manuscript rots silently.
+
+```bash
+python paper/make_tables.py    # regenerate tables + inline macros
+python paper/check_tex.py      # static checks (no LaTeX toolchain needed)
+cd paper && latexmk -pdf main.tex
+```
+
+`check_tex.py` catches undefined macros, unresolved citations, dangling
+cross-references, unbalanced environments and missing figures — the things that
+would otherwise only surface on first compile.
+
+**Not yet compiled.** No LaTeX toolchain on this machine; static checks pass but
+the draft has never been run through `iopart.cls`. Expect minor first-compile
+fixes.
+
+**Before submitting**, work through `paper/README.md`'s checklist. The most
+important item: `refs.bib` marks each entry `[VERIFIED]` (checked against the
+publisher record during this study) or `[CHECK]` (canonical work cited from
+standing knowledge — the paper is right, the volume/page metadata was not
+re-checked). Every `[CHECK]` needs a DOI lookup.
 
 ## How to run
 
