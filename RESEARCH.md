@@ -810,6 +810,73 @@ absolute values are not comparable to the nested-CV benchmark.
 
 ---
 
+### 4.9 Filter bank: parity survives FBCSP, at 5 qubits
+
+**Status: complete, n = 30.** `--suite filterbank`, merged from ten batches
+into `results/{raw_folds,summary}_filterbank_motor8.csv`. Four sub-bands
+(8–12, 12–16, 16–22, 22–30 Hz) *inside* the passband the loader already
+applies, so no reloading and no protocol change. 4 bands × 8 channels = 32
+dimensions = **exactly 5 qubits**, up from 3.
+
+This run existed to answer the question a referee asks the moment quantum
+kernels reach the top of a table: *does that survive against filter-bank CSP,
+the method the MI literature treats as the bar?*
+
+| Pipeline | Acc | Group |
+|---|---|---|
+| quantum/FB-Fidelity-ref-SVM | **0.6484** | quantum, reference frame |
+| quantum/FB-HS-overlap-ref-SVM | 0.6395 | quantum, reference frame |
+| quantum/FB-Bures-RBF-ref-SVM | 0.6390 | quantum, reference frame |
+| quantum/FB-QRE-RBF-ref-SVM | 0.6388 | quantum, reference frame |
+| quantum/FB-HS-RBF-ref-SVM | 0.6373 | quantum, reference frame |
+| control/FB-logeuclid-kernel-SVM | 0.6373 | **classical twin** |
+| control/FB-riemann-kernel-SVM | 0.6304 | **classical twin** |
+| classical/FBCSP+LDA | 0.6272 | classical |
+| classical/FB-TS+LR | 0.6230 | classical |
+| classical/FB-TS+RBF-SVM | 0.6000 | classical |
+| quantum/FB-*-SVM (sensor frame) | 0.4956–0.5151 | quantum, sensor frame |
+
+**Answer: yes, and it is still parity, not superiority.** The best quantum
+kernel beats FBCSP+LDA by +0.0212 (p = 0.12) and the reference `FB-TS+LR` by
++0.0254 (p = 0.067, Holm 0.53). Nothing significant.
+
+And the decisive control replicates exactly, at a different register size:
+
+| Quantum kernel (reference frame) | Δ vs FB-logeuclid-kernel-SVM | p |
+|---|---|---|
+| FB-Fidelity-ref | +0.0111 | 0.234 |
+| FB-HS-overlap-ref | +0.0022 | 0.682 |
+| FB-Bures-RBF-ref | +0.0017 | 0.851 |
+| FB-QRE-RBF-ref | +0.0015 | 0.847 |
+| FB-HS-RBF-ref | +0.0000 | 0.830 |
+
+**Not one differs from its classical twin**, and the twin itself is only
++0.0101 over FBCSP (p = 0.39). Same conclusion as §4.6 at 3 qubits, reached
+independently at 5 qubits against a stronger baseline family.
+
+#### The sensor frame gets *worse* with register size
+
+| Kernel | 3 qubits (8 dim) | 5 qubits (32 dim) | change |
+|---|---|---|---|
+| Fidelity | 0.5232 | 0.4968 | −0.0264 |
+| HS-overlap | 0.5321 | 0.4956 | −0.0365 |
+
+At 5 qubits the sensor-frame kernels are **at chance**, and significantly below
+the reference baseline after Holm correction (p = 0.0005–0.0071) — the only
+Holm-surviving results in the whole filter-bank family. The frame effect is
+therefore *larger* at 5 qubits than at 3 (≈ +0.14 versus ≈ +0.09).
+
+Note this does **not** contradict §4.1b(b), but it does qualify it. That
+section measured Gram *variance* against channel count and found it rises;
+this measures *accuracy* against band count. Higher kernel variance evidently
+does not convert into accuracy, and the two dimension-increases are not the
+same operation — adding bands produces strong block structure with
+near-degenerate cross-blocks, adding channels does not. The §9 item to re-run
+the channel sweep in the reference frame is what settles this properly; until
+then, do not quote §4.1b(b)'s "run it wider" corollary without this caveat.
+
+---
+
 ## 5. Datasets worth using
 
 | Dataset | Access | Size | Why |
@@ -952,12 +1019,22 @@ to spare: all nine geometries tie (§4.7).
 
 **In flight**
 
-- [ ] **Filter-bank / FBCSP suite at 5 qubits**, `--suite filterbank`, batches
-      `fbdone01-05` + `fbrest01-05`, merge with `qeeg.merge`. This is the
-      load-bearing one: with quantum kernels now at the top of the table, the
-      first referee question is whether parity survives against FBCSP.
 - [ ] **IV-2a extended replication**, `--tag refstate_bci2a_motor8_q4`. Slow
-      (2592 trials x 23 pipelines). Cross-dataset confirmation of §4.6.
+      (2592 trials × 23 pipelines, ~18 CPU-min per subject × 9 subjects). It
+      was left running on the original machine and did **not** finish; nothing
+      of it is committed. To redo it elsewhere, warm the MOABB cache first
+      (see `docs/session-portability.md`), then:
+
+      ```bash
+      OMP_NUM_THREADS=1 PYTHONPATH=src python -u -m qeeg.benchmark \
+          --dataset bci2a --suite extended --splits 5 --repeats 3 \
+          --tag refstate_bci2a_motor8_q4
+      ```
+
+      This is cross-dataset confirmation, not a load-bearing gap. The frame
+      effect has already replicated three independent ways: at 3 qubits
+      (§4.6), at 5 qubits against the FBCSP bar (§4.9), and in cross-subject
+      transfer (§4.7).
 
 **Next, in priority order**
 
