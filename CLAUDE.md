@@ -58,10 +58,19 @@ get manufactured. Do not weaken them to make results look better.
 
 ```
 src/qeeg/
-  data.py           PhysioNet EEGMMIDB loader, epoching, channel sets
-  quantum.py        density matrices, HS/fidelity/Bures kernels, CircuitKernel
-  pipelines.py      the 15 pipelines (classical / quantum / control)
-  benchmark.py      nested-CV runner + paired statistics
+  data.py           PhysioNet EEGMMIDB + MOABB loaders, epoching, channel sets
+  quantum.py        density matrices, HS/fidelity/Bures/QRE kernels,
+                    reference_whitener, CircuitKernel
+  pipelines.py      the pipeline registry; suite="core" (the published 15),
+                    "extended" (+8: reference-frame kernels, QRE, SPD-kernel
+                    controls)
+  reference.py      the invariance proposition + its numerical check, and the
+                    sensor-vs-reference concentration diagnostic
+  transfer.py       leave-one-subject-out cross-subject transfer
+  filterbank.py     FBCSP-class baselines and 5-qubit wide-register kernels
+  shots.py          finite-shot SWAP-test estimation
+  benchmark.py      nested-CV runner + paired statistics (--suite core |
+                    extended | filterbank)
   concentration.py  kernel variance vs qubit count
   merge.py          combine batched runs
   figures.py        publication figures (validated palette)
@@ -69,6 +78,16 @@ results/            CSV/JSON outputs + figures/
 paper/              journal manuscript (see below)
 RESEARCH.md         the actual research document
 ```
+
+**The central finding, so a fresh session does not re-derive it.** The
+density-matrix kernels were being evaluated in the *sensor* frame while every
+strong classical baseline is invariant under congruence `C → ACAᵀ`, the group
+EEG's nuisances actually generate. Referring states to a training-set
+reference state (`reference_whitener`) makes them exactly affine-invariant,
+which relieves concentration and lifts accuracy enough to reverse the headline
+comparison — but the `control/riemann-kernel-SVM` twin matches every quantum
+kernel to within noise, so the gain is the frame, not quantum structure. Read
+RESEARCH.md §4.6–§4.9 before proposing new experiments.
 
 ## The manuscript
 
