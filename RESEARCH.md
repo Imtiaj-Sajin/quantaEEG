@@ -38,6 +38,14 @@ benchmark in a hyped area has real value — but you should decide up front that
 you are willing to publish it, because the alternative is p-hacking your way
 into the low-credibility genre described above.
 
+**Update — that caution has now been confirmed empirically** (§4.4, n = 30,
+nested CV). The best classical pipeline beats the best quantum kernel by
++0.032 accuracy (p = 0.002, dz = 0.58, better in 24/30 subjects), no quantum
+kernel beat the reference at any significance level, and quantum kernels are
+2–270× more expensive. The paper is therefore an **Option A/B negative
+benchmark** (§6) — which is exactly the paper worth writing, because it comes
+with two mechanistic findings (§4.1, §4.1b) that explain *why*, not just *that*.
+
 ---
 
 ## 1. Why EEG is an unusually good substrate for this question
@@ -315,15 +323,79 @@ literature.*
   result is confounded with dimensionality reduction.
 - `logeuclid-TS+LR` — the classical geometry twin of the density-matrix kernels.
 
-### 4.4 Results
+### 4.4 Results — n = 30 subjects, nested CV
 
-> Full run in progress (30 subjects, nested CV). Table to be inserted here from
-> `results/summary_motor8_q4.csv` and `results/tests_vs_*.csv`.
+**Completed run.** 30 subjects × 15 pipelines × 15 outer folds = 6 750 fold
+scores. Sources: `results/summary_motor8_q4.csv`,
+`results/tests_vs_classical-TS+LR_motor8_q4.csv`, `results/meta_motor8_q4.json`.
+Figures: `results/figures/fig2_benchmark.*`, `fig3_paired_differences.*`.
 
-Preliminary 3-subject smoke run (5-fold, 1 repeat — **not** inferential, shown
-only for order of magnitude): classical `CSP+LDA` 0.696, `MDM` 0.674,
-`TS+LR` 0.667 vs quantum `IQP-kernel-SVM` 0.600, `Bures-RBF-SVM` 0.578,
-`HS-overlap-SVM` 0.548. Direction of travel is consistent with §2.2.
+| Pipeline | Group | Acc | SD | AUC | s/subj |
+|---|---|---|---|---|---|
+| classical/CSP+LDA | classical | **0.6114** | 0.154 | 0.636 | 2.0 |
+| classical/TS+LR | classical | 0.5946 | 0.174 | 0.625 | 2.7 |
+| classical/TS+RBF-SVM | classical | 0.5899 | 0.168 | 0.605 | 6.3 |
+| control/logeuclid-TS+LR | control | 0.5825 | 0.149 | 0.611 | 2.6 |
+| control/PCA-matched-linear | control | 0.5820 | 0.156 | 0.588 | 2.4 |
+| quantum/CNOT-kernel-SVM | quantum | 0.5790 | 0.148 | 0.593 | 9.3 |
+| control/PCA-matched-RBF | control | 0.5775 | 0.153 | 0.576 | 6.6 |
+| control/IQP-no-entangle | control | 0.5763 | 0.147 | 0.594 | 8.3 |
+| classical/MDM | classical | 0.5751 | 0.161 | 0.594 | 0.23 |
+| quantum/IQP-kernel-SVM | quantum | 0.5657 | 0.134 | 0.588 | 10.2 |
+| classical/logvar+LDA | classical | 0.5585 | 0.134 | 0.585 | **0.046** |
+| quantum/Bures-RBF-SVM | quantum | 0.5521 | 0.109 | 0.567 | 12.4 |
+| quantum/HS-RBF-SVM | quantum | 0.5494 | 0.101 | 0.567 | 5.8 |
+| quantum/HS-overlap-SVM | quantum | 0.5321 | 0.076 | 0.578 | 2.1 |
+| quantum/Fidelity-SVM | quantum | 0.5232 | 0.082 | 0.557 | 4.7 |
+
+Quantum kernels occupy **five of the bottom six** positions. Absolute
+accuracies are modest because PhysioNet MI contains many near-chance subjects;
+this is expected and is why paired subject-wise testing is mandatory.
+
+**Primary comparison — best classical vs best quantum:**
+
+| Comparison | Δacc | p (Wilcoxon) | Cohen's dz | better in |
+|---|---|---|---|---|
+| **CSP+LDA vs CNOT-kernel-SVM** | **+0.0323** | **0.0023** | **+0.576** | **24/30** |
+| CSP+LDA vs Fidelity-SVM | +0.0881 | 0.0006 | +0.665 | 24/30 |
+
+**The best classical pipeline significantly outperforms the best quantum
+kernel** — a medium effect size, consistent across 80 % of subjects.
+
+**Family test vs the `classical/TS+LR` reference** (14 comparisons, Holm
+corrected): **0 of 14 significant after correction.** Uncorrected, only two
+reach p < 0.05 — `HS-overlap-SVM` (p = 0.048) and `Fidelity-SVM` (p = 0.013) —
+and in both the quantum model is *worse*. **No quantum kernel beat the
+reference, at any significance level.**
+
+**Ablations — the controls, which are the point of the study:**
+
+| Ablation | Δacc | p | dz | better in |
+|---|---|---|---|---|
+| Remove entanglement (`IQP-no-entangle` vs `IQP-kernel-SVM`) | +0.0106 | 0.309 | +0.236 | 17/30 |
+| Dimension-matched (`PCA-matched-linear` vs `IQP-kernel-SVM`) | +0.0163 | 0.173 | +0.275 | 18/30 |
+
+Both point the same way as §2.2 but **neither is significant on accuracy at
+n = 30**. State this precisely and resist overclaiming: deleting entanglement
+did not *hurt*, and numerically helped, but the accuracy evidence alone cannot
+carry the claim. The entanglement effect is established much more strongly on
+**kernel variance** (§4.1b, 0.428 vs 0.716 per qubit) than on accuracy — which
+is itself the interesting point: the mechanism is visible in the kernel long
+before it shows up in a downstream score that is dominated by EEG noise.
+
+**Cost.** `classical/logvar+LDA` reaches 0.5585 in **0.046 s/subject**;
+`quantum/Bures-RBF-SVM` reaches 0.5521 in 12.4 s — **270× slower and less
+accurate**. Every quantum kernel is 2–270× more expensive than a classical
+baseline that matches or beats it. At infinite shots, on a simulator, with no
+hardware noise: i.e. under conditions maximally favourable to the quantum side.
+
+**Honest summary of what this run shows.** Against the specific `TS+LR`
+reference, differences are within noise. Against the *best* classical pipeline,
+quantum kernels lose significantly. Nothing here supports a quantum advantage
+for within-subject MI decoding, and the density-matrix kernels — the
+principled, hardware-mappable formulation — performed **worst of all**, which
+is the most scientifically interesting negative result in the set, because
+§4.1b explains exactly why (data-driven concentration, not qubit count).
 
 ---
 
@@ -387,10 +459,10 @@ into Option A/B. **This is where I would aim.**
 
 | Risk | Severity | Mitigation |
 |---|---|---|
-| Quantum methods simply lose | **High — expect it** | Frame as Option A/B, where a rigorous negative result is the contribution. Decide *now* that you will publish it. |
+| Quantum methods simply lose | **CONFIRMED (§4.4)** | Framed as Option A/B. The negative result now carries two mechanistic findings (§4.1, §4.1b) that explain it, which is what lifts it above a bare leaderboard table. |
 | Reviewer: "no quantum advantage, so what?" | High | Pre-empt: the paper is a benchmark + representation contribution, not an advantage claim. Cite Bowles et al. as precedent. |
 | Reviewer: "this is classically simulable" | Certain | Concede immediately and precisely. 8 ch = 3 qubits; everything here is classically computable. The claim is *geometric*, not computational. |
-| Kernel concentration kills everything | **Already happened** | Documented and remedied (§4.1–4.2). Now an asset, not a threat. |
+| Kernel concentration kills everything | **CONFIRMED (§4.1)** | Documented, quantified, and remedied (§4.1–4.2). Now the paper's strongest contribution rather than a threat. |
 | Small trials/subject (~45) | Medium | Many subjects + repeated nested CV + paired stats; add BCI IV-2a (288 trials/subject). |
 | Field is crowded with low-quality papers | Medium | Rigour *is* the differentiator. |
 
@@ -414,6 +486,15 @@ tests vs the chosen reference, and a metadata JSON recording the exact protocol.
 ---
 
 ## 9. Open threads
+
+**Done**
+
+- [x] Within-subject benchmark, 30 subjects, nested CV, 15 pipelines (§4.4).
+- [x] Kernel concentration on real EEG, 10 subjects, 2→6 qubits (§4.1, §4.1b).
+- [x] Entanglement ablation and dimension-matched controls.
+- [x] Figures 1–3 (`results/figures/`).
+
+**Next**
 
 - [ ] Add MOABB + BCI IV-2a for comparability with §2.1 claims.
 - [ ] Cross-subject / transfer evaluation (Option C).

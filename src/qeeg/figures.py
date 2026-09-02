@@ -220,16 +220,22 @@ def fig_benchmark(results: Path, out: Path, tag: str = "motor8_q4") -> bool:
                 ax.scatter(v, i + rng.uniform(-0.16, 0.16, size=len(v)),
                            s=9, color=INK, alpha=0.28, linewidths=0, zorder=4)
 
-    xmax = max(0.80, float(s["acc_mean"].max()) + 0.12)
+    # Value labels live in a gutter to the right of every mark, so they never
+    # sit inside the per-subject dot cloud.
+    data_max = float(s["acc_mean"].max())
+    if per_subj is not None and len(per_subj):
+        data_max = max(data_max, float(per_subj["accuracy"].max()))
+    label_x = data_max + 0.015
+    xmax = label_x + 0.055
+
     for i, v in enumerate(s["acc_mean"]):
-        ax.annotate(f"{v:.3f}", xy=(v, i), xytext=(6, 0),
-                    textcoords="offset points", va="center", ha="left",
+        ax.annotate(f"{v:.3f}", xy=(label_x, i), va="center", ha="left",
                     fontsize=8.2, color=INK, fontweight="bold", zorder=5)
 
     ax.set_yticks(ypos)
     ax.set_yticklabels(s["pipeline"], fontsize=8.4, color=INK)
     ax.set_xlabel("Within-subject accuracy  (nested CV, mean over subjects)")
-    ax.set_xlim(0.35, xmax)
+    ax.set_xlim(0.33, xmax)
     ax.set_ylim(-0.8, len(s) - 0.2)
     # Title states what the data shows, rather than asserting a conclusion the
     # run might not support.
