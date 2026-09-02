@@ -31,6 +31,11 @@ BLUE, ORANGE, AQUA, YELLOW, MAGENTA, GREEN = (
 INK, INK_2, INK_MUTED = "#0b0b0b", "#52514e", "#8a8880"
 SURFACE, GRID = "#fcfcfb", "#e4e3de"
 
+# Paper mode: the LaTeX \caption supplies the title and the explanatory note,
+# so the figure must not repeat them, and the canvas must be plain white to sit
+# on the page without a visible tint block. Toggled by --paper.
+PAPER = False
+
 GROUP_COLOR = {"classical": BLUE, "quantum": ORANGE, "control": AQUA}
 
 # Kernel -> (colour, linestyle). Linestyle encodes the family: dotted = raw
@@ -45,11 +50,17 @@ KERNEL_STYLE = {
 }
 
 
+def _surface() -> str:
+    """Actual canvas colour: white for the manuscript, tinted for standalone."""
+    return "#ffffff" if PAPER else SURFACE
+
+
 def _style() -> None:
+    surface = _surface()
     plt.rcParams.update({
-        "figure.facecolor": SURFACE,
-        "axes.facecolor": SURFACE,
-        "savefig.facecolor": SURFACE,
+        "figure.facecolor": surface,
+        "axes.facecolor": surface,
+        "savefig.facecolor": surface,
         "font.family": "sans-serif",
         "font.sans-serif": ["DejaVu Sans", "Arial", "Helvetica"],
         "font.size": 9,
@@ -80,9 +91,19 @@ def _caption(fig, text: str) -> None:
 
     Figure coordinates with a negative y; ``bbox_inches="tight"`` at save time
     expands the canvas to include it, so it can never collide with the axes.
+    Suppressed in paper mode, where LaTeX's \\caption does this job.
     """
+    if PAPER:
+        return
     fig.text(0.005, -0.015, text, fontsize=7.6, color=INK_MUTED,
              ha="left", va="top", linespacing=1.45)
+
+
+def _title(ax, text: str) -> None:
+    """Figure-embedded title. Suppressed in paper mode (LaTeX supplies it)."""
+    if PAPER:
+        return
+    ax.set_title(text, color=INK, loc="left", pad=12)
 
 
 def _place_end_labels(ax, entries) -> None:
@@ -159,7 +180,7 @@ def fig_concentration(results: Path, out: Path) -> bool:
         x, y = g["n_qubits"].to_numpy(), g["variance"].to_numpy()
         ax.plot(x, y, color=color, linestyle=ls, linewidth=2.0,
                 marker="o", markersize=5, markerfacecolor=color,
-                markeredgecolor=SURFACE, markeredgewidth=1.4, zorder=3)
+                markeredgecolor=_surface(), markeredgewidth=1.4, zorder=3)
         # Direct labels are the relief required by the contrast warning:
         # identity is never carried by colour alone.
         end_labels.append((kern, float(x[-1]), float(y[-1]), color))
@@ -167,9 +188,7 @@ def fig_concentration(results: Path, out: Path) -> bool:
     ax.set_xlabel(
         "Register size (qubits)      —      4 / 8 / 16 / 32 / 64 EEG channels")
     ax.set_ylabel("Kernel variance  (off-diagonal Gram)")
-    ax.set_title(
-        "Quantum kernels concentrate on EEG — entanglement accelerates it",
-        color=INK, loc="left", pad=12)
+    _title(ax, "Quantum kernels concentrate on EEG — entanglement accelerates it")
     ax.set_xticks([2, 3, 4, 5, 6])
     ax.set_xlim(1.9, 6.35)
     _despine(ax)
@@ -209,7 +228,7 @@ def fig_benchmark(results: Path, out: Path, tag: str = "motor8_q4") -> bool:
 
     ax.axvline(0.5, color=INK_MUTED, linewidth=1.0, linestyle="--", zorder=1)
     ax.barh(ypos, s["acc_mean"], height=0.62, color=colors, zorder=2,
-            edgecolor=SURFACE, linewidth=2.0)
+            edgecolor=_surface(), linewidth=2.0)
 
     # Per-subject spread: shows the heterogeneity that mean rankings hide.
     if per_subj is not None:
@@ -249,14 +268,14 @@ def fig_benchmark(results: Path, out: Path, tag: str = "motor8_q4") -> bool:
     else:
         title = (f"Tuned classical baselines lead the quantum kernels "
                  f"({best_c:.3f} vs {best_q:.3f})")
-    ax.set_title(title, color=INK, loc="left", pad=12)
+    _title(ax, title)
     ax.grid(axis="x", zorder=0)
     ax.set_axisbelow(True)
     _despine(ax)
 
     handles = [
         plt.Line2D([], [], marker="s", linestyle="", markersize=8,
-                   markerfacecolor=GROUP_COLOR[g], markeredgecolor=SURFACE,
+                   markerfacecolor=GROUP_COLOR[g], markeredgecolor=_surface(),
                    label=g)
         for g in ("classical", "quantum", "control")
     ]
@@ -307,7 +326,7 @@ def fig_paired(results: Path, out: Path, tag: str = "motor8_q4",
                    color=col, alpha=0.45, linewidths=0, zorder=3)
         m = float(d.mean())
         ax.scatter([m], [i], s=64, marker="D", color=col,
-                   edgecolor=SURFACE, linewidth=1.6, zorder=5)
+                   edgecolor=_surface(), linewidth=1.6, zorder=5)
         ax.annotate(f"{m:+.3f}", xy=(m, i), xytext=(0, 12),
                     textcoords="offset points", ha="center", fontsize=7.8,
                     color=INK, fontweight="bold", zorder=6)
@@ -323,15 +342,14 @@ def fig_paired(results: Path, out: Path, tag: str = "motor8_q4",
         sub = f"every quantum kernel below baseline (best {max(q_deltas):+.3f})"
     else:
         sub = "paired per-subject differences"
-    ax.set_title(f"Paired differences vs {reference} — {sub}",
-                 color=INK, loc="left", pad=12)
+    _title(ax, f"Paired differences vs {reference} — {sub}")
     ax.grid(axis="x", zorder=0)
     ax.set_axisbelow(True)
     _despine(ax)
 
     handles = [
         plt.Line2D([], [], marker="D", linestyle="", markersize=7,
-                   markerfacecolor=GROUP_COLOR[g], markeredgecolor=SURFACE,
+                   markerfacecolor=GROUP_COLOR[g], markeredgecolor=_surface(),
                    label=g)
         for g in ("classical", "quantum", "control")
     ]
@@ -351,11 +369,17 @@ def main(argv=None) -> int:
     ap.add_argument("--results", type=str, default="results")
     ap.add_argument("--tag", type=str, default="motor8_q4")
     ap.add_argument("--reference", type=str, default="classical/TS+LR")
+    ap.add_argument("--paper", action="store_true",
+                    help="omit in-figure titles/captions and use a white "
+                         "canvas, for embedding in the LaTeX manuscript where "
+                         "the LaTeX caption supplies that text")
     args = ap.parse_args(argv)
 
+    global PAPER
+    PAPER = args.paper
     _style()
     results = Path(args.results)
-    out = results / "figures"
+    out = results / ("figures_paper" if PAPER else "figures")
     print(f"Writing figures to {out.resolve()}")
     made = [
         fig_concentration(results, out),

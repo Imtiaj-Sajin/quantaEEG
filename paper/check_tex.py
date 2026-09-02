@@ -18,7 +18,12 @@ BS = "\\"
 HERE = Path(__file__).parent
 tex = (HERE / "main.tex").read_text(encoding="utf-8")
 tab = (HERE / "tables_auto.tex").read_text(encoding="utf-8")
+mac = (HERE / "macros_auto.tex").read_text(encoding="utf-8")
 bib = (HERE / "refs.bib").read_text(encoding="utf-8")
+
+# Generated content is split: macros are read in the preamble, table floats in
+# the body. Most checks care about the union.
+gen = mac + "\n" + tab
 
 problems: list[str] = []
 
@@ -28,7 +33,7 @@ def used(cmd: str, text: str) -> bool:
 
 
 # ---------------------------------------------------------------- macros
-defined = set(re.findall(re.escape(BS + "newcommand{" + BS) + r"(\w+)}", tab))
+defined = set(re.findall(re.escape(BS + "newcommand{" + BS) + r"(\w+)}", gen))
 used_defined = sorted(c for c in defined if used(c, tex))
 unused = sorted(defined - set(used_defined))
 
@@ -45,7 +50,7 @@ IOP_OK = {
 candidates = set(re.findall(re.escape(BS) + r"([A-Z][A-Za-z]+)(?![A-Za-z])", tex))
 unknown = sorted(c for c in candidates if c not in defined and c not in IOP_OK)
 
-print(f"macros defined in tables_auto.tex : {len(defined)}")
+print(f"macros defined in macros_auto.tex : {len(defined)}")
 print(f"macros used in main.tex           : {len(used_defined)}")
 print(f"  {used_defined}")
 if unused:
@@ -69,7 +74,7 @@ if missing:
     problems.append(f"missing bib entries: {missing}")
 
 # ---------------------------------------------------------------- labels
-labels = set(re.findall(re.escape(BS + "label{") + r"([^}]*)}", tex + tab))
+labels = set(re.findall(re.escape(BS + "label{") + r"([^}]*)}", tex + gen))
 refs: set[str] = set()
 for pat in ("Tref", "Fref", "Sref", "ref", "eref"):
     refs |= set(re.findall(re.escape(BS + pat + "{") + r"([^}]*)}", tex))
@@ -85,7 +90,7 @@ if dangling:
 
 # ---------------------------------------------------------- environments
 print("\nenvironment balance:")
-both = tex + tab
+both = tex + gen
 for env in ("document", "abstract", "table", "figure", "tabular",
             "indented", "equation", "align"):
     b = len(re.findall(re.escape(BS + "begin{" + env + "}"), both))
@@ -95,7 +100,8 @@ for env in ("document", "abstract", "table", "figure", "tabular",
     if b != e:
         problems.append(f"unbalanced environment: {env} ({b}/{e})")
 
-for name, text in (("main.tex", tex), ("tables_auto.tex", tab)):
+for name, text in (("main.tex", tex), ("tables_auto.tex", tab),
+                   ("macros_auto.tex", mac)):
     ok = text.count("{") == text.count("}")
     print(f"braces balanced in {name:16s}: {ok} "
           f"({text.count('{')} open / {text.count('}')} close)")

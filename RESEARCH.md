@@ -74,8 +74,13 @@ actual pain is. See §6.
 ### 2.1 The optimistic strand (claims of quantum benefit on EEG)
 
 - **[EEG-based motor imagery classification with quantum algorithms](https://www.sciencedirect.com/science/article/abs/pii/S0957417424002197)**
-  (Expert Systems with Applications, 2024). Reports ~84.86% mean accuracy on
-  BCI Competition IV-2a, SD 7.1 across 9 subjects.
+  — Olvera, Ross & Rubio, *Expert Systems with Applications* **247**:123354
+  (2024). Two NISQ-executable approaches (a quantum genetic algorithm for
+  feature selection, and an end-to-end variant). Reports 83.82% / 85.56% /
+  73.73% on **BCI Competition IV-2b** for subject-dependent cross-validation,
+  subject-dependent hold-out, and leave-one-subject-out respectively. *(An
+  earlier draft of this review recorded "84.86% on IV-2a" from a search
+  summary; that was wrong — corrected against the source record.)*
 - **[QEEGNet: Quantum Machine Learning for Enhanced EEG Encoding](https://arxiv.org/abs/2407.19214)**
   (2024). Inserts a variational quantum layer into EEGNet. Claims it
   "consistently outperforms traditional EEGNet on most subjects" and is more

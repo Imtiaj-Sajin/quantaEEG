@@ -14,3 +14,21 @@ results/_*/
 
 # Large cached datasets live in ~/mne_data, never in the repo.
 mne_data/
+
+# LaTeX build products
+paper/build/
+*.aux
+*.bbl
+*.blg
+*.out
+*.log
+*.xdv
+
+# Third-party IOP class files -- fetched by paper/get_iop_class.sh, not
+# redistributed here.
+paper/iopart.cls
+paper/iopart1*.clo
+paper/iopams.sty
+paper/setstack.sty
+paper/harvard.sty
+paper/iopart-num.bst

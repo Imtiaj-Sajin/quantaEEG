@@ -12,15 +12,20 @@
 \documentclass[12pt]{iopart}
 
 \usepackage{graphicx}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{booktabs}
+%% iopams loads amsmath/amssymb in the order iopart.cls requires. Loading
+%% amsmath directly clashes with the class's own \equation* definition.
+\usepackage{iopams}
 \usepackage[colorlinks=true,allcolors=blue]{hyperref}
 
-\graphicspath{{../results/figures/}{figures/}}
+%% Prefer the paper-mode figures: no in-figure title or note (the \caption
+%% supplies both) and a white canvas. Generate with:
+%%     PYTHONPATH=src python -m qeeg.figures --paper
+\graphicspath{{../results/figures_paper/}{../results/figures/}{figures/}}
 
-%% Auto-generated tables + \newcommand macros for every number in the prose.
-\input{tables_auto}
+%% Auto-generated \newcommand macros for every number quoted in the prose.
+%% Table floats live in tables_auto.tex and are input in the document body,
+%% since a float is not legal in the preamble.
+\input{macros_auto}
 
 \begin{document}
 
@@ -212,13 +217,15 @@ Both quantities proved severely concentrated on EEG (\sref{sec:concentration}),
 so we additionally define bandwidth-parameterised kernels that retain the
 quantum geometry while restoring a length scale, exactly as a radial basis
 function (RBF) kernel does for the Euclidean distance:
-\begin{align}
-K_{\mathrm{HS\text{-}RBF}}(\rho,\sigma) &= \exp\!\left(-\gamma\,
-   \mathrm{tr}\!\left[(\rho-\sigma)^2\right]\right), \\
-K_{\mathrm{Bures}}(\rho,\sigma) &= \exp\!\left(-\gamma\, d_{B}^{2}(\rho,\sigma)
-   \right), \quad
+%% iopart.cls is not compatible with amsmath's align; eqnarray is the
+%% class-supported multi-line display.
+\begin{eqnarray}
+K_{\mathrm{HS\mbox{-}RBF}}(\rho,\sigma) &=& \exp\left(-\gamma\,
+   \mathrm{tr}\left[(\rho-\sigma)^2\right]\right), \\
+K_{\mathrm{Bures}}(\rho,\sigma) &=& \exp\left(-\gamma\,
+   d_{B}^{2}(\rho,\sigma)\right), \qquad
 d_{B}^{2} = 2\left(1-\sqrt{F(\rho,\sigma)}\right).
-\end{align}
+\end{eqnarray}
 Here $d_B$ is the Bures distance, the geodesic distance of the Bures metric on
 state space, which for unit-trace matrices coincides with the
 Bures--Wasserstein distance occasionally used in the Riemannian EEG literature
@@ -286,6 +293,9 @@ Analyses use MNE-Python \cite{mne2013}, pyRiemann, scikit-learn and PennyLane
 %% =====================================================================
 \section{Results}
 %% =====================================================================
+
+%% Auto-generated table floats; LaTeX places them near their references.
+\input{tables_auto}
 
 \subsection{Quantum kernels do not outperform tuned classical baselines}
 
