@@ -60,6 +60,21 @@ def make_grids() -> dict[str, dict]:
         "control/PCA-matched-RBF": {"clf__C": C_GRID, "clf__gamma": ["scale", 0.01, 0.1]},
         "control/PCA-matched-linear": {"clf__C": C_GRID},
         "control/logeuclid-TS+LR": {"clf__C": C_GRID},
+        # --- extended suite: reference-state kernels and their twins -----
+        # Same grid shapes as the sensor-frame versions above, so the frame is
+        # the only thing that differs between a pipeline and its *-ref pair.
+        "quantum/HS-overlap-ref-SVM": {"clf__C": C_GRID},
+        "quantum/Fidelity-ref-SVM": {"clf__C": C_GRID},
+        "quantum/HS-RBF-ref-SVM": {
+            "clf__C": C_GRID, "clf__gamma_mult": [0.25, 1.0, 4.0]},
+        "quantum/Bures-RBF-ref-SVM": {
+            "clf__C": C_GRID, "clf__gamma_mult": [0.25, 1.0, 4.0]},
+        "quantum/QRE-RBF-SVM": {
+            "clf__C": C_GRID, "clf__gamma_mult": [0.25, 1.0, 4.0]},
+        "quantum/QRE-RBF-ref-SVM": {
+            "clf__C": C_GRID, "clf__gamma_mult": [0.25, 1.0, 4.0]},
+        "control/riemann-kernel-SVM": {"clf__C": C_GRID},
+        "control/logeuclid-kernel-SVM": {"clf__C": C_GRID},
     }
 
 
@@ -241,6 +256,14 @@ def main(argv=None) -> int:
     ap.add_argument("--repeats", type=int, default=3)
     ap.add_argument("--qubits", type=int, default=N_QUBITS)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--suite", type=str, default="core",
+                    choices=("core", "extended", "filterbank"),
+                    help="core reproduces the published 15-pipeline run; "
+                         "extended adds the reference-state quantum kernels, "
+                         "the quantum relative-entropy kernel and the "
+                         "Riemannian/log-Euclidean kernel controls; "
+                         "filterbank runs the FBCSP-class baselines against "
+                         "wide-register (5-qubit) density-matrix kernels")
     ap.add_argument("--channels", type=str, default="motor8",
                     choices=["motor8", "motor16", "motor32", "all64"])
     ap.add_argument("--dataset", type=str, default="physionet",
@@ -284,8 +307,19 @@ def main(argv=None) -> int:
         print("No usable subjects loaded.")
         return 1
 
-    pipelines = make_pipelines(n_qubits=args.qubits, seed=args.seed)
-    grids = make_grids()
+    if args.suite == "filterbank":
+        from .filterbank import make_filterbank_grids, make_filterbank_pipelines
+
+        sfreq = float(eps[0].sfreq)
+        pipelines = make_filterbank_pipelines(sfreq=sfreq, seed=args.seed)
+        grids = make_filterbank_grids()
+        n_wide = len(eps[0].ch_names) * 4
+        print(f"  filter-bank suite: 4 sub-bands x {len(eps[0].ch_names)} ch "
+              f"= {n_wide} dims = {np.log2(n_wide):.0f} qubits @ {sfreq:g} Hz")
+    else:
+        pipelines = make_pipelines(n_qubits=args.qubits, seed=args.seed,
+                                   suite=args.suite)
+        grids = make_grids()
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -331,6 +365,7 @@ def main(argv=None) -> int:
         "subjects_used": [e.subject for e in eps],
         "n_trials_per_subject": {str(e.subject): int(len(e)) for e in eps},
         "channels": chans,
+        "suite": args.suite,
         "n_qubits": args.qubits,
         "outer_cv": f"{args.splits}-fold x {args.repeats} repeats",
         "inner_cv": "4-fold GridSearchCV",

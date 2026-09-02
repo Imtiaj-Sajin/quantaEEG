@@ -92,9 +92,17 @@ cd paper && latexmk -pdf main.tex
 cross-references, unbalanced environments and missing figures, the things that
 would otherwise only surface on first compile.
 
-**Not yet compiled.** No LaTeX toolchain on this machine; static checks pass but
-the draft has never been run through `iopart.cls`. Expect minor first-compile
-fixes.
+**Compiles.** First successful build 2026-09-03 with MiKTeX/`latexmk`: 17 pages,
+0 undefined references, 0 overfull boxes, 15 bibliography entries. Run
+`bash paper/get_iop_class.sh` once first (`iopart.cls` is not on CTAN). Note
+the `-outdir` BibTeX trap documented in `paper/README.md`: without `BIBINPUTS`
+set, BibTeX silently produces an empty bibliography and the error surfaces as
+a misleading `missing \item` from `main.bbl`.
+
+`check_tex.py` is a pre-flight, not a substitute for compiling: it cannot see
+undefined macros that come from a package the class does not load (`\tfrac`
+under `iopams`) or environments the class never defines. Compile before
+believing the draft is sound.
 
 **Before submitting**, work through `paper/README.md`'s checklist. The most
 important item: `refs.bib` marks each entry `[VERIFIED]` (checked against the

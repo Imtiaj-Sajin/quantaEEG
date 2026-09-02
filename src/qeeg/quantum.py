@@ -162,6 +162,95 @@ def bures_distance_sq(
     return np.clip(2.0 * (1.0 - root_f), 0.0, None)
 
 
+def logm_spd(M: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    """Matrix logarithm of an SPD matrix, eigenvalues floored at `eps`."""
+    w, V = eigh(M)
+    return (V * np.log(np.clip(w, eps, None))) @ V.T
+
+
+def qre_divergence(
+    A: np.ndarray, B: np.ndarray | None = None, eps: float = 1e-12
+) -> np.ndarray:
+    """Symmetrised quantum relative entropy, pairwise.
+
+    S(rho||sigma) = tr(rho log rho) - tr(rho log sigma) is the quantum
+    relative entropy. Its symmetrised form
+
+        J(rho, sigma) = 0.5 * tr[(rho - sigma)(log rho - log sigma)]
+
+    is the quantum Jeffreys divergence: non-negative, symmetric, and
+    squared-distance-like, so it exponentiates into a bandwidth kernel exactly
+    as the Bures distance does.
+
+    This is *not* pyriemann's ``distance_kullback``, which is the classical
+    Kullback-Leibler divergence between the zero-mean Gaussians the covariances
+    parameterise. That one involves tr(sigma^-1 rho) and log-determinants; this
+    one is a function of the matrix logarithms, and is the divergence quantum
+    information theory actually supplies.
+    """
+    symmetric = B is None
+    B = A if symmetric else B
+    LA = np.stack([logm_spd(a, eps) for a in A])
+    LB = LA if symmetric else np.stack([logm_spd(b, eps) for b in B])
+    sA = np.einsum("nij,nji->n", A, LA)          # tr(rho log rho) = -S(rho)
+    sB = sA if symmetric else np.einsum("nij,nji->n", B, LB)
+    cross_ab = np.einsum("ikl,jlk->ij", A, LB)   # tr(rho_i log sigma_j)
+    cross_ba = np.einsum("jkl,ilk->ij", B, LA)   # tr(sigma_j log rho_i)
+    D = 0.5 * (sA[:, None] + sB[None, :] - cross_ab - cross_ba)
+    return np.clip(D, 0.0, None)
+
+
+# --------------------------------------------------------------------------
+# Reference states
+# --------------------------------------------------------------------------
+#
+# The kernels above are evaluated in whatever frame the electrodes happen to
+# define. That is the wrong frame, for two reasons that turn out to be the
+# same reason.
+#
+# (1) Every EEG covariance from one subject is dominated by the same mixing and
+#     volume-conduction structure, so all rho sit in a tiny neighbourhood of
+#     their own mean and tr(rho sigma) ~ 0.99 (the data-driven concentration
+#     documented in RESEARCH.md 4.1).
+#
+# (2) The nuisance group of EEG *is* congruence, C -> A C A^T: electrode gain,
+#     impedance, referencing, source mixing, and the change from one subject or
+#     session to the next all act this way. The affine-invariant Riemannian
+#     metric is invariant under that group, which is precisely why
+#     tangent-space decoding is the classical state of the art. tr(rho sigma),
+#     Uhlmann fidelity, the Bures distance and the quantum relative entropy are
+#     invariant only under the *orthogonal* subgroup. They have the wrong
+#     invariance for the data.
+#
+# Measuring each state relative to a reference state M fixes both at once. With
+# W = M^-1/2 and rho~ = W C W / tr(W C W):
+#
+#     under C -> A C A^T the Riemannian mean obeys M -> A M A^T, so
+#     (A M A^T)^-1/2 A = U M^-1/2 for some orthogonal U, and every whitened
+#     matrix transforms by that same U.
+#
+# All four quantum quantities are invariant under a common unitary, so in the
+# reference frame they become *exactly* affine-invariant. This is verifiable to
+# machine precision; see `qeeg.reference.check_invariance`.
+#
+# The operation is quantum-legitimate, not a classical pre-processing hack:
+# rho -> W rho W / tr(W rho W) is a filtering (Lueders) operation with Kraus
+# operator W, followed by renormalisation, so the SWAP-test implementation path
+# survives intact.
+
+def reference_whitener(covs: np.ndarray, metric: str = "riemann") -> np.ndarray:
+    """W = M^-1/2 for M the Frechet mean of `covs` under `metric`.
+
+    Must be estimated on training data only; the pipelines enforce this by
+    computing it inside `fit`.
+    """
+    from pyriemann.utils.base import invsqrtm
+    from pyriemann.utils.mean import mean_covariance
+
+    return invsqrtm(mean_covariance(np.asarray(covs, dtype=np.float64),
+                                    metric=metric))
+
+
 def median_bandwidth(D: np.ndarray) -> float:
     """Median heuristic: gamma = 1 / median(off-diagonal squared distance).
 

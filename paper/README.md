@@ -35,8 +35,32 @@ hand-transcribed manuscript silently rots.
 
 ## Building
 
-**The draft compiles cleanly: 12 pages, 0 undefined references, 0 overfull
-boxes, 0 BibTeX warnings.**
+**The draft compiles cleanly: 17 pages, 0 undefined references, 0 overfull
+boxes, 0 BibTeX warnings** (MiKTeX/`latexmk`, 2026-09-03).
+
+### The `-outdir` BibTeX trap
+
+Building with `-outdir=build` runs BibTeX *inside* `build/`, where it cannot
+see `refs.bib` and silently emits an empty bibliography; the failure surfaces
+much later as `Something's wrong--perhaps a missing \item` from `main.bbl`,
+which points nowhere near the real cause. Set the search paths:
+
+```bash
+export PATH="$PATH:/c/Users/User/AppData/Local/Programs/MiKTeX/miktex/bin/x64"
+export BIBINPUTS="<abs-path-to>/paper;"
+export TEXINPUTS="<abs-path-to>/paper;"
+latexmk -pdf -interaction=nonstopmode -outdir=build main.tex
+```
+
+(The trailing `;` matters on Windows: it means "then search the normal
+places".) Confirm the build really succeeded by checking the *final* pass,
+not the accumulated `latexmk` log, which contains first-pass warnings that
+later passes resolve:
+
+```bash
+grep -E "Warning" build/main.log | grep -viE "font|miktex|update"   # expect none
+grep -c bibitem build/main.bbl                                       # expect 15
+```
 
 The build uses [Tectonic](https://tectonic-typesetting.github.io/): a single
 self-contained binary that fetches only the TeX packages it needs, requires no

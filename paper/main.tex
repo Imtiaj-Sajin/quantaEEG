@@ -256,6 +256,81 @@ as a distance but, to our knowledge, never as a kernel. The bandwidth
 $\gamma$ is set by the median heuristic computed \emph{on the training split
 only}, with a multiplier selected in the inner cross-validation loop.
 
+\subsection{Reference states, and the invariance the sensor frame lacks}
+\label{sec:reference}
+
+Equation~\eref{eq:density} expresses each state in the frame the electrodes
+happen to define. That frame is not neutral.
+
+The nuisance transformations of EEG act on the spatial covariance by
+congruence, $C \mapsto ACA^{\mathsf{T}}$ with $A$ invertible: per-electrode
+gain and impedance, the choice of reference electrode, linear source mixing
+and volume conduction, and the change from one subject or session to the next
+all take this form. The affine-invariant Riemannian metric is invariant under
+the whole congruence group, which is the structural reason tangent-space
+decoding is the classical state of the art and why it transfers.
+
+The quantum quantities are not. $\mathrm{tr}(\rho\sigma)$, the Uhlmann
+fidelity, the Bures distance and the quantum relative entropy are invariant
+only under the \emph{orthogonal} subgroup $A \in O(n_{\mathrm{ch}})$. This is
+an asymmetry in the comparison itself, not merely a property of the data:
+pyRiemann's tangent-space estimator fits a reference mean $M$ and maps
+$C \mapsto \log(M^{-1/2} C M^{-1/2})$, and both the minimum-distance-to-mean
+classifier and CSP are congruence-invariant by construction. Every strong
+classical baseline in our suite therefore possesses an invariance that none of
+the sensor-frame quantum kernels possess.
+
+We remove the asymmetry by referring each state to a \emph{reference state}
+$M$, the Fr\'echet mean of the \emph{training} covariances, via the whitening
+$W = M^{-1/2}$:
+\begin{equation}
+\tilde{\rho}_i \;=\; \frac{W C_i W}{\mathrm{tr}\,(W C_i W)}.
+\label{eq:refstate}
+\end{equation}
+
+%% iopart.cls defines no theorem environments and loading amsthm alongside it
+%% is not worth the risk; the statement is set in the class's own \indented.
+\begin{indented}
+\item[]\textbf{Proposition.}\ \emph{Under a common congruence
+$C_i \mapsto A C_i A^{\mathsf{T}}$ with $A$ invertible, the kernels
+$\mathrm{tr}(\tilde\rho\tilde\sigma)$, $F(\tilde\rho,\tilde\sigma)$,
+$d_B(\tilde\rho,\tilde\sigma)$ and $J(\tilde\rho,\tilde\sigma)$ are
+invariant.}
+\end{indented}
+
+\noindent\emph{Proof.} The affine-invariant mean is equivariant,
+$M \mapsto AMA^{\mathsf{T}}$. Put $B = (AMA^{\mathsf{T}})^{-1/2}A$. Then
+$BMB^{\mathsf{T}} = I = WMW^{\mathsf{T}}$, so $U := BM^{1/2}$ satisfies
+$UU^{\mathsf{T}} = I$ and $B = UW$. Hence
+$W C_i W \mapsto U (W C_i W) U^{\mathsf{T}}$ for one common orthogonal $U$,
+and trace normalisation commutes with orthogonal conjugation. Each quantity
+above is invariant under a common unitary. \hfill$\square$
+
+In the reference frame the quantum kernels are thus \emph{exactly}
+affine-invariant, sharing the invariance group of the affine-invariant
+Riemannian metric. Two consequences follow, and we test both. First, the
+comparison against the classical baselines becomes like for like. Second, and
+less obviously, the quantum kernels can now at best \emph{match} the
+Riemannian metric on any nuisance that is a congruence; parity, not
+superiority, is the ceiling the algebra permits.
+
+Equation~\eref{eq:refstate} is not classical preprocessing smuggled into a
+quantum method. The map $\rho \mapsto W\rho W/\mathrm{tr}(W\rho W)$ is a
+filtering (L\"uders) operation with Kraus operator $W$ followed by
+renormalisation, so it is state preparation and the SWAP-test implementation
+path is unchanged. $M$ is estimated on training data only.
+
+We also add the symmetrised quantum relative entropy
+\begin{equation}
+J(\rho,\sigma) = \frac{1}{2}\,\mathrm{tr}\!\left[(\rho-\sigma)
+   (\log\rho - \log\sigma)\right],
+\end{equation}
+used as $\exp(-\gamma J)$. It is distinct from the classical
+Kullback--Leibler divergence between the Gaussians the covariances
+parameterise, which pyRiemann supplies as a distance and which involves
+$\mathrm{tr}(\sigma^{-1}\rho)$ and log-determinants rather than matrix
+logarithms.
+
 \subsection{Circuit embedding kernels and the entanglement ablation}
 
 For comparison with the prevailing approach, we also evaluate
@@ -527,13 +602,20 @@ neural-network approaches are outside our scope.
 \subsection{What would change the conclusion}
 
 We regard the following as the informative next tests. Cross-subject transfer
-is foremost: the hypothesis that Bures or quantum-relative-entropy distances
-are more robust to inter-subject covariance shift than the affine-invariant
-Riemannian distance is well posed, addresses the field's real bottleneck (the
-calibration problem), and is untested. Replication on BCI Competition IV-2a
-would establish comparability with existing claims. Finally, a shot-noise
-analysis would quantify how far the concentration reported here places these
-kernels beyond practical hardware estimation.
+is foremost, since it addresses the field's real bottleneck, the calibration
+problem. We note, however, that the natural form of the hypothesis --- that
+Bures or quantum-relative-entropy distances are \emph{more} robust to
+inter-subject covariance shift than the affine-invariant Riemannian distance
+--- cannot hold as stated. Inter-subject shift is dominated by congruence,
+$C \mapsto ACA^{\mathsf{T}}$, and the affine-invariant metric is invariant
+under that whole group whereas the quantum quantities are invariant only under
+its orthogonal subgroup. The quantum distances can therefore at best match the
+Riemannian one, and testing the hypothesis in the sensor frame would measure
+invariance groups while appearing to measure geometry. The informative version
+compares the geometries once both are referred to a common reference state,
+where they share an invariance group; \sref{sec:reference} develops this.
+Finally, a shot-noise analysis would quantify how far the concentration
+reported here places these kernels beyond practical hardware estimation.
 
 %% =====================================================================
 \section{Conclusion}

@@ -76,8 +76,14 @@ if missing:
 # ---------------------------------------------------------------- labels
 labels = set(re.findall(re.escape(BS + "label{") + r"([^}]*)}", tex + gen))
 refs: set[str] = set()
-for pat in ("Tref", "Fref", "Sref", "ref", "eref"):
-    refs |= set(re.findall(re.escape(BS + pat + "{") + r"([^}]*)}", tex))
+# iopart supplies both cases of each cross-reference macro and the manuscript
+# uses the lowercase ones (\sref, \eref) far more than the capitalised forms.
+# Listing only the capitalised spellings silently missed every \sref in the
+# document, which is exactly the dangling-reference class this script exists
+# to catch, so match the macro name case-insensitively.
+for pat in ("Tref", "Fref", "Sref", "Eref", "ref"):
+    refs |= set(re.findall(
+        re.escape(BS) + pat + r"\{([^}]*)\}", tex, flags=re.IGNORECASE))
 
 print(f"\nlabels defined                    : {sorted(labels)}")
 print(f"refs used                         : {sorted(refs)}")
