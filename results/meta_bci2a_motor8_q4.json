@@ -1,0 +1,42 @@
+{
+  "dataset": "bci2a",
+  "subjects_requested": null,
+  "subjects_used": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "n_trials_per_subject": {
+    "1": 288,
+    "2": 288,
+    "3": 288,
+    "4": 288,
+    "5": 288,
+    "6": 288,
+    "7": 288,
+    "8": 288,
+    "9": 288
+  },
+  "channels": [
+    "FC3",
+    "FCz",
+    "FC4",
+    "C3",
+    "Cz",
+    "C4",
+    "CP3",
+    "CP4"
+  ],
+  "n_qubits": 4,
+  "outer_cv": "5-fold x 3 repeats",
+  "inner_cv": "4-fold GridSearchCV",
+  "seed": 0,
+  "reference": "classical/TS+LR",
+  "total_seconds": 3352.1
+}

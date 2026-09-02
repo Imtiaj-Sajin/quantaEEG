@@ -114,3 +114,65 @@ HS-overlap & $+0.419$ & 1.520 & 0.00051 & 0.00356 \\
 \end{tabular}
 \end{indented}
 \end{table}
+
+
+%% ---------------------------------------------------------------- Table 5
+\begin{table}[htbp]
+\caption{\label{tab:bci}Replication on BCI Competition IV-2a (9 subjects, 288 trials each), with the PhysioNet result repeated for
+comparison. Protocol, channels, tuning budget and pipelines are
+identical; only the data differs. Quantum kernels occupy the four
+lowest positions on both datasets.}
+\begin{indented}
+\item[]\begin{tabular}{@{}lccc@{}}
+\br
+Pipeline & Acc (IV-2a) & AUC (IV-2a) & Acc (Phys.) \\
+\mr
+classical/TS+LR & \textbf{0.763} & 0.822 & 0.595 \\
+classical/TS+RBF-SVM & 0.755 & 0.811 & 0.590 \\
+classical/CSP+LDA & 0.751 & 0.808 & 0.611 \\
+control/logeuclid-TS+LR & 0.751 & 0.810 & 0.582 \\
+classical/MDM & 0.723 & 0.777 & 0.575 \\
+classical/logvar+LDA & 0.697 & 0.748 & 0.559 \\
+control/PCA-matched-linear & 0.690 & 0.735 & 0.582 \\
+control/PCA-matched-RBF & 0.687 & 0.729 & 0.578 \\
+quantum/CNOT-kernel-SVM & 0.685 & 0.726 & 0.579 \\
+control/IQP-no-entangle & 0.682 & 0.722 & 0.576 \\
+quantum/IQP-kernel-SVM & 0.672 & 0.712 & 0.566 \\
+quantum/Bures-RBF-SVM & 0.600 & 0.630 & 0.552 \\
+quantum/HS-RBF-SVM & 0.595 & 0.621 & 0.549 \\
+quantum/HS-overlap-SVM & 0.586 & 0.629 & 0.532 \\
+quantum/Fidelity-SVM & 0.580 & 0.616 & 0.523 \\
+\br
+\end{tabular}
+\end{indented}
+\end{table}
+
+
+%% ---------------------------------------------------------------- Table 6
+\begin{table}[htbp]
+\caption{\label{tab:cross}Pre-specified comparisons on both datasets, combined by
+Fisher's method. Positive $\Delta$ favours the first-named pipeline. At $n=9$ the
+two-sided signed-rank test cannot return $p<0.0039$, so the IV-2a entries marked
+$\dagger$ sit at that floor: the test is saturated rather than merely significant.
+Both classical-versus-quantum contrasts hold in every one of the nine IV-2a subjects.}
+\begin{indented}
+\item[]\begin{tabular}{@{}llccc@{}}
+\br
+Comparison & Dataset & $\Delta$ acc & $p$ & Better \\
+\mr
+Best classical vs.\ best quantum & PhysioNet & $+0.0323$ & 0.002 & 24/30 \\
+ & IV-2a & $+0.0662$ & 0.004$^\dagger$ & 9/9 \\
+ & \textit{Fisher combined} & & \textbf{$<$0.001} & \\
+\noalign{\smallskip}
+Entanglement ablation & PhysioNet & $+0.0106$ & 0.309 & 17/30 \\
+ & IV-2a & $+0.0100$ & 0.203 & 7/9 \\
+ & \textit{Fisher combined} & & 0.237 & \\
+\noalign{\smallskip}
+Dimension-matched control & PhysioNet & $+0.0163$ & 0.173 & 18/30 \\
+ & IV-2a & $+0.0178$ & 0.129 & 7/9 \\
+ & \textit{Fisher combined} & & 0.107 & \\
+\noalign{\smallskip}
+\br
+\end{tabular}
+\end{indented}
+\end{table}

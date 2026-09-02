@@ -63,10 +63,13 @@ class Epochs:
     """Epoched trials for one subject."""
 
     X: np.ndarray  # (n_trials, n_channels, n_times)
-    y: np.ndarray  # (n_trials,) int labels, 0 = left fist, 1 = right fist
+    y: np.ndarray  # (n_trials,) int labels, 0 = left hand, 1 = right hand
     subject: int
     ch_names: list[str]
     sfreq: float
+    # Recording session per trial, when the dataset has more than one. Enables
+    # cross-session evaluation; None for single-session datasets.
+    session: np.ndarray | None = None
 
     def __len__(self) -> int:
         return len(self.y)
@@ -159,4 +162,109 @@ def load_many(
             print(f"  [skip] subject {s}: only {len(ep)} usable trials")
             continue
         out.append(ep)
+    return out
+
+
+# --------------------------------------------------------------------------
+# MOABB-backed datasets
+# --------------------------------------------------------------------------
+#
+# PhysioNet gives breadth (many subjects, few trials each). The BCI Competition
+# datasets give the opposite: few subjects, many trials. Running the identical
+# pipeline suite on both tests whether the ranking of methods is a property of
+# the methods or of the trial count, which is a limitation any single-dataset
+# benchmark has to concede.
+
+MOABB_DATASETS = {
+    # BCI Competition IV-2a: 9 subjects, 22 EEG channels, 288 MI trials each
+    # over 2 sessions. The de facto standard benchmark in the quantum-EEG
+    # literature, which is why it is included here.
+    "bci2a": "BNCI2014_001",
+    # BCI Competition IV-2b: 9 subjects, 3 bipolar channels, 5 sessions.
+    "bci2b": "BNCI2014_004",
+}
+
+# The 8 sensorimotor channels used for PhysioNet all exist in the 2a montage,
+# so the two datasets can be compared at an identical register size.
+BCI2A_MOTOR_8 = MOTOR_8
+BCI2A_MOTOR_16 = [
+    "FC3", "FC1", "FCz", "FC2", "FC4",
+    "C3", "C1", "Cz", "C2", "C4",
+    "CP3", "CP1", "CPz", "CP2", "CP4", "Fz",
+]
+
+
+def load_moabb(
+    dataset: str = "bci2a",
+    subjects: list[int] | None = None,
+    channels: list[str] | None = None,
+    fmin: float = 8.0,
+    fmax: float = 30.0,
+    resample: float = 128.0,
+    min_trials: int = 30,
+) -> list[Epochs]:
+    """Load a MOABB left-hand versus right-hand motor-imagery dataset.
+
+    Band-pass and resampling match the PhysioNet pipeline. The epoch window is
+    left at the dataset's own standard interval rather than forced to match,
+    since each competition dataset defines its own cue timing; the comparison
+    of interest is whether the *ranking* of pipelines changes, not whether the
+    absolute accuracies coincide.
+    """
+    import logging
+    import warnings
+
+    warnings.filterwarnings("ignore")
+    logging.getLogger("moabb").setLevel(logging.ERROR)
+    import mne
+
+    mne.set_log_level("ERROR")
+    import moabb.datasets as mds
+    from moabb.paradigms import LeftRightImagery
+
+    if dataset not in MOABB_DATASETS:
+        raise ValueError(f"unknown dataset {dataset!r}; "
+                         f"choose from {sorted(MOABB_DATASETS)}")
+    ds = getattr(mds, MOABB_DATASETS[dataset])()
+    if subjects is None:
+        subjects = list(ds.subject_list)
+
+    paradigm = LeftRightImagery(fmin=fmin, fmax=fmax, resample=resample)
+
+    out: list[Epochs] = []
+    for s in subjects:
+        try:
+            # return_epochs=True gives the channel names alongside the data,
+            # so the recording is decoded once rather than twice.
+            ep_mne, y, meta = paradigm.get_data(
+                dataset=ds, subjects=[int(s)], return_epochs=True)
+        except Exception as exc:  # noqa: BLE001 - a missing recording is not fatal
+            print(f"  [skip] subject {s}: {type(exc).__name__}: {exc}")
+            continue
+
+        ch_names = list(ep_mne.ch_names)
+        if channels:
+            missing = [c for c in channels if c not in ch_names]
+            if missing:
+                print(f"  [skip] subject {s}: missing channels {missing}")
+                continue
+            ep_mne = ep_mne.copy().pick(list(channels))
+            names = list(channels)
+        else:
+            names = ch_names
+        X = ep_mne.get_data(copy=False)
+
+        y_int = (np.asarray(y) == "right_hand").astype(int)
+        if len(y_int) < min_trials or len(np.unique(y_int)) < 2:
+            print(f"  [skip] subject {s}: only {len(y_int)} usable trials")
+            continue
+
+        out.append(Epochs(
+            X=np.asarray(X, dtype=np.float64),
+            y=y_int,
+            subject=int(s),
+            ch_names=names,
+            sfreq=float(resample),
+            session=np.asarray(meta["session"].values),
+        ))
     return out

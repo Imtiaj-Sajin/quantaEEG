@@ -52,22 +52,24 @@ matrix on $\log_2 n_{\mathrm{ch}}$ qubits, making quantum information geometry
 applicable without dimensionality reduction or ad-hoc angle encoding. We define
 Hilbert--Schmidt overlap, Uhlmann fidelity and Bures kernels alongside
 conventional circuit embedding kernels, and benchmark \NPipelines{} pipelines
-on PhysioNet EEGMMIDB left- versus right-hand motor imagery (\NSubjects{}
-subjects, \NFoldScores{} fold scores) using nested cross-validation in which
-every pipeline, classical baselines included, receives an identical tuning
-budget. Two controls are decisive: an entanglement ablation, and
-dimension-matched classical kernels operating on exactly the features the
-circuit kernels see.
+on two datasets under one protocol: PhysioNet EEGMMIDB (\NSubjects{} subjects,
+\NTrials{} trials each) and BCI Competition IV-2a (\BciNSubjects{} subjects,
+\BciNTrials{} trials each). Nested cross-validation gives every pipeline,
+classical baselines included, an identical tuning budget. Two controls are
+decisive: an entanglement ablation, and dimension-matched classical kernels
+operating on exactly the features the circuit kernels see.
 
 \textit{Main results.}
-The best classical pipeline (\BestClassicalAcc{}) significantly outperformed
-the best quantum kernel (\BestQuantumAcc{}): $\Delta=\PrimaryDelta$,
-$p=\PrimaryP$, $d_z=\PrimaryDz$, superior in \PrimaryBetter{} subjects. Of
-\NFamilyTests{} paired comparisons against a Riemannian tangent-space
-reference, \NSurviveHolm{} survived Holm correction, and no quantum kernel
-exceeded the reference at any significance level. Quantum overlap kernels
-concentrated severely (pairwise values $0.99\pm0.01$, a near rank-one Gram
-matrix), and entanglement \emph{accelerated} the collapse, reducing kernel
+Classical baselines won on both datasets. On PhysioNet the best classical
+pipeline outperformed the best quantum kernel by $\PrimaryDelta$
+($p=\PrimaryP$, $d_z=\PrimaryDz$, superior in \PrimaryBetter{} subjects); on
+IV-2a by $\BciPrimaryDelta$ ($d_z=\BciPrimaryDz$) in \BciPrimaryBetter{}
+subjects, with Fisher-combined $p=\FisherPrimaryP$. No quantum kernel exceeded
+the reference at any significance level on either dataset. Crucially the gap
+\emph{widened} with more data, from \GapPhysio{} to \GapBci{}, while the
+pipeline ranking stayed stable (Spearman $\rho=\SpearmanRho$). Quantum overlap
+kernels concentrated severely (pairwise values $0.99\pm0.01$, a near rank-one
+Gram matrix), and entanglement \emph{accelerated} the collapse, reducing kernel
 variance by a factor of $0.428$ per qubit versus $0.716$ without entanglers.
 Quantum kernels cost 2--\SpeedRatio$\times$ more for no gain, under noiseless
 infinite-shot simulation.
@@ -177,6 +179,27 @@ subjects.
 Spatial covariance matrices are estimated per trial with the oracle
 approximating shrinkage (OAS) estimator, which is well conditioned at the
 trial counts available here.
+
+\subsection{Second dataset: BCI Competition IV-2a}
+
+A single dataset cannot separate a property of the methods from a property of
+the data. PhysioNet gives breadth but only \NTrials{} trials per subject, so a
+negative result there invites the objection that the quantum models were
+starved. We therefore repeat the entire benchmark on BCI Competition IV-2a
+(\BciNSubjects{} subjects, \BciNTrials{} trials each, \BciNFoldScores{} fold
+scores), accessed through MOABB \cite{moabb2018}. The two datasets sit at
+opposite corners of the design space: many subjects with little data each
+versus few subjects with a great deal.
+
+IV-2a is also the dataset the quantum-EEG literature reports on
+\cite{qeegnet2024}, so results here are directly comparable to published
+claims. The same eight sensorimotor channels are used, all of which exist in
+the IV-2a montage, so the register size is identical at three qubits.
+Band-pass, resampling, pipelines, hyperparameter grids and cross-validation
+protocol are unchanged; only the data differs. Each dataset keeps its own
+standard epoch window, since each competition defines its own cue timing, and
+the comparison of interest is whether the \emph{ranking} of pipelines moves rather
+than whether absolute accuracies coincide.
 
 \subsection{EEG covariance matrices as quantum states}
 
@@ -390,6 +413,59 @@ separate trials. Line style encodes the kernel family. The entangled circuit
 kernel (orange, dashed) decays fastest.}
 \end{figure}
 
+\subsection{Replication on IV-2a: more data widens the gap}
+\label{sec:crossdataset}
+
+Repeating the entire benchmark on BCI Competition IV-2a reproduces the
+ordering and sharpens it (\Tref{tab:bci}, \Fref{fig:cross}). The best classical
+pipeline reached \BciBestClassicalAcc{} against \BciBestQuantumAcc{} for the
+best quantum kernel and \BciWorstQuantumAcc{} for the worst, a
+classical-versus-quantum gap of \GapBci{} where PhysioNet gave \GapPhysio{},
+and a gap to the weakest quantum kernel of \GapWorstBci{} against
+\GapWorstPhysio{}.
+
+The direction of that change is the point. Classical methods gained roughly
+0.15 accuracy from the six-fold increase in trials; the density-matrix kernels
+gained about 0.05. \textbf{More and cleaner data made the quantum kernels
+relatively worse, not better}, which is the opposite of what a data-starvation
+explanation predicts, and exactly what \sref{sec:concentration} implies: a
+kernel whose off-diagonal entries all sit near unity gains no additional
+structure from additional trials, while the classical methods gain a great
+deal.
+
+The ranking is also stable. Spearman rank correlation between the two
+orderings is \SpearmanRho{} across all \NPipelines{} pipelines, and the four
+lowest positions are occupied by the same four quantum kernels on both
+datasets with zero rank shift. This is a property of the methods, not of the
+dataset.
+
+Statistically (\Tref{tab:cross}), on IV-2a the best classical pipeline beat the
+best quantum kernel by $\BciPrimaryDelta$ ($p=\BciPrimaryP$,
+$d_z=\BciPrimaryDz$) in \BciPrimaryBetter{} subjects, and beat the
+density-matrix kernel by $\BciDensDelta$ ($d_z=\BciDensDz$) in
+\BciDensBetter{} subjects. Combining the two independent datasets by Fisher's
+method gives $p=\FisherPrimaryP$ and $p=\FisherDensP$ respectively.
+
+One caveat must be stated precisely rather than left to the reader. With $n$
+pairs the two-sided signed-rank test cannot return a $p$ below $2^{1-n}$; at
+$n=\BciNSubjects$ that floor is \BciWilcoxonFloor{}, so a Holm correction over
+\NFamilyTests{} comparisons cannot fall below \BciHolmFloor{} whatever the
+effect size. Ten of the fourteen IV-2a family comparisons sit exactly at that
+floor. Reporting them as "not significant after correction" would misdescribe
+a saturated test as a null result, which is why the pre-specified comparisons
+in \Tref{tab:cross}, which require no family correction, carry the inference.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig4_crossdataset.pdf}
+\caption{\label{fig:cross}The same \NPipelines{} pipelines on two datasets at
+opposite corners of the design space. Identical channels, protocol, tuning
+budget and code; only the data differs. Line slope is the quantity of
+interest: classical and control pipelines rise steeply with the extra trials
+while the four density-matrix and overlap kernels stay low. The dashed line
+marks chance.}
+\end{figure}
+
 \subsection{Computational cost}
 
 The cost asymmetry is substantial. \FastestName{} reached its accuracy in
@@ -433,9 +509,13 @@ tangent-space or spatial-filtering front end remains an untested explanation.
 
 \subsection{Limitations}
 
-Four limitations bound our conclusions. (i) We study one dataset and one
-binary paradigm; EEGMMIDB has \NTrials{} trials per subject, and datasets with
-more trials per subject may behave differently. (ii) We evaluate within-subject
+Four limitations bound our conclusions. (i) We study two datasets but one
+binary paradigm, left hand versus right hand; other motor-imagery classes and
+other BCI paradigms (P300, SSVEP) are untested. The trial-count concern that
+a single dataset would leave open is addressed by
+\sref{sec:crossdataset}, where the six-fold increase from \NTrials{} to
+\BciNTrials{} trials per subject widened rather than closed the gap.
+(ii) We evaluate within-subject
 decoding only; cross-subject transfer, where the geometry of covariance shift
 matters most, is untested and is the setting in which quantum-information
 distances are most plausibly useful. (iii) Simulation is noiseless and

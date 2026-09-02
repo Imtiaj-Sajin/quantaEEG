@@ -243,6 +243,11 @@ def main(argv=None) -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--channels", type=str, default="motor8",
                     choices=["motor8", "motor16", "motor32", "all64"])
+    ap.add_argument("--dataset", type=str, default="physionet",
+                    choices=["physionet", "bci2a", "bci2b"],
+                    help="physionet = EEGMMIDB (many subjects, 45 trials "
+                         "each); bci2a/bci2b = BCI Competition IV via MOABB "
+                         "(9 subjects, many trials each)")
     ap.add_argument("--out", type=str, default="results")
     ap.add_argument("--subject-list", type=str, default=None,
                     help="explicit comma-separated subject ids (overrides "
@@ -256,16 +261,23 @@ def main(argv=None) -> int:
                     help="baseline for the paired significance tests")
     args = ap.parse_args(argv)
 
-    from .data import CHANNEL_SETS
+    from .data import CHANNEL_SETS, MOABB_DATASETS, load_moabb
 
     chans = CHANNEL_SETS[args.channels]
     if args.subject_list:
         subjects = [int(x) for x in args.subject_list.split(",") if x.strip()]
+    elif args.dataset != "physionet":
+        subjects = None  # MOABB datasets define their own subject list
     else:
         subjects = list(range(args.start, args.start + args.subjects))
 
-    print(f"Loading {len(subjects)} subjects ({args.channels}, {len(chans)} ch) ...")
-    eps = load_many(subjects, channels=chans)
+    n_req = len(subjects) if subjects else "all"
+    print(f"Loading {n_req} subjects from {args.dataset} "
+          f"({args.channels}, {len(chans)} ch) ...")
+    if args.dataset == "physionet":
+        eps = load_many(subjects, channels=chans)
+    else:
+        eps = load_moabb(args.dataset, subjects=subjects, channels=chans)
     print(f"  usable: {len(eps)} subjects, "
           f"{sum(len(e) for e in eps)} trials total")
     if not eps:
@@ -277,7 +289,8 @@ def main(argv=None) -> int:
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    tag = args.tag or f"{args.channels}_q{args.qubits}"
+    prefix = "" if args.dataset == "physionet" else f"{args.dataset}_"
+    tag = args.tag or f"{prefix}{args.channels}_q{args.qubits}"
     partial = out / f"raw_folds_{tag}.partial.csv"
 
     all_rows = []
@@ -313,6 +326,7 @@ def main(argv=None) -> int:
                 index=False)
 
     meta = {
+        "dataset": args.dataset,
         "subjects_requested": subjects,
         "subjects_used": [e.subject for e in eps],
         "n_trials_per_subject": {str(e.subject): int(len(e)) for e in eps},
@@ -327,10 +341,12 @@ def main(argv=None) -> int:
     (out / f"meta_{tag}.json").write_text(json.dumps(meta, indent=2))
 
     pd.set_option("display.width", 200)
-    print("\n=== SUMMARY (mean over subjects) ===")
-    print(summary.to_string(index=False, float_format=lambda x: f"{x:.4f}"))
-    print(f"\n=== PAIRED TESTS vs {args.reference} ===")
-    print(tests.to_string(index=False, float_format=lambda x: f"{x:.4f}"))
+    if summary is not None:
+        print("\n=== SUMMARY (mean over subjects) ===")
+        print(summary.to_string(index=False, float_format=lambda x: f"{x:.4f}"))
+    if tests is not None:
+        print(f"\n=== PAIRED TESTS vs {args.reference} ===")
+        print(tests.to_string(index=False, float_format=lambda x: f"{x:.4f}"))
     print(f"\nWall clock: {meta['total_seconds']}s -> {out.resolve()}")
     return 0
 

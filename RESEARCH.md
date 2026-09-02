@@ -404,12 +404,108 @@ is the most scientifically interesting negative result in the set, because
 
 ---
 
+### 4.5 Replication on BCI Competition IV-2a, and what changes with more data
+
+The single-dataset benchmark in §4.4 has an obvious weakness, which the paper
+had to concede as a limitation: PhysioNet EEGMMIDB gives only 45 trials per
+subject, so "quantum kernels lose" might really be "quantum kernels lose when
+starved of data". BCI Competition IV-2a is the natural test, for two reasons.
+It has **288 trials per subject**, more than six times as many, on cleaner
+recordings. And it is the dataset the quantum-EEG literature actually reports
+on, so a result here is directly comparable to published claims.
+
+Identical protocol, identical 8 sensorimotor channels (all present in the 2a
+montage), identical nested cross-validation, identical tuning budget. Only the
+data changed. 9 subjects, 2 592 trials, 56 minutes of compute.
+
+**Result: quantum kernels do not merely lose again, they lose by much more.**
+
+| Pipeline | Group | Acc (2a) | Acc (PhysioNet) |
+|---|---|---|---|
+| classical/TS+LR | classical | **0.7631** | 0.5946 |
+| classical/TS+RBF-SVM | classical | 0.7554 | 0.5899 |
+| classical/CSP+LDA | classical | 0.7507 | 0.6114 |
+| control/logeuclid-TS+LR | control | 0.7506 | 0.5825 |
+| classical/MDM | classical | 0.7226 | 0.5751 |
+| classical/logvar+LDA | classical | 0.6972 | 0.5585 |
+| control/PCA-matched-linear | control | 0.6900 | 0.5820 |
+| control/PCA-matched-RBF | control | 0.6874 | 0.5775 |
+| quantum/CNOT-kernel-SVM | quantum | 0.6845 | 0.5790 |
+| control/IQP-no-entangle | control | 0.6821 | 0.5763 |
+| quantum/IQP-kernel-SVM | quantum | 0.6721 | 0.5657 |
+| quantum/Bures-RBF-SVM | quantum | 0.6002 | 0.5521 |
+| quantum/HS-RBF-SVM | quantum | 0.5951 | 0.5494 |
+| quantum/HS-overlap-SVM | quantum | 0.5862 | 0.5321 |
+| quantum/Fidelity-SVM | quantum | 0.5799 | 0.5232 |
+
+#### Finding 3: the gap widens with better data
+
+| Dataset | Best classical | Best quantum | Gap | Gap to worst quantum |
+|---|---|---|---|---|
+| PhysioNet (45 trials) | 0.6114 | 0.5790 | 0.032 | 0.088 |
+| BCI IV-2a (288 trials) | 0.7631 | 0.6845 | **0.079** | **0.183** |
+
+Classical methods gained roughly 0.15 accuracy from the extra data. The
+density-matrix kernels gained about 0.05 and stayed near chance in relative
+terms. **More and cleaner data made the quantum kernels relatively worse, not
+better.** This directly refutes the most natural defence of a negative QML
+result, that the quantum model was starved. It is exactly what §4.1 predicts:
+a kernel whose off-diagonal entries all sit at 0.99 has no extra structure to
+exploit no matter how many trials you hand it, while the classical methods
+have plenty.
+
+#### Finding 4: the ranking is stable across radically different datasets
+
+**Spearman rank correlation between the two datasets: 0.882** over 15
+pipelines, despite one having 30 subjects with 45 trials each and the other 9
+subjects with 288. More striking, the **four bottom positions are identical**:
+Bures-RBF (12), HS-RBF (13), HS-overlap (14), Fidelity (15) on both datasets,
+with zero rank shift. The ordering is a property of the methods, not of the
+dataset.
+
+#### Statistics, and a floor that must be reported honestly
+
+Pre-specified comparisons, with Fisher's method combining the two independent
+datasets:
+
+| Comparison | PhysioNet | BCI IV-2a | Fisher combined |
+|---|---|---|---|
+| Best classical vs best quantum | +0.032, p=0.0023, 24/30 | +0.066, p=0.0039, **9/9** | **p = 0.0001** |
+| Best classical vs density-matrix | +0.088, p=0.0006, 24/30 | +0.171, p=0.0039, **9/9** | **p = 0.00002** |
+| Entanglement ablation | +0.011, p=0.309, 17/30 | +0.010, p=0.203, 7/9 | p = 0.237 |
+| Dimension-matched control | +0.016, p=0.173, 18/30 | +0.018, p=0.129, 7/9 | p = 0.107 |
+
+On 2a the best classical pipeline beat the best quantum kernel in **all nine
+subjects**, with dz = 1.14; against the density-matrix kernels, dz = 1.45.
+
+**The floor caveat.** With n pairs the two-sided Wilcoxon signed-rank test
+cannot return a p below 2^(1-n). At n = 9 that floor is **0.0039**, so Holm
+correction across 14 comparisons cannot produce anything below **0.0547**,
+regardless of effect size. Ten of the fourteen 2a comparisons sit exactly at
+that floor. Reporting "0 of 14 survive Holm correction" without this caveat
+would badly misrepresent the data: the test is saturated, not null. This is
+why the pre-specified comparisons above, which need no family correction, are
+the right inference. `crossdataset.py` computes and prints the floor so it
+cannot be forgotten.
+
+#### What is still not established
+
+The entanglement ablation now has four independent signals pointing the same
+way: kernel variance decay (§4.1b, a large and unambiguous effect), accuracy on
+PhysioNet, accuracy on 2a, and the Fisher combination. It is still **not
+significant on accuracy** (combined p = 0.237). The honest statement remains
+that entanglement clearly damages the *kernel*, and that its accuracy cost is
+directionally consistent but below the resolution of these sample sizes. Do
+not overstate it.
+
+---
+
 ## 5. Datasets worth using
 
 | Dataset | Access | Size | Why |
 |---|---|---|---|
 | **PhysioNet EEGMMIDB** | `mne.datasets.eegbci`, works, no auth | 109 subjects, 64 ch, 160 Hz | Large subject count for paired stats. **Currently used.** |
-| **BCI Competition IV-2a** | MOABB `BNCI2014_001` | 9 subjects, 22 ch, 4 classes | The genre's default benchmark, needed for comparability with §2.1 papers. |
+| **BCI Competition IV-2a** | MOABB `BNCI2014_001` | 9 subjects, 22 ch, 4 classes | The genre's default benchmark. **Done (§4.5).** |
 | **BCI Competition IV-2b** | MOABB `BNCI2014_004` | 9 subjects, 3 ch | Multi-session, good for transfer experiments. |
 | **Cho2017** | MOABB | 52 subjects | Large MI dataset, good for cross-subject. |
 | **CHB-MIT** | PhysioNet | 23 patients | Seizure detection; heavy class imbalance. |

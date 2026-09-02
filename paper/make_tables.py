@@ -18,6 +18,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import wilcoxon
 
+import cross_tables as ct
+
 REFERENCE = "classical/TS+LR"
 TAG = "motor8_q4"
 
@@ -224,6 +226,7 @@ def macros(df: pd.DataFrame, summary: pd.DataFrame, tests: pd.DataFrame,
     out.append("")
 
 
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--results", default="results")
@@ -257,6 +260,23 @@ def main(argv=None) -> int:
     table_tests(tests, out)
     table_key(per, out)
     table_concentration(decay, out)
+
+    # Second dataset, when its results are present. The manuscript degrades
+    # gracefully to a single-dataset paper if the IV-2a run has not been done.
+    bci_raw = res / f"raw_folds_{ct.BCI_TAG}.csv"
+    bci_sum = res / f"summary_{ct.BCI_TAG}.csv"
+    if bci_raw.exists() and bci_sum.exists():
+        df_b = pd.read_csv(bci_raw)
+        summary_b = pd.read_csv(bci_sum)
+        per_b = (df_b.groupby(["pipeline", "subject"])["accuracy"]
+                 .mean().unstack("pipeline"))
+        ct.table_bci(summary_b, summary, out, esc, GROUP_LABEL)
+        ct.table_cross(per, per_b, KEY_COMPARISONS, paired, fmt_p, out)
+        ct.cross_macros(summary, summary_b, per, per_b, df_b,
+                        KEY_COMPARISONS, paired, fmt_p, mac)
+        print(f"  + BCI IV-2a: {df_b.subject.nunique()} subjects")
+    else:
+        print("  ! BCI IV-2a results absent; manuscript will be single-dataset")
 
     mdest = Path(args.macros_out)
     mdest.parent.mkdir(parents=True, exist_ok=True)

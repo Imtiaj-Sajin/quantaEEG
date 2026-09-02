@@ -113,17 +113,17 @@ def fidelity_kernel(
 
     sqrtA = np.stack([_sqrtm_spd(a, eps) for a in A])
     K = np.empty((len(A), len(B)))
+    # One batched eigendecomposition per row rather than one per pair: at 288
+    # trials this is the difference between ~83k Python iterations and 288.
     for i in range(len(A)):
         Si = sqrtA[i]
-        jstart = i if symmetric else 0
-        for j in range(jstart, len(B)):
-            M = Si @ B[j] @ Si
-            M = 0.5 * (M + M.T)
-            w = np.clip(eigh(M, eigvals_only=True), eps, None)
-            root = float(np.sum(np.sqrt(w)))
-            K[i, j] = root
-            if symmetric:
-                K[j, i] = root
+        M = Si @ B @ Si                       # (n_B, d, d) by broadcasting
+        M = 0.5 * (M + np.transpose(M, (0, 2, 1)))
+        w = np.clip(np.linalg.eigvalsh(M), eps, None)
+        K[i] = np.sqrt(w).sum(axis=1)
+    if symmetric:
+        # Fidelity is symmetric; averaging removes any numerical asymmetry.
+        K = 0.5 * (K + K.T)
     return K**2 if squared else K
 
 

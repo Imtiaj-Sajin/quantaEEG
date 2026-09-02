@@ -385,9 +385,82 @@ def main(argv=None) -> int:
         fig_concentration(results, out),
         fig_benchmark(results, out, args.tag),
         fig_paired(results, out, args.tag, args.reference),
+        fig_crossdataset(results, out),
     ]
-    print(f"Done: {sum(made)}/3 figures.")
+    print(f"Done: {sum(made)}/{len(made)} figures.")
     return 0
+
+
+
+
+# --------------------------------------------------------------------------
+# Figure 4 - the same pipelines on two very different datasets
+# --------------------------------------------------------------------------
+
+def fig_crossdataset(results: Path, out: Path) -> bool:
+    """Slope chart: accuracy on PhysioNet versus on BCI Competition IV-2a.
+
+    A slope chart is the right form here because the question is about
+    *change* between two paired conditions, not about two independent
+    magnitudes: the eye should read the steepness of each line. Classical
+    lines rise steeply with the extra data; the density-matrix kernels stay
+    almost flat, which is the finding.
+    """
+    a = results / "summary_motor8_q4.csv"
+    b = results / "summary_bci2a_motor8_q4.csv"
+    if not (a.exists() and b.exists()):
+        print("  [skip] fig4: need both dataset summaries")
+        return False
+
+    pa = pd.read_csv(a).set_index("pipeline")
+    pb = pd.read_csv(b).set_index("pipeline")
+    common = [p for p in pa.index if p in pb.index]
+
+    fig, ax = plt.subplots(figsize=(7.4, 5.4))
+    ax.grid(axis="y", zorder=0)
+    ax.set_axisbelow(True)
+
+    x0, x1 = 0.0, 1.0
+    end_labels: list[tuple[str, float, float, str]] = []
+    for name in common:
+        ya, yb = float(pa.loc[name, "acc_mean"]), float(pb.loc[name, "acc_mean"])
+        colour = GROUP_COLOR.get(pa.loc[name, "group"], INK_MUTED)
+        ax.plot([x0, x1], [ya, yb], color=colour, linewidth=1.9,
+                alpha=0.9, zorder=3, solid_capstyle="round")
+        for x, y in ((x0, ya), (x1, yb)):
+            ax.plot([x], [y], marker="o", markersize=5.5, color=colour,
+                    markeredgecolor=_surface(), markeredgewidth=1.4, zorder=4)
+        # No value labels on the left: eleven of the fifteen sit inside a
+        # 0.04 band and collide into an unreadable smudge. The slope is what
+        # this chart is for, the numbers are in Table 1.
+        end_labels.append((f"{name}  {yb:.3f}", x1, yb, colour))
+
+    ax.axhline(0.5, color=INK_MUTED, linewidth=1.0, linestyle="--", zorder=1)
+    ax.set_xticks([x0, x1])
+    ax.set_xticklabels(["PhysioNet EEGMMIDB\n30 subjects, 45 trials each",
+                        "BCI Competition IV-2a\n9 subjects, 288 trials each"],
+                       fontsize=9, color=INK)
+    ax.set_xlim(-0.06, 1.62)
+    ax.set_ylabel("Within-subject accuracy")
+    _title(ax, "More data widens the classical advantage, it does not close it")
+    _despine(ax, keep=("left",))
+    ax.tick_params(axis="x", length=0)
+    _place_end_labels(ax, end_labels)
+
+    handles = [
+        plt.Line2D([], [], color=GROUP_COLOR[g], linewidth=2.4, label=g)
+        for g in ("classical", "quantum", "control")
+    ]
+    ax.legend(handles=handles, loc="upper left", fontsize=8.4)
+
+    _caption(fig, (
+        "Identical pipelines, channels, protocol and tuning budget on both "
+        "datasets; only the data differs.\n"
+        "Dashed line marks chance. Spearman rank correlation between the two "
+        "orderings is 0.882."
+    ))
+    _save(fig, out, "fig4_crossdataset")
+    return True
 
 
 if __name__ == "__main__":

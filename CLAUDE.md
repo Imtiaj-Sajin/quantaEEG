@@ -143,6 +143,19 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
   concurrent runs will corrupt each other's output files.
 - Subjects 88, 89, 92, 100, 104 are excluded (documented EEGMMIDB defects).
 
+## Datasets
+
+Two, run under one protocol, which is what lets the paper separate a property
+of the methods from a property of the data:
+
+- **PhysioNet EEGMMIDB** (`--dataset physionet`), 30 subjects, 45 trials each.
+  Downloads via MNE, slow first time, caches to `~/mne_data`.
+- **BCI Competition IV-2a** (`--dataset bci2a`), 9 subjects, 288 trials each,
+  via MOABB. ~83 MB per subject, ~6 min per subject to evaluate.
+
+The same 8 sensorimotor channels exist in both montages, so the register size
+is identical at 3 qubits and the two are directly comparable.
+
 ## Findings so far
 
 1. **Quantum overlap kernels concentrate catastrophically on EEG**, pairwise
@@ -154,7 +167,14 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
    variance at 0.428× per qubit vs 0.716× with entanglers removed, 2.5× faster
    in log-slope, 29× vs 3.7× loss over 2→6 qubits. This supplies a *mechanism*
    for why deleting entanglement improves QML models.
-3. **Two distinct concentration mechanisms.** Circuit kernels concentrate from
+3. **More data widens the gap, it does not close it.** On IV-2a (288 trials)
+   the classical-quantum gap is 0.079 versus 0.032 on PhysioNet (45 trials);
+   against the weakest quantum kernel, 0.183 versus 0.088. Classical methods
+   gained ~0.15 from the extra data, density-matrix kernels ~0.05. This kills
+   the "the quantum model was starved" defence. Ranking is stable across the
+   two datasets (Spearman 0.882) with the same four quantum kernels last on
+   both. Fisher-combined p < 0.001.
+4. **Two distinct concentration mechanisms.** Circuit kernels concentrate from
    qubit count; density-matrix kernels concentrate from the *data* (EEG
    covariances are intrinsically similar), dimension-independent, and actually
    *relieved* by adding channels. Corollary: the density-matrix route should
