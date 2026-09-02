@@ -73,6 +73,15 @@ from .quantum import (
 
 SHOT_GRID = (100, 1_000, 10_000, 100_000, 1_000_000, None)  # None = infinite
 
+# Shot noise makes a Gram matrix nearly degenerate, and libsvm's SMO can then
+# iterate for an unbounded time on particular noise draws -- observed here as a
+# single subject consuming 500+ CPU-seconds of work that takes ~31 s at other
+# draws. Cap the iterations. The cap applies identically to every frame, shot
+# level and hyperparameter, so it cannot bias the comparison; it bounds the
+# tail only. Intermediate budgets (1e3-1e4) are the expensive ones: enough
+# noise to make the problem hard, not enough to make it trivially separable.
+SVM_MAX_ITER = 2_000_000
+
 
 def swap_test_sample(K: np.ndarray, shots: int | None,
                      rng: np.random.Generator) -> np.ndarray:
@@ -143,7 +152,7 @@ def evaluate(ep, shots_grid=SHOT_GRID, n_splits=5, n_repeats=3, seed=0,
                     if kname == "HS-RBF":
                         g = gm * median_bandwidth(D[np.ix_(tr, tr)])
                         G = psd_project(np.exp(-g * D))
-                    svc = SVC(kernel="precomputed", C=Cc).fit(
+                    svc = SVC(kernel="precomputed", C=Cc, max_iter=SVM_MAX_ITER).fit(
                         G[np.ix_(tr, tr)], y[tr])
                     accs.append(accuracy_score(
                         y[te], svc.predict(G[np.ix_(te, tr)])))
@@ -173,7 +182,7 @@ def _tune(M, y, tr, C_grid, gamma_mults, kind, inner=3):
             s = []
             for a, b in skf.split(tr, y[tr]):
                 ia, ib = tr[a], tr[b]
-                svc = SVC(kernel="precomputed", C=Cc).fit(G[np.ix_(ia, ia)], y[ia])
+                svc = SVC(kernel="precomputed", C=Cc, max_iter=SVM_MAX_ITER).fit(G[np.ix_(ia, ia)], y[ia])
                 s.append(accuracy_score(y[ib], svc.predict(G[np.ix_(ib, ia)])))
             if np.mean(s) > best_s:
                 best_s, best = float(np.mean(s)), (Cc, gm)
@@ -223,7 +232,11 @@ def main(argv=None) -> int:
           f"subjects; shots = -1 means infinite) ===")
     print(piv.to_string(float_format=lambda x: f"{x:.4f}"))
 
-    print("\n=== SHOTS NEEDED TO REACH 99% OF THE INFINITE-SHOT ACCURACY ===")
+    print("\n=== SHOTS TO REACH 99% OF EACH FRAME'S OWN CEILING ===")
+    print("  (report this only with the caveat below: it normalises by a"
+          " ceiling that\n   differs between frames, and the sensor frame's"
+          " ceiling is near chance, so\n   'converging fast' there means"
+          " 'converging fast to nothing'.)")
     for kern in df.kernel.unique():
         for frame in ("sensor", "reference"):
             sub = df[(df.kernel == kern) & (df.frame == frame)]
@@ -233,6 +246,19 @@ def main(argv=None) -> int:
             need = reached[0] if reached else None
             print(f"  {kern:12s} {frame:10s} ceiling={ceiling:.4f}  "
                   f"shots={'>1e6' if need is None else f'{need:.0e}'}")
+
+    # The comparison that is actually meaningful: absolute accuracy at a finite
+    # budget in the reference frame, against the sensor frame given unlimited
+    # shots. It asks whether the frame buys more than the estimator loses.
+    print("\n=== FINITE-SHOT REFERENCE FRAME vs INFINITE-SHOT SENSOR FRAME ===")
+    for kern in df.kernel.unique():
+        sub = df[df.kernel == kern]
+        sensor_inf = sub[(sub.frame == "sensor") & (sub.shots == -1)].accuracy.mean()
+        print(f"  {kern}: sensor frame at infinite shots = {sensor_inf:.4f}")
+        for s in sorted(x for x in sub.shots.unique() if x > 0):
+            ref = sub[(sub.frame == "reference") & (sub.shots == s)].accuracy.mean()
+            verdict = "beats it" if ref > sensor_inf else "below it"
+            print(f"    reference @ {s:>9,} shots = {ref:.4f}   {verdict}")
 
     print(f"\nWall clock: {time.perf_counter() - t0:.1f}s -> {out.resolve()}")
     return 0

@@ -42,9 +42,32 @@ into the low-credibility genre described above.
 nested CV). The best classical pipeline beats the best quantum kernel by
 +0.032 accuracy (p = 0.002, dz = 0.58, better in 24/30 subjects), no quantum
 kernel beat the reference at any significance level, and quantum kernels are
-2–270× more expensive. The paper is therefore an **Option A/B negative
-benchmark** (§6), which is exactly the paper worth writing, because it comes
-with two mechanistic findings (§4.1, §4.1b) that explain *why*, not just *that*.
+2–270× more expensive.
+
+**Second update (2026-09-03), and it changes the paper.** §4.4 was measuring
+something it did not intend to. Every density-matrix kernel there was evaluated
+in the **sensor frame**, while every strong classical baseline in the same
+suite is invariant under congruence `C → ACAᵀ` — the group that EEG's nuisance
+transformations actually generate. Referring the states to a training-set
+reference state makes the quantum kernels *exactly* affine-invariant (§4.6,
+proved, verified to 1e-15), relieves concentration 4.7–9.5×, and lifts
+within-subject accuracy enough to **reverse the sign** of the headline
+comparison (+0.052 classical-favouring → −0.018 quantum-favouring, p = 0.059).
+
+That reversal is not a quantum win, and the new `control/riemann-kernel-SVM` is
+what proves it: the classical Riemannian kernel in the same SVM, same frame,
+same budget, scores second of 23, and **no quantum kernel differs from it**
+(Δ −0.015 to +0.008, all p > 0.18). The gain belongs to the frame and the
+kernel formulation, not to quantum structure. Cross-subject transfer agrees
+with power to spare — all nine geometries tie, spread 0.014 (§4.7).
+
+So the paper remains an **Option A/B negative result (§6), but for a better
+reason and with a much sharper mechanism**: not "quantum kernels concentrate"
+but "quantum information geometry has the wrong invariance group for EEG;
+supply the missing invariance and the quantum kernels become indistinguishable
+from their classical twins." That also diagnoses, concretely, how the
+optimistic literature manufactures wins — compare a whitened quantum kernel
+against an unwhitened classical baseline and a spurious advantage appears.
 
 ---
 
@@ -739,6 +762,54 @@ the answer is parity.
 
 ---
 
+### 4.8 Shot noise: what the kernels would cost on hardware
+
+**Status: complete, n = 30.** `src/qeeg/shots.py`,
+`results/shots_{folds,summary}_motor8.csv`. `tr(ρσ)` is exactly the SWAP-test
+observable, so the ancilla gives `P(0) = (1+k)/2` and `S` shots yield an
+unbiased estimate with variance `(1−k²)/S`. We sample the upper triangle
+binomially (a device estimates each unordered pair once), mirror, and project
+back to the PSD cone.
+
+| Kernel | frame | 10² | 10³ | 10⁴ | 10⁵ | 10⁶ | ∞ |
+|---|---|---|---|---|---|---|---|
+| HS-overlap | sensor | 0.5096 | 0.5069 | 0.5321 | 0.5383 | 0.5272 | 0.5323 |
+| HS-overlap | reference | 0.4914 | 0.5175 | 0.5652 | 0.5894 | 0.6072 | **0.6180** |
+| HS-RBF | sensor | 0.4919 | 0.5037 | 0.5111 | 0.5380 | 0.5331 | 0.5543 |
+| HS-RBF | reference | 0.4817 | 0.5294 | 0.5644 | 0.5862 | 0.5901 | **0.6089** |
+
+**A prediction of §4.6 was wrong and is corrected here.** We expected the
+4.7–9.5× variance gain to translate into a 5–9× shot saving. It does not. The
+reference frame needs *more* shots to approach its own ceiling, not fewer,
+because it has a higher ceiling and therefore finer distinctions to resolve.
+The "shots to reach 99 % of own ceiling" statistic is actively misleading here:
+the sensor frame converges fast only because it converges to near-chance.
+
+The meaningful comparison is cross-frame and absolute:
+
+> **At 10⁴ shots per Gram entry the reference frame already beats the sensor
+> frame at infinite shots** — 0.5652 vs 0.5323 for HS-overlap, 0.5644 vs
+> 0.5543 for HS-RBF — and the margin widens from there.
+
+Below 10³ shots both frames collapse to chance, so the frame does not rescue a
+starved estimator; it raises the ceiling that a well-fed one can reach.
+
+**The honest cost statement for the paper.** Near-ceiling accuracy needs
+10⁵–10⁶ shots *per Gram entry*. A 45-trial subject has ~10³ unordered pairs, so
+one Gram matrix costs 10⁸–10⁹ shots, and IV-2a's 288 trials cost ~40× more.
+This is the sentence that keeps the scope claim honest: the reference frame
+makes these kernels *work*, it does not make them *cheap*.
+
+Caveat to carry: some fits hit the `max_iter` cap (2×10⁶) at the noisiest
+budgets. The cap is identical across frames, shot levels and hyperparameters,
+so it cannot bias the comparison, but it bounds a tail rather than resolving
+it. Note also that the reference state here is fitted on all of a subject's
+trials — it is label-free, and this study asks about estimation cost rather
+than generalisation, so shot levels are comparable to each other but the
+absolute values are not comparable to the nested-CV benchmark.
+
+---
+
 ## 5. Datasets worth using
 
 | Dataset | Access | Size | Why |
@@ -845,43 +916,77 @@ tests vs the chosen reference, and a metadata JSON recording the exact protocol.
 
 ## 9. Open threads
 
-**Done**
+### Where we are (2026-09-03)
 
-- [x] Within-subject benchmark, 30 subjects, nested CV, 15 pipelines (§4.4).
-- [x] Kernel concentration on real EEG, 10 subjects, 2→6 qubits (§4.1, §4.1b).
-- [x] Entanglement ablation and dimension-matched controls.
-- [x] Figures 1–3 (`results/figures/`).
+The study now has a **mechanism, a fix, and the control that stops the fix
+being oversold**, which is a materially stronger position than the negative
+benchmark of §4.4.
 
-**Next**
+The one-paragraph version: every density-matrix kernel was being evaluated in
+the *sensor* frame while every strong classical baseline was congruence
+invariant, so the benchmark was partly measuring an invariance mismatch. Refer
+the states to a training-set reference state and the quantum kernels become
+exactly affine invariant (§4.6, proved and verified to 1e-15), concentration
+relieves 4.7-9.5x, and within-subject accuracy jumps enough to *reverse* the
+headline comparison. But the new Riemannian-kernel control -- same input, same
+SVM, same budget, same frame, only the metric differs -- matches every quantum
+kernel to within noise. So the gain is the frame plus the kernel formulation,
+not quantum structure. Cross-subject transfer says the same thing with power
+to spare: all nine geometries tie (§4.7).
 
-- [x] BCI IV-2a replication under the identical protocol (§4.5).
-- [x] Quantum relative entropy as an additional divergence, symmetrised
-      (`qeeg.quantum.qre_divergence`); in the extended suite.
-- [x] Riemannian-kernel controls (`control/riemann-kernel-SVM`,
-      `control/logeuclid-kernel-SVM` via `SPDKernelSVC`). These are the
-      density-matrix kernels' exact classical twins: same input, same
-      classifier, same tuning budget, only the geometry differs.
-- [x] Reference-state formulation, the invariance proposition and its
-      numerical verification, concentration relief at n = 14 (§4.6).
+**Settled, n = 30, do not re-litigate**
 
-- [ ] **Confirm §4.6 at n = 30 and on IV-2a.** Running as
-      `--suite extended --tag refstate_motor8_q4`. The paper's framing depends
-      on whether the reference-frame tie survives.
-- [ ] Cross-subject / transfer evaluation (Option C, **hypothesis restated**,
-      see §6). Run it *inside* the reference frame: per-subject recentring is
-      unsupervised, so it is legitimate target adaptation, and it is what makes
-      the comparison a comparison of geometries rather than of invariance
-      groups.
-- [ ] Filter-bank version, which buys two things at once: it lifts the
-      classical baseline to the FBCSP-class bar a referee will ask for, and a
-      band-block-diagonal density matrix is a principled way to add qubits,
-      which §4.1b(b) predicts should *help* the density-matrix kernels.
-- [ ] Re-run the channel-scaling sweep (§4.1b) in the reference frame. The
-      claim that density-matrix concentration is dimension-independent was
-      measured in the sensor frame and may not survive.
-- [ ] Shot-noise simulation: everything here is infinite-shot. Real hardware
-      estimation of `tr(ρσ)` needs O(1/ε²) shots, quantify the degradation.
-- [ ] Scale the density-matrix kernels to 64 channels (6 qubits) and test
-      whether concentration *worsens* with qubit count, as theory predicts.
-      **This is a direct empirical test of Thanasilp et al. on real data and is
-      probably the single highest-value remaining experiment.**
+- [x] Within-subject benchmark, 15 pipelines, nested CV (§4.4).
+- [x] Kernel concentration on real EEG, 2->6 qubits (§4.1, §4.1b).
+- [x] Entanglement ablation and dimension-matched controls (§4.3).
+- [x] BCI IV-2a replication, core suite (§4.5).
+- [x] Reference-state formulation + invariance proposition (§4.6).
+- [x] Extended suite at n = 30: frame effect significant for all five kernels;
+      headline reverses; **Riemannian-kernel control shows no quantum kernel
+      beats its classical twin** (§4.6). Core-15 rows reproduce the published
+      run to max |delta| = 0.0000, so all of this is additive.
+- [x] Cross-subject transfer, LOSO n = 30: parity across all nine geometries,
+      spread 0.0141, genuine null (§4.7). Option C answered.
+- [x] Shot-noise study, n = 30 (§4.8). Corrects a wrong prediction of §4.6.
+- [x] Manuscript compiles (17 pp, 0 warnings); all refs DOI-verified.
+
+**In flight**
+
+- [ ] **Filter-bank / FBCSP suite at 5 qubits**, `--suite filterbank`, batches
+      `fbdone01-05` + `fbrest01-05`, merge with `qeeg.merge`. This is the
+      load-bearing one: with quantum kernels now at the top of the table, the
+      first referee question is whether parity survives against FBCSP.
+- [ ] **IV-2a extended replication**, `--tag refstate_bci2a_motor8_q4`. Slow
+      (2592 trials x 23 pipelines). Cross-dataset confirmation of §4.6.
+
+**Next, in priority order**
+
+1. **Rewrite the manuscript around the new story.** This is now the critical
+    path, not more experiments. The paper is currently the §4.4 negative
+    benchmark; it needs to become "the frame was the confound, here is the
+    proof, here is what survives it". Retitle. Concretely:
+    `sec:reference` (Methods) is written; Results needs a reference-frame
+    section, a transfer section and a shot-noise section, and the abstract and
+    conclusion need rewriting.
+2. **Extend `paper/make_tables.py`** to emit macros/tables from
+    `reference_gram_motor8.csv`, `raw_folds_refstate_motor8_q4.csv`,
+    `transfer_*_motor8.csv` and `shots_*_motor8.csv`. The project's one rule
+    is that no number is typed by hand; the new sections must obey it before
+    they are written, not after.
+3. **Figures** for the reference frame (Gram histograms sensor vs reference),
+    transfer (paired per-subject), and the shot curve.
+4. Re-run the channel-scaling sweep (§4.1b) **in the reference frame**. The
+    claim that density-matrix concentration is dimension-independent was
+    measured in the sensor frame and may not survive; §4.6 suggests it will
+    not.
+5. Scale to 64 channels (6 qubits) for the direct Thanasilp et al. test.
+6. Cross-session transfer on IV-2b (5 sessions), where the shift is milder and
+    the geometry comparison is cleaner than cross-subject.
+
+**Do not bother with**
+
+- More datasets for their own sake. Two datasets with Spearman 0.882 already
+  separate "property of the method" from "property of the data"; a third
+  changes no reviewer's mind. Mechanism and controls do.
+- Chasing a higher accuracy number. The controls say the ceiling is the
+  classical twin's score, and that is the finding.

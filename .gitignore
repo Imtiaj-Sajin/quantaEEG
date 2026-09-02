@@ -32,3 +32,8 @@ paper/iopams.sty
 paper/setstack.sty
 paper/harvard.sty
 paper/iopart-num.bst
+
+# Screening/smoke outputs. Superseded by the tagged production runs; keeping
+# them invites quoting a 2-subject pilot as if it were the n=30 result.
+results/*_smoke.csv
+results/exp_*.csv
