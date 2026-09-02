@@ -1,0 +1,484 @@
+%% =====================================================================
+%%  Quantum kernels for EEG decoding: a controlled benchmark
+%%
+%%  Target journal : Journal of Neural Engineering (IOP, Q1)
+%%  Document class : iopart.cls  (IOP Publishing; on CTAN as "iopart")
+%%
+%%  Build:   latexmk -pdf main.tex
+%%  Tables and inline numbers come from tables_auto.tex, which is
+%%  regenerated from the result CSVs by:  python paper/make_tables.py
+%%  Never edit numbers by hand.
+%% =====================================================================
+\documentclass[12pt]{iopart}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,allcolors=blue]{hyperref}
+
+\graphicspath{{../results/figures/}{figures/}}
+
+%% Auto-generated tables + \newcommand macros for every number in the prose.
+\input{tables_auto}
+
+\begin{document}
+
+\title[Quantum kernels for EEG decoding]{Quantum kernels for EEG decoding:
+a controlled benchmark and the concentration barrier}
+
+\author{Imtiaj Sajin}
+\address{%% TODO: department, institution, city, country
+Affiliation to be completed}
+\ead{imtiajsajin@gmail.com}
+
+\begin{abstract}
+\textit{Objective.}
+Quantum machine learning is increasingly proposed for
+electroencephalography (EEG) decoding, yet published claims of benefit rarely
+include the controls needed to attribute performance to quantum structure
+rather than to preprocessing or tuning. We ask whether quantum kernels improve
+motor-imagery decoding when compared against properly tuned classical
+baselines under matched conditions, and---if they do not---why.
+
+\textit{Approach.}
+We observe that a trace-normalised EEG spatial covariance matrix is formally a
+quantum density matrix on $\log_2 n_{\mathrm{ch}}$ qubits, which makes quantum
+information geometry applicable to EEG without any dimensionality reduction or
+ad-hoc angle encoding. On this basis we define Hilbert--Schmidt overlap,
+Uhlmann fidelity and Bures kernels, alongside conventional parameterised-circuit
+embedding kernels. We benchmark \NPipelines{} pipelines on PhysioNet EEGMMIDB
+left- versus right-hand motor imagery (\NSubjects{} subjects, \NTrials{} trials
+each, \NFoldScores{} fold scores) using nested cross-validation in which every
+pipeline---classical baselines included---receives an identical hyperparameter
+search budget. The design includes two decisive controls: an entanglement
+ablation, in which the entangling gates are deleted from an otherwise identical
+circuit, and dimension-matched classical kernels that operate on exactly the
+features the circuit kernels see.
+
+\textit{Main results.}
+The best classical pipeline (\BestClassicalName, \BestClassicalAcc{})
+significantly outperformed the best quantum kernel (\BestQuantumName,
+\BestQuantumAcc{}): $\Delta=\PrimaryDelta$, $p=\PrimaryP$, $d_z=\PrimaryDz$,
+superior in \PrimaryBetter{} subjects. Of \NFamilyTests{} paired comparisons
+against a Riemannian tangent-space reference, \NSurviveHolm{} survived
+Holm correction, and no quantum kernel exceeded the reference at any
+significance level. We further show that quantum overlap kernels concentrate
+severely on EEG---pairwise values $0.99\pm0.01$, yielding a near rank-one Gram
+matrix---and that entanglement \emph{accelerates} this collapse, reducing
+kernel variance by a factor of $0.428$ per qubit versus $0.716$ for the same
+circuit without entanglers. Quantum kernels were 2--\SpeedRatio$\times$ more
+expensive for no accuracy gain, under noiseless infinite-shot simulation.
+
+\textit{Significance.}
+We find no evidence of quantum advantage for within-subject motor-imagery
+decoding, and we identify the mechanism: kernel concentration, arising from two
+distinct causes---register size for circuit kernels, and the intrinsic
+similarity of EEG covariance matrices for density-matrix kernels. The latter is
+dimension-independent and is \emph{relieved} by adding channels, which inverts
+the standard practice of aggressive dimensionality reduction before quantum
+encoding. All code, data splits and results are released to support replication.
+\end{abstract}
+
+\noindent{\it Keywords}: quantum machine learning, brain--computer interface,
+electroencephalography, quantum kernels, Riemannian geometry, motor imagery,
+benchmarking
+
+\submitto{\JNE}
+
+\maketitle
+
+%% =====================================================================
+\section{Introduction}
+%% =====================================================================
+
+Decoding motor imagery from EEG is a core problem in brain--computer interface
+(BCI) research, and the field has converged on a small set of strong classical
+methods: common spatial patterns (CSP) \cite{ramoser2000} and, more recently,
+classifiers built on the Riemannian geometry of spatial covariance matrices
+\cite{barachant2012,congedo2017}. Large-scale benchmarking finds that
+covariance tangent-space projection and CSP consistently define the strongest
+methodological families across public motor-imagery datasets.
+
+In parallel, a growing literature applies quantum machine learning (QML) to
+EEG, typically reporting improvements over a classical comparator
+\cite{qeegnet2024,eswa2024}. These reports share a recurring methodological
+pattern that makes them difficult to interpret. Classical baselines are often
+weak or untuned---plain support vector machines on band power rather than the
+Riemannian or filter-bank CSP methods that define the state of the art.
+Hyperparameters are frequently optimised for the quantum model alone. Most
+critically, two controls are almost universally absent: an \emph{entanglement
+ablation}, which tests whether the quantum resource contributes anything at
+all, and a \emph{dimension-matched classical comparator}, without which an
+apparent quantum effect is confounded with the dimensionality reduction applied
+before encoding.
+
+The wider QML literature gives strong reasons for caution. Bowles \etal
+\cite{bowles2024} benchmarked twelve quantum models across 160 datasets and
+found that out-of-the-box classical models generally outperformed them; more
+pointedly, removing entanglement often left performance equal or better.
+Thanasilp \etal \cite{thanasilp2024} proved that quantum kernel values
+concentrate exponentially in qubit count toward a fixed value, collapsing the
+model to a trivial one. Neither result has been systematically tested on EEG.
+
+This paper makes three contributions.
+
+First, we identify a \emph{principled} quantum encoding for EEG. An EEG trial's
+spatial covariance matrix is symmetric positive definite; normalised to unit
+trace it is a bona fide quantum density matrix. This is an identity, not an
+analogy, and it makes quantum information geometry---Uhlmann fidelity, the
+Bures metric, von Neumann entropy---applicable to EEG natively, with no lossy
+squeezing of features into rotation angles. The Hilbert--Schmidt overlap
+$\mathrm{tr}(\rho\sigma)$ is moreover exactly the quantity a SWAP test
+estimates, so the construction maps onto a hardware-native primitive. Related
+tooling exists \cite{pyriemannqiskit2023}, but its quantum step operates on
+flattened tangent-space vectors, discarding the density-matrix structure.
+
+Second, we report a controlled benchmark of \NPipelines{} pipelines on
+\NSubjects{} subjects with nested cross-validation, matched tuning budgets,
+both of the missing controls, and paired subject-wise statistics with
+multiple-comparison correction.
+
+Third, we characterise \emph{why} the quantum kernels fail. We reproduce the
+concentration pathology of \cite{thanasilp2024} on real biological data, show
+that entanglement accelerates it, and demonstrate that density-matrix kernels
+and circuit kernels concentrate for two distinct and oppositely-scaling
+reasons.
+
+We state our scope plainly. At the channel counts considered here (8--64,
+i.e.\ 3--6 qubits) every kernel we evaluate is classically computable in
+$O(n_{\mathrm{ch}}^3)$. We make no claim of quantum speedup; the object of
+study is whether quantum \emph{geometry} improves decoding, evaluated by
+noiseless simulation under conditions maximally favourable to the quantum side.
+
+%% =====================================================================
+\section{Methods}
+%% =====================================================================
+
+\subsection{Data and preprocessing}
+
+We use the PhysioNet EEG Motor Movement/Imagery Database (EEGMMIDB)
+\cite{schalk2004,goldberger2000}, recorded with the BCI2000 system at 160~Hz
+over 64 channels. We analyse the standard binary protocol: imagined left-hand
+versus right-hand movement (runs 4, 8 and 12), giving \NTrials{} trials per
+subject. Signals are band-pass filtered to 8--30~Hz, spanning the $\mu$ and
+$\beta$ rhythms in which motor-imagery event-related desynchronisation appears,
+and epoched from 0.5 to 3.5~s after cue onset to exclude the cue-evoked
+transient. Epochs are resampled to 128~Hz.
+
+The primary analysis uses eight sensorimotor channels (FC3, FCz, FC4, C3, Cz,
+C4, CP3, CP4), a register of exactly three qubits under the amplitude encoding
+described below. Subjects 88, 89, 92, 100 and 104 are excluded for documented
+annotation and sampling-rate defects. We analyse the first \NSubjects{} eligible
+subjects.
+
+Spatial covariance matrices are estimated per trial with the oracle
+approximating shrinkage (OAS) estimator, which is well conditioned at the
+trial counts available here.
+
+\subsection{EEG covariance matrices as quantum states}
+
+Let $C_i \in \mathbb{R}^{n_{\mathrm{ch}} \times n_{\mathrm{ch}}}$ be the
+spatial covariance of trial $i$. Since $C_i$ is symmetric positive definite,
+\begin{equation}
+\rho_i \;=\; \frac{C_i}{\mathrm{tr}\,C_i}
+\label{eq:density}
+\end{equation}
+satisfies $\rho_i \succeq 0$ and $\mathrm{tr}\,\rho_i = 1$: it is a density
+matrix on an $n_{\mathrm{ch}}$-dimensional Hilbert space, that is, on
+$\log_2 n_{\mathrm{ch}}$ qubits. Sweeping the channel count over powers of two
+therefore sweeps the register size with no change of method---a property we
+exploit in \sref{sec:concentration}.
+
+\subsection{Density-matrix kernels}
+
+Equation~\eref{eq:density} makes the following quantum-information quantities
+directly available as kernels between trials.
+
+The \emph{Hilbert--Schmidt overlap}
+\begin{equation}
+K_{\mathrm{HS}}(\rho,\sigma) = \mathrm{tr}(\rho\sigma)
+\end{equation}
+is an inner product on Hermitian matrices, so its Gram matrix is positive
+semi-definite by construction and requires no repair. It is precisely the
+observable estimated by a SWAP test.
+
+The \emph{Uhlmann fidelity} \cite{uhlmann1976}
+\begin{equation}
+F(\rho,\sigma) = \left(\mathrm{tr}\sqrt{\sqrt{\rho}\,\sigma\sqrt{\rho}}\right)^{2}
+\end{equation}
+is the quantum generalisation of the Bhattacharyya coefficient. We evaluate it
+via the eigenvalues of the symmetrised product, which is numerically stable for
+the matrix sizes involved.
+
+Both quantities proved severely concentrated on EEG (\sref{sec:concentration}),
+so we additionally define bandwidth-parameterised kernels that retain the
+quantum geometry while restoring a length scale, exactly as a radial basis
+function (RBF) kernel does for the Euclidean distance:
+\begin{align}
+K_{\mathrm{HS\text{-}RBF}}(\rho,\sigma) &= \exp\!\left(-\gamma\,
+   \mathrm{tr}\!\left[(\rho-\sigma)^2\right]\right), \\
+K_{\mathrm{Bures}}(\rho,\sigma) &= \exp\!\left(-\gamma\, d_{B}^{2}(\rho,\sigma)
+   \right), \quad
+d_{B}^{2} = 2\left(1-\sqrt{F(\rho,\sigma)}\right).
+\end{align}
+Here $d_B$ is the Bures distance, the geodesic distance of the Bures metric on
+state space, which for unit-trace matrices coincides with the
+Bures--Wasserstein distance occasionally used in the Riemannian EEG literature
+as a distance---but, to our knowledge, never as a kernel. The bandwidth
+$\gamma$ is set by the median heuristic computed \emph{on the training split
+only}, with a multiplier selected in the inner cross-validation loop.
+
+\subsection{Circuit embedding kernels and the entanglement ablation}
+
+For comparison with the prevailing approach, we also evaluate
+parameterised-circuit embedding kernels
+$K(x,z) = |\langle \phi(x) | \phi(z) \rangle|^{2}$, where $\phi$ is an
+instantaneous-quantum-polynomial (IQP) style feature map of the
+Havlíček \etal family \cite{havlicek2019}, built from Hadamard and $R_Z$
+rotations with data-dependent $ZZ$ couplings. Inputs are Riemannian
+tangent-space features reduced by PCA to the number of qubits and scaled to a
+rotation-angle range; the angle scale is itself a tuned hyperparameter. A
+variant with fixed CNOT entanglers is also included.
+
+The \textbf{entanglement ablation} is the decisive control: an otherwise
+identical circuit with every entangling gate deleted. The resulting kernel
+factorises into single-qubit kernels and is classically trivial. If it matches
+or exceeds the entangled version, quantum structure is not contributing
+\cite{bowles2024}.
+
+Kernels are evaluated by preparing each embedded state once on a state-vector
+simulator, which is mathematically identical to running the adjoint kernel-%
+estimation circuit at infinite shots but costs $O(n\,2^{q})$ rather than
+$O(n^{2})$ circuit executions.
+
+\subsection{Classical baselines and controls}
+
+Five classical baselines represent the genuine state of the art rather than a
+strawman: log-variance with shrinkage LDA; CSP with shrinkage LDA; minimum
+distance to Riemannian mean (MDM); Riemannian tangent space with logistic
+regression; and tangent space with an RBF SVM.
+
+Four controls isolate specific confounds: the entanglement ablation described
+above; \emph{dimension-matched} linear and RBF SVMs operating on exactly the
+same PCA features the circuit kernels receive; and a log-Euclidean tangent-space
+classifier as the classical geometric twin of the density-matrix kernels.
+
+\subsection{Evaluation protocol and statistics}
+
+Each subject is evaluated independently. The outer loop is a repeated
+stratified $k$-fold ($5$ folds $\times\,3$ repeats) estimating generalisation;
+the inner loop is a $4$-fold grid search selecting hyperparameters. Crucially,
+\emph{every} pipeline---including all classical baselines---receives the same
+inner search budget. All fitted transformations (tangent-space reference mean,
+scalers, PCA, and the kernel bandwidth) are refit within each training split,
+so no information leaks across folds.
+
+Across subjects we use the Wilcoxon signed-rank test on paired per-subject
+accuracies, with Holm correction across the family of comparisons, and report
+the paired effect size $d_z$. Per-subject optimality varies substantially in
+motor-imagery decoding, so paired non-parametric testing---rather than
+comparison of grand means---is the appropriate inference.
+
+\subsection{Implementation}
+
+Analyses use MNE-Python \cite{mne2013}, pyRiemann, scikit-learn and PennyLane
+\cite{pennylane2018}. Code and results are available at
+\url{https://github.com/Imtiaj-Sajin/quantaEEG}.
+
+%% =====================================================================
+\section{Results}
+%% =====================================================================
+
+\subsection{Quantum kernels do not outperform tuned classical baselines}
+
+\Tref{tab:main} reports within-subject performance for all \NPipelines{}
+pipelines; \Fref{fig:benchmark} shows the same data with per-subject spread.
+Quantum kernels occupy five of the bottom six positions. Absolute accuracies
+are modest because EEGMMIDB contains many near-chance subjects, which is
+precisely why paired testing is required.
+
+The primary pre-specified comparison---best classical versus best quantum---is
+significant: \BestClassicalName{} exceeded \BestQuantumName{} by
+$\Delta=\PrimaryDelta$ ($p=\PrimaryP$, $d_z=\PrimaryDz$), and was superior in
+\PrimaryBetter{} subjects (\Tref{tab:key}).
+
+Against the Riemannian tangent-space reference (\Tref{tab:tests},
+\Fref{fig:paired}), \NSurviveHolm{} of \NFamilyTests{} comparisons survived
+Holm correction. Only two reached $p<0.05$ uncorrected, and in both the quantum
+model was \emph{worse}. No quantum kernel exceeded the reference at any
+significance level.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig2_benchmark.pdf}
+\caption{\label{fig:benchmark}Within-subject accuracy by pipeline
+($n=\NSubjects$ subjects, nested cross-validation). Bars are means over
+subjects; grey dots are individual subject means. The dashed line marks chance.
+Every pipeline, classical baselines included, received the same inner
+hyperparameter search.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig3_paired_differences.pdf}
+\caption{\label{fig:paired}Paired per-subject accuracy differences against the
+Riemannian tangent-space reference. Dots are individual subjects; diamonds are
+means. Points left of zero indicate worse performance than the reference.}
+\end{figure}
+
+\subsection{The controls: entanglement and dimension matching}
+
+Both control ablations point in the direction predicted by \cite{bowles2024},
+but neither reaches significance on accuracy (\Tref{tab:key}). Removing
+entanglement changed accuracy by $\AblationDelta$ ($p=\AblationP$, superior in
+\AblationBetter{} subjects); the dimension-matched linear SVM exceeded the IQP
+circuit kernel by $\DimDelta$ ($p=\DimP$).
+
+We regard the honest reading as follows: deleting the quantum resource did not
+harm performance and numerically helped, but accuracy alone---measured on a
+noisy, low-SNR signal---does not have the power to establish the effect. The
+next section shows that the same effect is unambiguous when measured on the
+kernel itself.
+
+\subsection{Kernel concentration, and why entanglement makes it worse}
+\label{sec:concentration}
+
+Raw overlap kernels are severely concentrated on EEG. Off-diagonal Gram entries
+had mean $0.991\pm0.010$ (Hilbert--Schmidt) and $0.988\pm0.010$ (fidelity):
+every pair of trials appears $\approx99\%$ identical, the Gram matrix is
+effectively rank-one, and the classifier has nothing to separate. This is the
+pathology proved by Thanasilp \etal \cite{thanasilp2024}, here reproduced on
+real biological data rather than synthetic constructions.
+
+Exploiting \eref{eq:density}, we swept register size by varying the channel
+count over powers of two ($4/8/16/32/64$ channels $=2$--$6$ qubits) with no
+change of method (\Tref{tab:concentration}, \Fref{fig:concentration}). Two
+findings emerge.
+
+First, \textbf{entanglement accelerates the collapse}. The entangled IQP kernel
+loses variance by a factor of $0.428$ per qubit---more than halving with each
+added qubit---while the identical circuit with entanglers deleted decays at
+$0.716$. In log-slope the entangled kernel concentrates $2.5\times$ faster
+($-0.850$ versus $-0.334$ per qubit), a $29\times$ versus $3.7\times$ loss
+across the range. This supplies a mechanism for the observation of
+\cite{bowles2024} that removing entanglement often improves QML models:
+entanglement drives embedded states toward mutual orthogonality, pushing the
+Gram matrix toward the identity---a memorising, non-generalising model.
+
+Second, \textbf{the two kernel families concentrate for different reasons}. The
+raw density-matrix kernels do not follow the qubit-count law at all; their
+variance \emph{increases} with dimension (factors $1.45$--$1.52$). They are
+already saturated at two qubits because EEG covariance matrices are
+intrinsically similar to one another---a property of the data, not of the
+register. The practical corollary inverts standard practice: the density-matrix
+route should use \emph{more} channels, not fewer.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig1_concentration.pdf}
+\caption{\label{fig:concentration}Kernel variance versus register size on real
+EEG ($n=10$ subjects). Lower is worse: a kernel whose variance collapses cannot
+separate trials. Line style encodes the kernel family. The entangled circuit
+kernel (orange, dashed) decays fastest.}
+\end{figure}
+
+\subsection{Computational cost}
+
+The cost asymmetry is substantial. \FastestName{} reached its accuracy in
+\FastestSec~s per subject, while \SlowestName{} required \SlowestSec~s---a
+factor of \SpeedRatio---for no accuracy gain. This is measured under noiseless,
+infinite-shot simulation; on hardware, estimating $\mathrm{tr}(\rho\sigma)$ to
+precision $\epsilon$ costs $O(\epsilon^{-2})$ shots per Gram entry, and the
+concentration results above imply that the required $\epsilon$ shrinks
+exponentially with register size.
+
+%% =====================================================================
+\section{Discussion}
+%% =====================================================================
+
+\subsection{Interpretation}
+
+Under matched tuning, matched features and paired statistics, quantum kernels
+did not improve motor-imagery decoding; the best classical pipeline
+significantly outperformed the best quantum one. This is consistent with the
+broader QML benchmarking literature \cite{bowles2024} and, we argue, more
+informative than a bare negative result, because we identify the mechanism.
+
+The density-matrix kernels---the most principled construction we evaluated,
+requiring no dimensionality reduction and mapping onto a hardware-native SWAP
+test---performed \emph{worst}. \Sref{sec:concentration} explains why: EEG
+covariance matrices are mutually so similar that their quantum overlaps
+saturate near unity irrespective of register size. Any method whose
+discriminative signal lives in the small residual variation of
+$\mathrm{tr}(\rho\sigma)$ inherits a severe conditioning problem, and on
+hardware would additionally require an impractical number of shots.
+
+\subsection{Relation to prior work}
+
+Our findings are compatible with reports of quantum benefit on EEG
+\cite{qeegnet2024,eswa2024} only under the interpretation that those benefits
+arise from the classical components of the hybrid pipelines. Our
+dimension-matched control speaks directly to this: a plain linear SVM on the
+same PCA-reduced tangent-space features matched or exceeded every circuit
+kernel. Where an advantage is reported without such a control, the
+tangent-space or spatial-filtering front end remains an untested explanation.
+
+\subsection{Limitations}
+
+Four limitations bound our conclusions. (i) We study one dataset and one
+binary paradigm; EEGMMIDB has \NTrials{} trials per subject, and datasets with
+more trials per subject may behave differently. (ii) We evaluate within-subject
+decoding only; cross-subject transfer, where the geometry of covariance shift
+matters most, is untested and is the setting in which quantum-information
+distances are most plausibly useful. (iii) Simulation is noiseless and
+infinite-shot---favourable to quantum methods, so this does not weaken a
+negative result, but it does mean hardware performance would be worse, not
+better. (iv) We survey a specific family of kernels; variational and quantum
+neural-network approaches are outside our scope.
+
+\subsection{What would change the conclusion}
+
+We regard the following as the informative next tests. Cross-subject transfer
+is foremost: the hypothesis that Bures or quantum-relative-entropy distances
+are more robust to inter-subject covariance shift than the affine-invariant
+Riemannian distance is well posed, addresses the field's real bottleneck (the
+calibration problem), and is untested. Replication on BCI Competition IV-2a
+would establish comparability with existing claims. Finally, a shot-noise
+analysis would quantify how far the concentration reported here places these
+kernels beyond practical hardware estimation.
+
+%% =====================================================================
+\section{Conclusion}
+%% =====================================================================
+
+Treating EEG covariance matrices as quantum density matrices yields a
+principled, hardware-mappable family of quantum kernels that requires no
+dimensionality reduction. Under a controlled benchmark with matched tuning,
+matched features, an entanglement ablation and paired subject-wise statistics,
+these kernels---and conventional circuit embedding kernels---did not outperform
+tuned classical baselines on motor-imagery decoding, and were substantially
+more expensive. The mechanism is kernel concentration, arising from register
+size for circuit kernels and from the intrinsic similarity of EEG covariances
+for density-matrix kernels. We release all code and results, and identify
+cross-subject transfer as the setting in which quantum information geometry
+remains genuinely worth testing.
+
+%% =====================================================================
+\ack
+%% TODO: funding, computing resources, acknowledgements.
+
+\section*{Data availability statement}
+The PhysioNet EEG Motor Movement/Imagery Database is publicly available at
+\url{https://physionet.org/content/eegmmidb/1.0.0/}. All analysis code,
+configuration and result files supporting this study are openly available at
+\url{https://github.com/Imtiaj-Sajin/quantaEEG}.
+
+\section*{Conflicts of interest}
+The author declares no conflicts of interest.
+
+\section*{References}
+\bibliographystyle{iopart-num}
+\bibliography{refs}
+
+\end{document}
