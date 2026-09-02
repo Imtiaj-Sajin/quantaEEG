@@ -1,0 +1,55 @@
+Loading 10 subjects with 64 channels ...
+  usable: 10 subjects
+  [1/10] S001 done
+  [2/10] S002 done
+  [3/10] S003 done
+  [4/10] S004 done
+  [5/10] S005 done
+  [6/10] S006 done
+  [7/10] S007 done
+  [8/10] S008 done
+  [9/10] S009 done
+  [10/10] S010 done
+
+=== KERNEL VARIANCE vs QUBITS (mean over subjects) ===
+       kernel  n_qubits  n_channels  variance     mean      std  n_subjects
+    Bures-RBF         2           4  0.095090 0.403284 0.306349          10
+    Bures-RBF         3           8  0.077183 0.393246 0.274645          10
+    Bures-RBF         4          16  0.065473 0.386652 0.252982          10
+    Bures-RBF         5          32  0.040808 0.374580 0.199306          10
+    Bures-RBF         6          64  0.031711 0.370256 0.171357          10
+     Fidelity         2           4  0.000264 0.987138 0.013984          10
+     Fidelity         3           8  0.000263 0.984888 0.014326          10
+     Fidelity         4          16  0.000281 0.981594 0.015311          10
+     Fidelity         5          32  0.000474 0.967787 0.019748          10
+     Fidelity         6          64  0.001248 0.946155 0.029994          10
+       HS-RBF         2           4  0.093181 0.402784 0.302977          10
+       HS-RBF         3           8  0.080204 0.395045 0.280509          10
+       HS-RBF         4          16  0.073085 0.390097 0.268032          10
+       HS-RBF         5          32  0.053470 0.376437 0.229473          10
+       HS-RBF         6          64  0.046314 0.371046 0.210230          10
+   HS-overlap         2           4  0.000506 0.984373 0.016789          10
+   HS-overlap         3           8  0.000390 0.983780 0.015705          10
+   HS-overlap         4          16  0.000287 0.983098 0.014521          10
+   HS-overlap         5          32  0.000520 0.968253 0.020620          10
+   HS-overlap         6          64  0.003556 0.928468 0.049214          10
+IQP-entangled         2           2  0.078235 0.432934 0.278847          10
+IQP-entangled         3           3  0.038770 0.197394 0.196248          10
+IQP-entangled         4           4  0.016731 0.104657 0.127761          10
+IQP-entangled         5           5  0.006531 0.054386 0.079573          10
+IQP-entangled         6           6  0.002726 0.030336 0.051171          10
+  IQP-product         2           2  0.098214 0.480429 0.312120          10
+  IQP-product         3           3  0.078069 0.345965 0.278719          10
+  IQP-product         4           4  0.056328 0.250155 0.236810          10
+  IQP-product         5           5  0.038431 0.182140 0.195414          10
+  IQP-product         6           6  0.026331 0.137986 0.161693          10
+
+=== EXPONENTIAL DECAY FIT ===
+(variance_factor_per_qubit < 1 => concentration worsens with scale)
+       kernel  log_variance_slope_per_qubit  variance_factor_per_qubit  variance_first  variance_last qubits
+IQP-entangled                       -0.8495                     0.4276          0.0782         0.0027   2->6
+  IQP-product                       -0.3342                     0.7159          0.0982         0.0263   2->6
+    Bures-RBF                       -0.2834                     0.7532          0.0951         0.0317   2->6
+       HS-RBF                       -0.1804                     0.8350          0.0932         0.0463   2->6
+     Fidelity                        0.3694                     1.4468          0.0003         0.0012   2->6
+   HS-overlap                        0.4190                     1.5204          0.0005         0.0036   2->6
