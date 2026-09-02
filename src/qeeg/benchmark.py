@@ -19,6 +19,7 @@ and does not assume normally distributed per-subject accuracies.
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import time
 import warnings
@@ -30,6 +31,9 @@ from sklearn.model_selection import GridSearchCV, RepeatedStratifiedKFold
 from sklearn.metrics import accuracy_score, roc_auc_score
 
 from .data import load_many
+
+# Redirected stdout is block-buffered; flush so progress is visible live.
+print = functools.partial(print, flush=True)  # noqa: A001
 from .pipelines import N_QUBITS, make_pipelines
 
 
@@ -240,6 +244,14 @@ def main(argv=None) -> int:
     ap.add_argument("--channels", type=str, default="motor8",
                     choices=["motor8", "motor16", "motor32", "all64"])
     ap.add_argument("--out", type=str, default="results")
+    ap.add_argument("--subject-list", type=str, default=None,
+                    help="explicit comma-separated subject ids (overrides "
+                         "--start/--subjects); lets a long run be split into "
+                         "batches that are merged afterwards")
+    ap.add_argument("--tag", type=str, default=None,
+                    help="override the output filename tag (batch runs)")
+    ap.add_argument("--no-stats", action="store_true",
+                    help="skip summary/tests (use when merging batches later)")
     ap.add_argument("--reference", type=str, default="classical/TS+LR",
                     help="baseline for the paired significance tests")
     args = ap.parse_args(argv)
@@ -247,7 +259,10 @@ def main(argv=None) -> int:
     from .data import CHANNEL_SETS
 
     chans = CHANNEL_SETS[args.channels]
-    subjects = list(range(args.start, args.start + args.subjects))
+    if args.subject_list:
+        subjects = [int(x) for x in args.subject_list.split(",") if x.strip()]
+    else:
+        subjects = list(range(args.start, args.start + args.subjects))
 
     print(f"Loading {len(subjects)} subjects ({args.channels}, {len(chans)} ch) ...")
     eps = load_many(subjects, channels=chans)
@@ -259,6 +274,11 @@ def main(argv=None) -> int:
 
     pipelines = make_pipelines(n_qubits=args.qubits, seed=args.seed)
     grids = make_grids()
+
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    tag = args.tag or f"{args.channels}_q{args.qubits}"
+    partial = out / f"raw_folds_{tag}.partial.csv"
 
     all_rows = []
     t0 = time.perf_counter()
@@ -275,20 +295,22 @@ def main(argv=None) -> int:
         )
         print(f"  [{i}/{len(eps)}] S{ep.subject:03d} n={len(ep):3d} "
               f"({time.perf_counter()-ts:5.1f}s)  best: {best}")
+        # Checkpoint after every subject: a long run must survive being killed.
+        pd.DataFrame(all_rows).to_csv(partial, index=False)
 
     df = pd.DataFrame(all_rows)
-    out = Path(args.out)
-    out.mkdir(parents=True, exist_ok=True)
-
-    tag = f"{args.channels}_q{args.qubits}"
     df.to_csv(out / f"raw_folds_{tag}.csv", index=False)
+    partial.unlink(missing_ok=True)
 
-    summary = summarise(df)
-    summary.to_csv(out / f"summary_{tag}.csv", index=False)
-
-    tests = paired_tests(df, args.reference)
-    tests.to_csv(out / f"tests_vs_{args.reference.replace('/', '-')}_{tag}.csv",
-                 index=False)
+    summary = tests = None
+    if not args.no_stats:
+        summary = summarise(df)
+        summary.to_csv(out / f"summary_{tag}.csv", index=False)
+        if df["subject"].nunique() > 1:
+            tests = paired_tests(df, args.reference)
+            tests.to_csv(
+                out / f"tests_vs_{args.reference.replace('/', '-')}_{tag}.csv",
+                index=False)
 
     meta = {
         "subjects_requested": subjects,

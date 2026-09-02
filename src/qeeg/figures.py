@@ -231,8 +231,19 @@ def fig_benchmark(results: Path, out: Path, tag: str = "motor8_q4") -> bool:
     ax.set_xlabel("Within-subject accuracy  (nested CV, mean over subjects)")
     ax.set_xlim(0.35, xmax)
     ax.set_ylim(-0.8, len(s) - 0.2)
-    ax.set_title("Quantum kernels do not beat tuned classical baselines",
-                 color=INK, loc="left", pad=12)
+    # Title states what the data shows, rather than asserting a conclusion the
+    # run might not support.
+    best_q = s[s["group"] == "quantum"]["acc_mean"].max()
+    best_c = s[s["group"] == "classical"]["acc_mean"].max()
+    if np.isnan(best_q) or np.isnan(best_c):
+        title = "Within-subject decoding accuracy by pipeline"
+    elif best_q > best_c:
+        title = (f"Best quantum kernel leads the classical baselines "
+                 f"({best_q:.3f} vs {best_c:.3f})")
+    else:
+        title = (f"Tuned classical baselines lead the quantum kernels "
+                 f"({best_c:.3f} vs {best_q:.3f})")
+    ax.set_title(title, color=INK, loc="left", pad=12)
     ax.grid(axis="x", zorder=0)
     ax.set_axisbelow(True)
     _despine(ax)
@@ -299,9 +310,15 @@ def fig_paired(results: Path, out: Path, tag: str = "motor8_q4",
     ax.set_yticklabels(order, fontsize=8.4, color=INK)
     ax.set_xlabel(f"Accuracy difference vs {reference}   (per subject)")
     ax.set_ylim(-0.8, len(order) - 0.2)
-    ax.set_title(
-        "Paired per-subject differences — nothing clears the baseline",
-        color=INK, loc="left", pad=12)
+    q_deltas = [deltas[c].mean() for c in order if groups.get(c) == "quantum"]
+    if q_deltas and max(q_deltas) > 0:
+        sub = f"best quantum kernel {max(q_deltas):+.3f} vs baseline"
+    elif q_deltas:
+        sub = f"every quantum kernel below baseline (best {max(q_deltas):+.3f})"
+    else:
+        sub = "paired per-subject differences"
+    ax.set_title(f"Paired differences vs {reference} — {sub}",
+                 color=INK, loc="left", pad=12)
     ax.grid(axis="x", zorder=0)
     ax.set_axisbelow(True)
     _despine(ax)

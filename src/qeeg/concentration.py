@@ -18,6 +18,7 @@ model whose kernel variance is below shot noise cannot learn anything.
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 from pathlib import Path
 
@@ -25,6 +26,9 @@ import numpy as np
 import pandas as pd
 
 from pyriemann.estimation import Covariances
+
+# Redirected stdout is block-buffered; flush so progress is visible live.
+print = functools.partial(print, flush=True)  # noqa: A001
 
 from .quantum import (
     CircuitKernel,
