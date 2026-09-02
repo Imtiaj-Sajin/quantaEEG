@@ -1,6 +1,6 @@
 # Manuscript
 
-Draft targeting **Journal of Neural Engineering** (IOP Publishing, Q1) —
+Draft targeting **Journal of Neural Engineering** (IOP Publishing, Q1), 
 `iopart.cls`, structured abstract (*Objective / Approach / Main results /
 Significance*), Harvard-numeric references via `iopart-num`.
 
@@ -9,8 +9,8 @@ Significance*), Harvard-numeric references via `iopart-num`.
 | File | Role |
 |---|---|
 | `main.tex` | The manuscript. |
-| `macros_auto.tex` | **Auto-generated — never edit.** Every number quoted in the prose, as `\newcommand` macros. Read in the preamble. |
-| `tables_auto.tex` | **Auto-generated — never edit.** The four table floats. Read in the body. |
+| `macros_auto.tex` | **Auto-generated: never edit.** Every number quoted in the prose, as `\newcommand` macros. Read in the preamble. |
+| `tables_auto.tex` | **Auto-generated: never edit.** The four table floats. Read in the body. |
 | `make_tables.py` | Regenerates both of the above from `results/*.csv`. |
 | `check_tex.py` | Static checks with no LaTeX needed: undefined macros, unresolved citations, dangling refs, unbalanced environments, missing figures. |
 | `get_iop_class.sh` | Fetches the IOP class files (not on CTAN, not committed). |
@@ -29,7 +29,7 @@ python paper/make_tables.py     # rewrites macros_auto.tex + tables_auto.tex
 python paper/check_tex.py       # confirm nothing broke
 ```
 
-and the whole manuscript — tables and prose — is consistent by construction.
+and the whole manuscript, tables and prose, is consistent by construction.
 This matters because the study is ongoing: numbers will change, and a
 hand-transcribed manuscript silently rots.
 
@@ -38,7 +38,7 @@ hand-transcribed manuscript silently rots.
 **The draft compiles cleanly: 12 pages, 0 undefined references, 0 overfull
 boxes, 0 BibTeX warnings.**
 
-The build uses [Tectonic](https://tectonic-typesetting.github.io/) — a single
+The build uses [Tectonic](https://tectonic-typesetting.github.io/): a single
 self-contained binary that fetches only the TeX packages it needs, requires no
 admin rights, and needs no TeX installation. Download the Windows zip from its
 [releases page](https://github.com/tectonic-typesetting/tectonic/releases) and
@@ -54,7 +54,7 @@ cd paper && tectonic -X compile main.tex --outdir build
 Output: `paper/build/main.pdf`.
 
 MiKTeX or TeX Live work too (`latexmk -pdf main.tex`), but note that
-**`iopart.cls` is not on CTAN** — IOP distributes it separately, so no TeX
+**`iopart.cls` is not on CTAN**, IOP distributes it separately, so no TeX
 distribution installs it automatically. `get_iop_class.sh` fetches it plus
 `iopart10/12.clo`, `iopams.sty`, `setstack.sty`, `harvard.sty` and
 `iopart-num.bst`. These are third-party files and are **not committed** to the
@@ -73,12 +73,12 @@ repo; for a real submission take the official copy from
 
 `\graphicspath` prefers `../results/figures_paper/`, produced by
 `python -m qeeg.figures --paper`. Paper mode drops the in-figure title and
-explanatory note (the LaTeX `\caption` supplies both — having them twice is a
+explanatory note (the LaTeX `\caption` supplies both, having them twice is a
 journal-convention error) and uses a white canvas so the figure does not sit on
 the page as a tinted block. The default mode keeps titles and captions for
 standalone viewing, and writes to `results/figures/`.
 
-## Before submission — checklist
+## Before submission: checklist
 
 - [ ] **Verify every `[CHECK]` entry in `refs.bib`.** Those are canonical works
       cited from standing knowledge; the papers are right, but volume/issue/page
@@ -89,7 +89,7 @@ standalone viewing, and writes to `results/figures/`.
 - [ ] Complete the `\ack` section (funding, compute).
 - [ ] Add co-authors if applicable.
 - [ ] Compile once and read the PDF end to end.
-- [ ] Check JNE's current author guidelines — word limits and the structured
+- [ ] Check JNE's current author guidelines, word limits and the structured
       abstract format are enforced and do change.
 
 ## Scope note carried into the paper
@@ -104,12 +104,12 @@ critiques, and removing it would make the paper indefensible.
 Complete first draft, **compiling to 12 pages**: abstract, introduction,
 methods, results, discussion, limitations, conclusion, data-availability
 statement, four tables, three figures, 14 references. Reports a **negative
-result with an identified mechanism** — the framing is deliberate and is argued
+result with an identified mechanism**, the framing is deliberate and is argued
 for in [../RESEARCH.md](../RESEARCH.md) §6.
 
 Not yet included, and the obvious next additions:
 
-- Cross-subject transfer experiment (RESEARCH.md §6, Option C) — the strongest
+- Cross-subject transfer experiment (RESEARCH.md §6, Option C), the strongest
   candidate for a positive finding, and the setting the discussion flags.
 - BCI Competition IV-2a replication for comparability with published claims.
 - Shot-noise analysis.

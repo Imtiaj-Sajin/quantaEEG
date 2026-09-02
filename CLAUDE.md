@@ -1,4 +1,4 @@
-# CLAUDE.md — project context
+# CLAUDE.md: project context
 
 Auto-loaded at the start of every Claude Code session. Keep it current; it is
 what makes a fresh session on any machine immediately useful.
@@ -14,7 +14,7 @@ field is full of "PCA to 8 features → ZZFeatureMap → QSVM → 85%" papers wi
 weak baselines and no controls. The contribution here is rigour plus a
 principled representation.
 
-**Read [RESEARCH.md](RESEARCH.md) first** — it holds the feasibility verdict,
+**Read [RESEARCH.md](RESEARCH.md) first**: it holds the feasibility verdict,
 the literature review, the identified gap, all findings, and the publication
 strategy. This file is only orientation.
 
@@ -24,10 +24,10 @@ An EEG trial's spatial covariance `C` is symmetric positive definite.
 Normalised to unit trace, `ρ = C/tr(C)` **is a quantum density matrix** on
 `log2(n_channels)` qubits. That is an identity, not an analogy, so quantum
 information geometry (Uhlmann fidelity, Bures metric, von Neumann entropy)
-applies to EEG natively — no lossy squeezing of features into rotation angles.
+applies to EEG natively, no lossy squeezing of features into rotation angles.
 `tr(ρσ)` is exactly what a SWAP test estimates.
 
-**Scope discipline — never overstate this.** At 8–64 channels everything here
+**Scope discipline: never overstate this.** At 8–64 channels everything here
 is classically computable in O(n³). The claim is *quantum-information-geometric
 modelling*, never a speedup. Any wording that implies quantum advantage is
 wrong and will (rightly) get the paper rejected.
@@ -39,14 +39,14 @@ get manufactured. Do not weaken them to make results look better.
 
 1. **Classical baselines are tuned with the same CV budget** as the quantum
    models (inner 4-fold `GridSearchCV`). Riemannian tangent-space and CSP are
-   the real state of the art — beating a strawman proves nothing.
-2. **Entanglement ablation** (`control/IQP-no-entangle`) — the identical
+   the real state of the art, beating a strawman proves nothing.
+2. **Entanglement ablation** (`control/IQP-no-entangle`): the identical
    circuit with entanglers deleted. This isolates whether "quantumness"
    contributes anything (Bowles et al., arXiv:2403.07059).
-3. **Dimension-matched controls** (`control/PCA-matched-*`) — classical kernels
+3. **Dimension-matched controls** (`control/PCA-matched-*`): classical kernels
    on the *same* 4-D features the circuit kernels see, so results are not
    confounded with dimensionality reduction.
-4. **Paired subject-wise statistics** — Wilcoxon signed-rank + Holm correction.
+4. **Paired subject-wise statistics**: Wilcoxon signed-rank + Holm correction.
    Per-subject optimality varies a lot; mean rankings alone mislead.
 5. **Report wall-clock cost.** The quantum kernels are far slower for no gain.
    Hiding that would be dishonest.
@@ -89,7 +89,7 @@ cd paper && latexmk -pdf main.tex
 ```
 
 `check_tex.py` catches undefined macros, unresolved citations, dangling
-cross-references, unbalanced environments and missing figures — the things that
+cross-references, unbalanced environments and missing figures, the things that
 would otherwise only surface on first compile.
 
 **Not yet compiled.** No LaTeX toolchain on this machine; static checks pass but
@@ -99,7 +99,7 @@ fixes.
 **Before submitting**, work through `paper/README.md`'s checklist. The most
 important item: `refs.bib` marks each entry `[VERIFIED]` (checked against the
 publisher record during this study) or `[CHECK]` (canonical work cited from
-standing knowledge — the paper is right, the volume/page metadata was not
+standing knowledge, the paper is right, the volume/page metadata was not
 re-checked). Every `[CHECK]` needs a DOI lookup.
 
 ## How to run
@@ -145,18 +145,18 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
 
 ## Findings so far
 
-1. **Quantum overlap kernels concentrate catastrophically on EEG** — pairwise
+1. **Quantum overlap kernels concentrate catastrophically on EEG**, pairwise
    `tr(ρσ)` ≈ 0.99 ± 0.01, Gram matrix effectively rank-one. This reproduces
    the Thanasilp et al. (*Nat. Commun.* 2024) pathology on real biological
    data. Remedy implemented: bandwidth-parameterised kernels
    `exp(−γ·d²_Bures)`, γ from the median heuristic on training splits only.
 2. **Entanglement accelerates the collapse** (n=10). Entangled IQP kernels lose
-   variance at 0.428× per qubit vs 0.716× with entanglers removed — 2.5× faster
+   variance at 0.428× per qubit vs 0.716× with entanglers removed, 2.5× faster
    in log-slope, 29× vs 3.7× loss over 2→6 qubits. This supplies a *mechanism*
    for why deleting entanglement improves QML models.
 3. **Two distinct concentration mechanisms.** Circuit kernels concentrate from
    qubit count; density-matrix kernels concentrate from the *data* (EEG
-   covariances are intrinsically similar) — dimension-independent, and actually
+   covariances are intrinsically similar), dimension-independent, and actually
    *relieved* by adding channels. Corollary: the density-matrix route should
    use more channels, not fewer.
 
@@ -169,5 +169,5 @@ Highest value first (see RESEARCH.md §6, §9):
   covariance shift than affine-invariant Riemannian ones. This targets the
   field's actual bottleneck (the calibration problem).
 - Add MOABB + BCI Competition IV-2a for comparability with published claims.
-- Shot-noise simulation — everything is currently infinite-shot.
+- Shot-noise simulation: everything is currently infinite-shot.
 - Quantum relative entropy `S(ρ‖σ)` as an additional divergence.

@@ -186,9 +186,9 @@ def fig_concentration(results: Path, out: Path) -> bool:
         end_labels.append((kern, float(x[-1]), float(y[-1]), color))
 
     ax.set_xlabel(
-        "Register size (qubits)      —      4 / 8 / 16 / 32 / 64 EEG channels")
+        "Register size (qubits):  4 / 8 / 16 / 32 / 64 EEG channels")
     ax.set_ylabel("Kernel variance  (off-diagonal Gram)")
-    _title(ax, "Quantum kernels concentrate on EEG — entanglement accelerates it")
+    _title(ax, "Quantum kernels concentrate on EEG: entanglement accelerates it")
     ax.set_xticks([2, 3, 4, 5, 6])
     ax.set_xlim(1.9, 6.35)
     _despine(ax)
@@ -198,7 +198,7 @@ def fig_concentration(results: Path, out: Path) -> bool:
     _caption(fig, (
         f"PhysioNet EEGMMIDB, n = {n} subjects. Lower is worse: a kernel whose "
         "variance collapses cannot separate trials.\n"
-        "Line style marks the family — dotted = raw overlap, "
+        "Line style marks the family: dotted = raw overlap, "
         "solid = bandwidth-corrected, dashed = circuit embedding."
     ))
     _save(fig, out, "fig1_concentration")
@@ -342,7 +342,7 @@ def fig_paired(results: Path, out: Path, tag: str = "motor8_q4",
         sub = f"every quantum kernel below baseline (best {max(q_deltas):+.3f})"
     else:
         sub = "paired per-subject differences"
-    _title(ax, f"Paired differences vs {reference} — {sub}")
+    _title(ax, f"Paired differences vs {reference}: {sub}")
     ax.grid(axis="x", zorder=0)
     ax.set_axisbelow(True)
     _despine(ax)

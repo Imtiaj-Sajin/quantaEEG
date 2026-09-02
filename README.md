@@ -11,7 +11,7 @@ The scientific framing, literature review, and findings live in
 
 An EEG trial's spatial covariance matrix `C` is symmetric positive definite.
 Normalised to unit trace, `ρ = C / tr(C)` **is a quantum density matrix** on
-`log2(n_channels)` qubits. That is an identity, not an analogy — so quantum
+`log2(n_channels)` qubits. That is an identity, not an analogy, so quantum
 information geometry applies to EEG directly, with no PCA-into-rotation-angles
 step:
 
@@ -19,8 +19,8 @@ step:
 |---|---|---|
 | `tr(ρσ)` | Hilbert–Schmidt overlap of two trials | SWAP test |
 | `F(ρ,σ)` | Uhlmann fidelity | SWAP test on purifications |
-| `d_Bures` | Bures / Bures–Wasserstein metric | — |
-| `S(ρ)` | von Neumann entropy — spatial mixedness | — |
+| `d_Bures` | Bures / Bures–Wasserstein metric |, |
+| `S(ρ)` | von Neumann entropy, spatial mixedness |, |
 
 **Scope, stated plainly:** at 8–64 channels all of this is classically
 computable in O(n³). This is quantum-information-*geometric* modelling, not a
@@ -50,26 +50,26 @@ cached in `~/mne_data`.
 
 ## What is in the benchmark
 
-15 pipelines in three groups. The **controls** are the point — without them, a
+15 pipelines in three groups. The **controls** are the point: without them, a
 quantum result cannot be interpreted.
 
 **Classical baselines** (tuned with the same CV budget as everything else)
 `logvar+LDA` · `CSP+LDA` · `MDM` · `TS+LR` · `TS+RBF-SVM`
 
 **Quantum**
-`HS-overlap-SVM` · `Fidelity-SVM` — raw overlaps, kept to document the
+`HS-overlap-SVM` · `Fidelity-SVM`, raw overlaps, kept to document the
 concentration pathology
-`HS-RBF-SVM` · `Bures-RBF-SVM` — bandwidth-corrected quantum-geometric kernels
-`IQP-kernel-SVM` · `CNOT-kernel-SVM` — parameterised circuit embedding kernels
+`HS-RBF-SVM` · `Bures-RBF-SVM`, bandwidth-corrected quantum-geometric kernels
+`IQP-kernel-SVM` · `CNOT-kernel-SVM`, parameterised circuit embedding kernels
 
 **Controls**
-`IQP-no-entangle` — identical circuit with every entangler deleted. If this
+`IQP-no-entangle`: identical circuit with every entangler deleted. If this
 matches the entangled version, "quantumness" contributed nothing. (The ablation
 from [Bowles et al. 2024](https://arxiv.org/abs/2403.07059).)
-`PCA-matched-RBF` · `PCA-matched-linear` — classical kernels on the *same*
+`PCA-matched-RBF` · `PCA-matched-linear`: classical kernels on the *same*
 4-dimensional features the circuit kernels see, so results are not confounded
 with dimensionality reduction.
-`logeuclid-TS+LR` — the classical geometry twin of the density-matrix kernels.
+`logeuclid-TS+LR`: the classical geometry twin of the density-matrix kernels.
 
 ## Methodology
 

@@ -1,4 +1,4 @@
-# Quantum Machine Learning for EEG — Research Log
+# Quantum Machine Learning for EEG: Research Log
 
 **Status:** living document. Started 2026-09-02.
 **Question being answered:** is "quantum + EEG" a real research programme or a fascination?
@@ -7,7 +7,7 @@
 
 ## 0. Verdict up front
 
-**The idea is feasible and publishable — but not in the form most papers in this
+**The idea is feasible and publishable, but not in the form most papers in this
 area take it.**
 
 Two things are true at once, and keeping both in view is the whole game:
@@ -20,30 +20,30 @@ Two things are true at once, and keeping both in view is the whole game:
 2. **There is a genuinely underexplored, principled bridge.** EEG's dominant
    modern representation is the **spatial covariance matrix**, which is
    symmetric positive definite. A trace-normalised SPD matrix **is a quantum
-   density matrix**. That is not an analogy — it is an identity. It means the
+   density matrix**. That is not an analogy: it is an identity. It means the
    entire apparatus of quantum information geometry (Uhlmann fidelity, Bures
    metric, von Neumann entropy, quantum relative entropy) applies to EEG
    *natively*, with no lossy feature-squeezing step. This connection is
    visible in the literature but, as far as this review found, **has not been
    developed into a kernel method and benchmarked properly.**
 
-So: publishable, yes — if the paper's contribution is *rigour plus a principled
+So: publishable, yes, if the paper's contribution is *rigour plus a principled
 representation*, not a leaderboard number. See §6 for what that paper looks
 like and §7 for the risk that the honest answer is negative.
 
 **One caution to internalise now:** the most likely outcome of a well-controlled
 study here is that quantum methods **match or underperform** strong classical
-baselines. That is still a publishable result — a well-executed negative
-benchmark in a hyped area has real value — but you should decide up front that
+baselines. That is still a publishable result, a well-executed negative
+benchmark in a hyped area has real value, but you should decide up front that
 you are willing to publish it, because the alternative is p-hacking your way
 into the low-credibility genre described above.
 
-**Update — that caution has now been confirmed empirically** (§4.4, n = 30,
+**Update: that caution has now been confirmed empirically** (§4.4, n = 30,
 nested CV). The best classical pipeline beats the best quantum kernel by
 +0.032 accuracy (p = 0.002, dz = 0.58, better in 24/30 subjects), no quantum
 kernel beat the reference at any significance level, and quantum kernels are
 2–270× more expensive. The paper is therefore an **Option A/B negative
-benchmark** (§6) — which is exactly the paper worth writing, because it comes
+benchmark** (§6), which is exactly the paper worth writing, because it comes
 with two mechanistic findings (§4.1, §4.1b) that explain *why*, not just *that*.
 
 ---
@@ -59,10 +59,10 @@ properties that make the quantum question *natural* rather than decorative:
 | Low channel counts (8–64) | 8 channels = 3 qubits, 64 channels = 6 qubits under amplitude encoding. Fits NISQ scale honestly. |
 | Small trial counts (~45–288 per subject) | Kernel methods are the right tool; deep nets overfit. Quantum kernels are at least in the correct algorithmic family. |
 | High inter-subject variability | Creates a real, unsolved problem (calibration/transfer) that a better *geometry* could plausibly address. |
-| Non-stationary, low SNR | Robustness and regularisation matter more than raw capacity — an argument for structured kernels. |
+| Non-stationary, low SNR | Robustness and regularisation matter more than raw capacity, an argument for structured kernels. |
 
 That fourth row is the strategically important one. **The unsolved problem in
-BCI is not within-subject accuracy — it is cross-subject/cross-session
+BCI is not within-subject accuracy, it is cross-subject/cross-session
 transfer.** Chasing within-subject accuracy puts you in a crowded field where
 classical methods are already excellent. Chasing transfer puts you where the
 actual pain is. See §6.
@@ -74,13 +74,13 @@ actual pain is. See §6.
 ### 2.1 The optimistic strand (claims of quantum benefit on EEG)
 
 - **[EEG-based motor imagery classification with quantum algorithms](https://www.sciencedirect.com/science/article/abs/pii/S0957417424002197)**
-  — Olvera, Ross & Rubio, *Expert Systems with Applications* **247**:123354
+  Olvera, Ross & Rubio, *Expert Systems with Applications* **247**:123354
   (2024). Two NISQ-executable approaches (a quantum genetic algorithm for
   feature selection, and an end-to-end variant). Reports 83.82% / 85.56% /
   73.73% on **BCI Competition IV-2b** for subject-dependent cross-validation,
   subject-dependent hold-out, and leave-one-subject-out respectively. *(An
   earlier draft of this review recorded "84.86% on IV-2a" from a search
-  summary; that was wrong — corrected against the source record.)*
+  summary; that was wrong: corrected against the source record.)*
 - **[QEEGNet: Quantum Machine Learning for Enhanced EEG Encoding](https://arxiv.org/abs/2407.19214)**
   (2024). Inserts a variational quantum layer into EEGNet. Claims it
   "consistently outperforms traditional EEGNet on most subjects" and is more
@@ -99,17 +99,17 @@ actual pain is. See §6.
 - **[QuantumNeuroXAI](https://www.nature.com/articles/s41598-026-47627-y)**
   (Scientific Reports, 2026) and
   **[Quantum-inspired wavelet and Fourier feature fusion for EEG epilepsy detection](https://www.nature.com/articles/s41598-025-31219-3)**
-  (Sci Rep, 2025; 92.3% Bonn, 91.0% CHB-MIT) — note these are **quantum-
+  (Sci Rep, 2025; 92.3% Bonn, 91.0% CHB-MIT), note these are **quantum-
   *inspired*** (classical algorithms borrowing quantum formalism), a
   distinction routinely blurred in abstracts.
 
 **Recurring methodological weaknesses across this strand** (this is your
 opening):
-1. Classical baselines are weak or untuned — often plain SVM/LDA on band power,
+1. Classical baselines are weak or untuned, often plain SVM/LDA on band power,
    rather than the Riemannian tangent-space or FBCSP methods that actually
    define the state of the art.
 2. No entanglement ablation, so "quantumness" is never isolated.
-3. No dimension-matched control — the quantum model sees 4–8 PCA features and
+3. No dimension-matched control: the quantum model sees 4–8 PCA features and
    is compared against a classical model that saw something else entirely.
 4. Small subject counts, single splits, no paired statistics across subjects.
 5. Hyperparameters tuned for the quantum model only.
@@ -117,36 +117,36 @@ opening):
 ### 2.2 The skeptical strand (and why you must engage with it)
 
 - **[Better than classical? The subtle art of benchmarking QML models](https://arxiv.org/abs/2403.07059)**
-  — Bowles, Ahmed & Schuld (2024). 12 QML models × 6 tasks × 160 datasets.
+  Bowles, Ahmed & Schuld (2024). 12 QML models × 6 tasks × 160 datasets.
   Findings: **out-of-the-box classical models outperform the quantum
   classifiers**, and **removing entanglement often leaves performance equal or
   better**. This is the single most important paper to reckon with; a reviewer
   who knows the field *will* ask whether you ran their ablation.
 - **[Exponential concentration in quantum kernel methods](https://www.nature.com/articles/s41467-024-49287-w)**
-  — Thanasilp, Wang, Cerezo & Holmes, *Nature Communications* 15 (2024).
+  Thanasilp, Wang, Cerezo & Holmes, *Nature Communications* 15 (2024).
   Quantum kernel values concentrate exponentially in qubit count toward a fixed
   value, yielding a trivial model. **We reproduced exactly this pathology on
-  EEG data — see §4.1.** Engaging with it explicitly is a credibility marker.
+  EEG data, see §4.1.** Engaging with it explicitly is a credibility marker.
 - **[Quantum Kernel Methods under Scrutiny: A Benchmarking Study](https://arxiv.org/pdf/2409.04406)**
   (2024) and **[Benchmarking QML kernel training for classification](https://arxiv.org/abs/2408.10274)**
-  (2024) — quantum kernel *training* (QKT) often fails to justify its extra
+  (2024), quantum kernel *training* (QKT) often fails to justify its extra
   cost over plain quantum kernel estimation.
 - **[Limitations of Amplitude Encoding on Quantum Classification](https://arxiv.org/pdf/2503.01545)** (2025).
 - Dequantization results generally: claimed exponential speedups collapse to
   polynomial under sampling-access assumptions.
 
-### 2.3 The bridge that already exists — and where it stops
+### 2.3 The bridge that already exists: and where it stops
 
 - **[pyRiemann-qiskit](https://github.com/pyRiemann/pyRiemann-qiskit)**
-  ([RIO Journal paper](https://riojournal.com/article/101006/), 2023) — the
+  ([RIO Journal paper](https://riojournal.com/article/101006/), 2023), the
   most relevant prior art. Implements QSVC, VQC and a Nearest Convex Hull
   classifier on top of pyRiemann, with a standard pipeline
   (`QuantumClassifierWithDefaultRiemannianPipeline`) for binary brain-wave
   classification. **It is explicitly framed as a "sandbox," not a claim of
   advantage.** Crucially, its quantum step still operates on *tangent-space
-  vectors* — the covariance is flattened to a Euclidean vector before the
+  vectors*, the covariance is flattened to a Euclidean vector before the
   quantum model sees it. The density-matrix structure is discarded.
-- **[A Unified SPD Token Transformer Framework for EEG Classification](https://arxiv.org/html/2601.21521)** (2026) — notes that the
+- **[A Unified SPD Token Transformer Framework for EEG Classification](https://arxiv.org/html/2601.21521)** (2026), notes that the
   **Bures–Wasserstein** distance "offers an alternative via matrix square root,
   with better gradient conditioning but **no prior systematic evaluation for
   EEG**." The Bures–Wasserstein distance on trace-normalised SPD matrices *is*
@@ -165,7 +165,7 @@ You must clear these bars, not strawmen:
   across PhysionetMI (109 subjects) and others, **covariance tangent-space
   projection and CSP consistently define the strongest methodological
   families**, in near-equilibrium on PhysionetMI. Average rankings *mask
-  per-subject optimality* — different subjects have different best decoders,
+  per-subject optimality*: different subjects have different best decoders,
   which is why paired, subject-wise statistics are mandatory.
 - Standard MOABB protocol: `LeftRightImagery`, 8–15 Hz and 8–30 Hz bands,
   within-session evaluation.
@@ -176,7 +176,7 @@ You must clear these bars, not strawmen:
 
 > EEG spatial covariance matrices, normalised to unit trace, are quantum density
 > matrices. Quantum information geometry therefore supplies a family of kernels
-> — Hilbert–Schmidt overlap, Uhlmann fidelity, Bures metric — that apply to EEG
+>Hilbert–Schmidt overlap, Uhlmann fidelity, Bures metric, that apply to EEG
 > **without any dimensionality reduction or ad-hoc angle encoding**, and that
 > map onto hardware-native primitives (the SWAP test). No published work
 > evaluates these as kernels for EEG decoding against properly tuned Riemannian
@@ -193,24 +193,24 @@ Why this framing is defensible:
   affine-invariant Riemannian kernels are the natural null hypotheses.
 - **Honest about scope.** At 8–64 channels these kernels are classically
   computable in O(n³). This is *quantum-information-geometric* modelling, not a
-  speedup claim — and saying so plainly is what separates a credible paper from
+  speedup claim, and saying so plainly is what separates a credible paper from
   the genre in §2.1.
 
 ---
 
 ## 4. What we built and what we found
 
-Code: [src/qeeg/](src/qeeg/) — `data.py`, `quantum.py`, `pipelines.py`,
+Code: [src/qeeg/](src/qeeg/): `data.py`, `quantum.py`, `pipelines.py`,
 `benchmark.py`. Dataset: PhysioNet EEG Motor Movement/Imagery (EEGMMIDB),
 left-fist vs right-fist imagery (runs 4/8/12), 8 sensorimotor channels,
 8–30 Hz, 0.5–3.5 s window, ~45 trials/subject.
 
-Protocol: **nested CV** — outer 5-fold × 3 repeats for generalisation, inner
+Protocol: **nested CV**: outer 5-fold × 3 repeats for generalisation, inner
 4-fold `GridSearchCV` for hyperparameters, applied *identically to every
 pipeline including all classical baselines*. Paired Wilcoxon signed-rank across
 subjects with Holm correction.
 
-### 4.1 Finding 1 — quantum overlap kernels concentrate catastrophically on EEG
+### 4.1 Finding 1: quantum overlap kernels concentrate catastrophically on EEG
 
 Measured on subject S001, 45 trials, 8 channels (off-diagonal Gram entries after
 cosine normalisation):
@@ -223,11 +223,11 @@ cosine normalisation):
 
 Every pair of trials looks ~99% identical. The Gram matrix is effectively
 rank-one and the SVM has nothing to separate. **This is the Thanasilp et al.
-concentration pathology, reproduced on real biological data** — and it is a
+concentration pathology, reproduced on real biological data**, and it is a
 concrete, quantitative contribution in its own right, because that paper's
 examples are largely synthetic.
 
-For the IQP circuit kernel the failure is the mirror image — over-dispersion:
+For the IQP circuit kernel the failure is the mirror image, over-dispersion:
 
 | Circuit kernel | off-diag mean | std |
 |---|---|---|
@@ -238,11 +238,11 @@ Entanglement pushes states toward mutual orthogonality, i.e. toward a kernel
 that memorises the training set. Both regimes are useless for the same
 underlying reason: no tunable length scale.
 
-### 4.1b Finding 2 — entanglement *accelerates* the collapse (new result)
+### 4.1b Finding 2: entanglement *accelerates* the collapse (new result)
 
 We swept register size on real EEG by exploiting the identity directly: a
 d-channel covariance is a density matrix on log2(d) qubits, so sweeping
-channels over powers of two sweeps qubits with **no change of method** —
+channels over powers of two sweeps qubits with **no change of method**, 
 4/8/16/32/64 channels = 2/3/4/5/6 qubits. Statistic: variance of off-diagonal
 Gram entries (the quantity whose collapse defines concentration). Fitted decay
 per added qubit, **n = 10 subjects** (`results/concentration_decay.csv`):
@@ -259,8 +259,8 @@ per added qubit, **n = 10 subjects** (`results/concentration_decay.csv`):
 Two results here, and the second is the more interesting one.
 
 **(a) Entanglement is what kills the circuit kernel.** The entangled IQP kernel
-loses variance at 0.428 per qubit — it more than *halves* with every qubit
-added — while the identical circuit with entanglers deleted decays at 0.716.
+loses variance at 0.428 per qubit, it more than *halves* with every qubit
+added, while the identical circuit with entanglers deleted decays at 0.716.
 In log-variance slope the entangled kernel concentrates **2.5× faster**
 (−0.850 vs −0.334 per qubit); over the 2→6 qubit range that is a 29× loss of
 kernel variance versus 3.7×. This supplies a *mechanism* for the Bowles et al.
@@ -276,7 +276,7 @@ one standard deviation, and the requirement grows exponentially with qubits.
 The `shots_for_1sigma` column in `results/concentration_raw.csv` tracks this.
 
 **(b) The two kernel families concentrate for *different reasons*.** The raw
-HS/fidelity kernels do **not** follow the qubit-count law — their variance
+HS/fidelity kernels do **not** follow the qubit-count law, their variance
 *rises* with dimension (factor 1.53–1.99). They are already saturated at 2
 qubits (variance ~1e-4, mean 0.99) because **EEG covariance matrices are
 intrinsically similar to one another**, not because of register size. So there
@@ -285,7 +285,7 @@ are two distinct pathologies wearing the same name:
 - *Circuit kernels*: concentration driven by qubit count and entanglement
   (the Thanasilp et al. mechanism).
 - *Density-matrix overlap kernels*: concentration driven by the **data
-  distribution** — dimension-independent, and in fact *relieved* by adding
+  distribution**, dimension-independent, and in fact *relieved* by adding
   channels.
 
 The practical corollary is encouraging for the density-matrix route: unlike
@@ -294,7 +294,7 @@ opposite of what the standard "PCA down to 4 features" recipe does.
 
 ### 4.2 The remedy we implemented
 
-Keep the quantum *geometry*, restore a length scale — exponentiate the induced
+Keep the quantum *geometry*, restore a length scale, exponentiate the induced
 quantum distance with a tunable bandwidth, exactly as an RBF kernel does for
 Euclidean distance:
 
@@ -312,7 +312,7 @@ literature.*
 
 ### 4.3 The benchmark suite (15 pipelines, 3 groups)
 
-**Classical baselines** — the bar to clear:
+**Classical baselines**: the bar to clear:
 `logvar+LDA`, `CSP+LDA`, `MDM`, `TS+LR`, `TS+RBF-SVM`
 
 **Quantum:**
@@ -320,15 +320,15 @@ literature.*
 `HS-RBF-SVM`, `Bures-RBF-SVM` (bandwidth-corrected),
 `IQP-kernel-SVM`, `CNOT-kernel-SVM`
 
-**Controls** — what makes this a real study:
-- `IQP-no-entangle` — identical circuit, entanglers deleted (the Bowles et al.
+**Controls**: what makes this a real study:
+- `IQP-no-entangle`: identical circuit, entanglers deleted (the Bowles et al.
   ablation).
-- `PCA-matched-RBF`, `PCA-matched-linear` — classical kernels on the *same*
+- `PCA-matched-RBF`, `PCA-matched-linear`, classical kernels on the *same*
   4-dimensional PCA features the circuit kernels see. Without this, any circuit
   result is confounded with dimensionality reduction.
-- `logeuclid-TS+LR` — the classical geometry twin of the density-matrix kernels.
+- `logeuclid-TS+LR`: the classical geometry twin of the density-matrix kernels.
 
-### 4.4 Results — n = 30 subjects, nested CV
+### 4.4 Results: n = 30 subjects, nested CV
 
 **Completed run.** 30 subjects × 15 pipelines × 15 outer folds = 6 750 fold
 scores. Sources: `results/summary_motor8_q4.csv`,
@@ -357,7 +357,7 @@ Quantum kernels occupy **five of the bottom six** positions. Absolute
 accuracies are modest because PhysioNet MI contains many near-chance subjects;
 this is expected and is why paired subject-wise testing is mandatory.
 
-**Primary comparison — best classical vs best quantum:**
+**Primary comparison: best classical vs best quantum:**
 
 | Comparison | Δacc | p (Wilcoxon) | Cohen's dz | better in |
 |---|---|---|---|---|
@@ -365,15 +365,15 @@ this is expected and is why paired subject-wise testing is mandatory.
 | CSP+LDA vs Fidelity-SVM | +0.0881 | 0.0006 | +0.665 | 24/30 |
 
 **The best classical pipeline significantly outperforms the best quantum
-kernel** — a medium effect size, consistent across 80 % of subjects.
+kernel**, a medium effect size, consistent across 80 % of subjects.
 
 **Family test vs the `classical/TS+LR` reference** (14 comparisons, Holm
 corrected): **0 of 14 significant after correction.** Uncorrected, only two
-reach p < 0.05 — `HS-overlap-SVM` (p = 0.048) and `Fidelity-SVM` (p = 0.013) —
+reach p < 0.05, `HS-overlap-SVM` (p = 0.048) and `Fidelity-SVM` (p = 0.013), 
 and in both the quantum model is *worse*. **No quantum kernel beat the
 reference, at any significance level.**
 
-**Ablations — the controls, which are the point of the study:**
+**Ablations: the controls, which are the point of the study:**
 
 | Ablation | Δacc | p | dz | better in |
 |---|---|---|---|---|
@@ -384,12 +384,12 @@ Both point the same way as §2.2 but **neither is significant on accuracy at
 n = 30**. State this precisely and resist overclaiming: deleting entanglement
 did not *hurt*, and numerically helped, but the accuracy evidence alone cannot
 carry the claim. The entanglement effect is established much more strongly on
-**kernel variance** (§4.1b, 0.428 vs 0.716 per qubit) than on accuracy — which
+**kernel variance** (§4.1b, 0.428 vs 0.716 per qubit) than on accuracy, which
 is itself the interesting point: the mechanism is visible in the kernel long
 before it shows up in a downstream score that is dominated by EEG noise.
 
 **Cost.** `classical/logvar+LDA` reaches 0.5585 in **0.046 s/subject**;
-`quantum/Bures-RBF-SVM` reaches 0.5521 in 12.4 s — **270× slower and less
+`quantum/Bures-RBF-SVM` reaches 0.5521 in 12.4 s, **270× slower and less
 accurate**. Every quantum kernel is 2–270× more expensive than a classical
 baseline that matches or beats it. At infinite shots, on a simulator, with no
 hardware noise: i.e. under conditions maximally favourable to the quantum side.
@@ -397,8 +397,8 @@ hardware noise: i.e. under conditions maximally favourable to the quantum side.
 **Honest summary of what this run shows.** Against the specific `TS+LR`
 reference, differences are within noise. Against the *best* classical pipeline,
 quantum kernels lose significantly. Nothing here supports a quantum advantage
-for within-subject MI decoding, and the density-matrix kernels — the
-principled, hardware-mappable formulation — performed **worst of all**, which
+for within-subject MI decoding, and the density-matrix kernels, the
+principled, hardware-mappable formulation, performed **worst of all**, which
 is the most scientifically interesting negative result in the set, because
 §4.1b explains exactly why (data-driven concentration, not qubit count).
 
@@ -408,9 +408,9 @@ is the most scientifically interesting negative result in the set, because
 
 | Dataset | Access | Size | Why |
 |---|---|---|---|
-| **PhysioNet EEGMMIDB** | `mne.datasets.eegbci` — works, no auth | 109 subjects, 64 ch, 160 Hz | Large subject count for paired stats. **Currently used.** |
-| **BCI Competition IV-2a** | MOABB `BNCI2014_001` | 9 subjects, 22 ch, 4 classes | The genre's default benchmark — needed for comparability with §2.1 papers. |
-| **BCI Competition IV-2b** | MOABB `BNCI2014_004` | 9 subjects, 3 ch | Multi-session — good for transfer experiments. |
+| **PhysioNet EEGMMIDB** | `mne.datasets.eegbci`, works, no auth | 109 subjects, 64 ch, 160 Hz | Large subject count for paired stats. **Currently used.** |
+| **BCI Competition IV-2a** | MOABB `BNCI2014_001` | 9 subjects, 22 ch, 4 classes | The genre's default benchmark, needed for comparability with §2.1 papers. |
+| **BCI Competition IV-2b** | MOABB `BNCI2014_004` | 9 subjects, 3 ch | Multi-session, good for transfer experiments. |
 | **Cho2017** | MOABB | 52 subjects | Large MI dataset, good for cross-subject. |
 | **CHB-MIT** | PhysioNet | 23 patients | Seizure detection; heavy class imbalance. |
 | **TUH EEG** | Registration required | Thousands of clinical recordings | Largest clinical corpus; the credible route to "scale." |
@@ -424,14 +424,14 @@ Cho2017 if the cross-subject story in §6 becomes the centre of the paper.
 
 Do **not** write "Quantum SVM achieves 85% on EEG." Write one of these:
 
-**Option A — the rigorous negative/neutral benchmark (safest, still valuable).**
+**Option A: the rigorous negative/neutral benchmark (safest, still valuable).**
 *"Do quantum kernels help EEG decoding? A controlled benchmark with
 entanglement ablations."* Contribution = methodology + honest answer + open
 code. Precedent: Bowles et al. is highly cited precisely for this. Venue:
 *Journal of Neural Engineering*, *EPJ Quantum Technology*, *Quantum Machine
 Intelligence*.
 
-**Option B — the principled-representation paper (higher ceiling).**
+**Option B: the principled-representation paper (higher ceiling).**
 *"EEG covariance matrices as quantum states: fidelity and Bures kernels for
 brain–computer interfaces."* Contribution = the density-matrix formulation, the
 concentration diagnosis on real data, the bandwidth remedy, and a fair
@@ -439,7 +439,7 @@ benchmark. Works **even if the quantum kernels only match** classical ones,
 because the framework and the diagnosis are the contribution. Venue: *Journal
 of Neural Engineering*, *IEEE TNSRE*, *Quantum Machine Intelligence*.
 
-**Option C — the one with the highest scientific upside (hardest).**
+**Option C: the one with the highest scientific upside (hardest).**
 Target **cross-subject transfer**, not within-subject accuracy. Hypothesis:
 quantum-information distances (Bures, quantum relative entropy) are more robust
 to the covariance shift between subjects than affine-invariant Riemannian
@@ -504,10 +504,10 @@ tests vs the chosen reference, and a metadata JSON recording the exact protocol.
 - [ ] Add MOABB + BCI IV-2a for comparability with §2.1 claims.
 - [ ] Cross-subject / transfer evaluation (Option C).
 - [ ] Quantum relative entropy `S(ρ‖σ)` as an additional divergence.
-- [ ] Riemannian-kernel controls (`riemann`, `logeuclid` from pyRiemann) —
+- [ ] Riemannian-kernel controls (`riemann`, `logeuclid` from pyRiemann), 
       currently only the tangent-space classifiers stand in for these.
 - [ ] Shot-noise simulation: everything here is infinite-shot. Real hardware
-      estimation of `tr(ρσ)` needs O(1/ε²) shots — quantify the degradation.
+      estimation of `tr(ρσ)` needs O(1/ε²) shots, quantify the degradation.
 - [ ] Scale the density-matrix kernels to 64 channels (6 qubits) and test
       whether concentration *worsens* with qubit count, as theory predicts.
       **This is a direct empirical test of Thanasilp et al. on real data and is
