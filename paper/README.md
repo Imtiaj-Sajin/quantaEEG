@@ -70,7 +70,8 @@ unpack it anywhere.
 
 ```bash
 bash paper/get_iop_class.sh                  # once: fetch IOP class files
-PYTHONPATH=src python -m qeeg.figures --paper   # paper-mode figures
+PYTHONPATH=src python -m qeeg.figures --paper            # figures 1-4
+PYTHONPATH=src python -m qeeg.figures_reference --paper  # figures 5-9
 python paper/make_tables.py                  # tables + inline macros
 cd paper && tectonic -X compile main.tex --outdir build
 ```
@@ -96,7 +97,10 @@ repo; for a real submission take the official copy from
 ### Figures
 
 `\graphicspath` prefers `../results/figures_paper/`, produced by
-`python -m qeeg.figures --paper`. Paper mode drops the in-figure title and
+`python -m qeeg.figures --paper` (figures 1--4) and
+`python -m qeeg.figures_reference --paper` (figures 5--9: the circuit feature
+maps, the reference-state schematic and invariance check, the frame effect, the
+classical-twin control, and transfer plus shot budget). Paper mode drops the in-figure title and
 explanatory note (the LaTeX `\caption` supplies both, having them twice is a
 journal-convention error) and uses a white canvas so the figure does not sit on
 the page as a tinted block. The default mode keeps titles and captions for

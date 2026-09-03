@@ -345,6 +345,20 @@ filtering (L\"uders) operation with Kraus operator $W$ followed by
 renormalisation, so it is state preparation and the SWAP-test implementation
 path is unchanged. $M$ is estimated on training data only.
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig6_reference.pdf}
+\caption{\label{fig:reference}(a) EEG covariances cluster tightly about their
+Fr\'echet mean $M$, and a nuisance congruence moves the whole cluster.
+Whitening by $M$ spreads the states about the identity and reduces the nuisance
+to a common rotation, to which every quantum invariant is blind. (b) The
+proposition verified numerically: reference-frame residuals sit at machine
+precision, sensor-frame ones are $O(10^{-1})$. (c) Off-diagonal Gram variance
+rises by \GramGainMin--\GramGainMax$\times$ in the reference frame. (d) The
+sensor-frame overlaps saturate near unity in every subject
+($n=\GramNSubjects$).}
+\end{figure}
+
 We also add the symmetrised quantum relative entropy
 \begin{equation}
 J(\rho,\sigma) = \frac{1}{2}\,\mathrm{tr}\!\left[(\rho-\sigma)
@@ -378,6 +392,18 @@ Kernels are evaluated by preparing each embedded state once on a state-vector
 simulator, which is mathematically identical to running the adjoint kernel-%
 estimation circuit at infinite shots but costs $O(n\,2^{q})$ rather than
 $O(n^{2})$ circuit executions.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig5_circuits.pdf}
+\caption{\label{fig:circuits}The circuit feature maps, at three qubits with one
+layer shown. Rotation angles carry the PCA-reduced tangent-space features and
+the kernel is the state overlap $|\langle\phi(x)|\phi(z)\rangle|^{2}$. The IQP
+map uses data-dependent $ZZ$ couplings; the ring map uses fixed CNOTs. The
+third panel is the entanglement ablation: the identical circuit with every
+entangling gate deleted, which factorises the kernel into single-qubit terms
+and isolates what entanglement contributes.}
+\end{figure}
 
 \subsection{Classical baselines and controls}
 
@@ -641,6 +667,29 @@ that operates on whitened or aligned covariances, compared against a classical
 baseline that does not, will show an advantage of roughly the size reported in
 \tref{tab:frame} that has nothing to do with quantum structure.
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig7_frame.pdf}
+\caption{\label{fig:frame}Accuracy in the sensor frame versus the reference
+frame. Thin lines are individual subjects, shown for the Fidelity kernel only.
+Every kernel improves on both datasets; on IV-2a every kernel improves in every
+subject. The correction is worth two to three times more on IV-2a, where the
+reference state is estimated from \BciNTrials{} rather than \NTrials{} trials
+per subject.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig8_twin.pdf}
+\caption{\label{fig:twin}The decisive control. Each quantum kernel is compared
+against a classical SPD-manifold kernel used in the same support vector
+machine, on the same covariances, with the same tuning budget, in the same
+reference frame; only the metric differs. Points are mean paired differences
+with 95\% confidence intervals. Every interval crosses zero in all four
+settings. Note the axis range: the entire plot spans eight accuracy points,
+against a frame effect (\fref{fig:frame}) of up to nineteen.}
+\end{figure}
+
 \subsection{Filter-bank baselines and a larger register}
 
 Since the reference-frame kernels reach the top of the table, the relevant
@@ -707,6 +756,18 @@ A \NTrials-trial subject has of order $10^3$ unordered pairs, so a single Gram
 matrix costs $10^8$--$10^9$ shots, and the IV-2a trial count raises that by a
 further factor of about forty. The reference frame makes these kernels work;
 it does not make them cheap.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig9_transfer_shots.pdf}
+\caption{\label{fig:transfer}(a) Cross-subject transfer, leave-one-subject-out.
+Recentring helps every method and helps the quantum kernels (Q) most, but in
+the reference frame all nine geometries are indistinguishable. (b) Accuracy
+against shot budget. The reference frame needs more shots to approach its own
+ceiling because that ceiling is higher, yet from $\ShotCrossover$ shots per
+Gram entry it already exceeds what the sensor frame attains with unlimited
+shots.}
+\end{figure}
 
 \subsection{Computational cost}
 
