@@ -877,6 +877,73 @@ then, do not quote §4.1b(b)'s "run it wider" corollary without this caveat.
 
 ---
 
+### 4.10 IV-2a replication: the frame effect is far larger on good data
+
+**Status: complete, n = 9, 2592 trials, 2.0 h.** `--dataset bci2a --suite
+extended --tag refstate_bci2a_motor8_q4`. Core-15 rows reproduce
+`summary_bci2a_motor8_q4.csv` to **max |Δ| = 0.0001**.
+
+| Frame | Kernel | sensor | reference | Δ | p | dz | better in |
+|---|---|---|---|---|---|---|---|
+| | Fidelity | 0.5799 | 0.7673 | **+0.1873** | 0.0039 | +1.69 | **9/9** |
+| | HS-overlap | 0.5864 | 0.7624 | +0.1760 | 0.0039 | +1.74 | **9/9** |
+| | HS-RBF | 0.5951 | 0.7629 | +0.1678 | 0.0039 | +2.02 | **9/9** |
+| | Bures-RBF | 0.6003 | 0.7649 | +0.1646 | 0.0039 | +1.97 | **9/9** |
+| | QRE-RBF | 0.5995 | 0.7638 | +0.1644 | 0.0039 | +1.96 | **9/9** |
+
+Every kernel, every subject, p at the n = 9 Wilcoxon floor, effect sizes
+dz ≈ 1.7–2.0. On PhysioNet the same effect was +0.05 to +0.11. **The frame
+correction is worth 2–3× more on IV-2a than on PhysioNet.**
+
+That is not a coincidence and it retro-explains §4.5. The reference state is a
+Fréchet mean estimated from the *training* covariances, so 288 trials per
+subject give a far better estimate of it than 45 do. §4.5 found that more data
+made the sensor-frame quantum kernels relatively *worse* — the gap widened
+from 0.032 to 0.079 — and concluded the kernels could not use the extra data.
+The correct reading is narrower: a kernel with the wrong invariance cannot use
+extra data, while the classical baselines can. Give it the right frame and the
+extra data becomes usable, in fact more usable than the classical methods find
+it. The "quantum was starved" defence is still dead; the mechanism was the
+frame, not the trial count.
+
+#### And the headline reverses on this dataset too, into a dead tie
+
+| Frame | best classical − best quantum | p | dz | classical better in |
+|---|---|---|---|---|
+| Sensor | **+0.1504** | 0.0039 | +1.63 | **9/9** |
+| Reference | −0.0041 | 0.496 | −0.28 | 4/9 |
+
+#### The decisive control replicates a third time
+
+| Quantum kernel (reference frame) | Δ vs `riemann-kernel-SVM` | p |
+|---|---|---|
+| Fidelity-ref | +0.0016 | 0.734 |
+| Bures-RBF-ref | −0.0008 | 0.652 |
+| QRE-RBF-ref | −0.0019 | 0.426 |
+| HS-RBF-ref | −0.0028 | 0.445 |
+| HS-overlap-ref | −0.0033 | 0.426 |
+
+The top eight pipelines on IV-2a — five quantum reference-frame kernels, both
+SPD-kernel controls and `TS+LR` — span **0.0049 in total**. Nothing separates
+them. `control/riemann-kernel-SVM` reaches 0.7657 in 15.7 s/subject against
+`Bures-RBF-ref` at 0.7649 in 117.7 s: identical accuracy for **7.5× the cost**.
+
+#### Cross-dataset summary of the frame effect
+
+| Setting | n | frame effect | quantum vs classical twin |
+|---|---|---|---|
+| PhysioNet, 3 qubits (§4.6) | 30 | +0.050 to +0.106 | none, p ≥ 0.18 |
+| PhysioNet, 5 qubits / FBCSP (§4.9) | 30 | ≈ +0.14 | none, p ≥ 0.23 |
+| PhysioNet transfer, LOSO (§4.7) | 30 | +0.040 to +0.095 | none, spread 0.014 |
+| **IV-2a, 3 qubits (this section)** | **9** | **+0.164 to +0.187** | **none, p ≥ 0.43** |
+
+Four independent settings, two datasets, two register sizes, within- and
+cross-subject. The frame effect is large and always significant; the quantum
+geometry is never distinguishable from its classical twin. That conjunction is
+the result.
+
+---
+
 ## 5. Datasets worth using
 
 | Dataset | Access | Size | Why |
@@ -1015,26 +1082,20 @@ to spare: all nine geometries tie (§4.7).
 - [x] Cross-subject transfer, LOSO n = 30: parity across all nine geometries,
       spread 0.0141, genuine null (§4.7). Option C answered.
 - [x] Shot-noise study, n = 30 (§4.8). Corrects a wrong prediction of §4.6.
+- [x] Filter-bank / FBCSP suite at 5 qubits, n = 30 (§4.9). Parity survives the
+      FBCSP bar; the classical-twin control replicates at a second register
+      size; sensor-frame kernels fall to chance at 5 qubits.
+- [x] IV-2a extended replication, n = 9 (§4.10). Frame effect +0.164 to +0.187,
+      **9/9 subjects for every kernel**, dz 1.7–2.0 — two to three times
+      larger than on PhysioNet, because 288 trials estimate the reference state
+      far better than 45 do. Classical-twin control replicates a third time.
+      Core-15 rows reproduce to max |Δ| = 0.0001.
 - [x] Manuscript compiles (17 pp, 0 warnings); all refs DOI-verified.
 
 **In flight**
 
-- [ ] **IV-2a extended replication**, `--tag refstate_bci2a_motor8_q4`. Slow
-      (2592 trials × 23 pipelines, ~18 CPU-min per subject × 9 subjects). It
-      was left running on the original machine and did **not** finish; nothing
-      of it is committed. To redo it elsewhere, warm the MOABB cache first
-      (see `docs/session-portability.md`), then:
-
-      ```bash
-      OMP_NUM_THREADS=1 PYTHONPATH=src python -u -m qeeg.benchmark \
-          --dataset bci2a --suite extended --splits 5 --repeats 3 \
-          --tag refstate_bci2a_motor8_q4
-      ```
-
-      This is cross-dataset confirmation, not a load-bearing gap. The frame
-      effect has already replicated three independent ways: at 3 qubits
-      (§4.6), at 5 qubits against the FBCSP bar (§4.9), and in cross-subject
-      transfer (§4.7).
+Nothing. Every experiment the argument needs is finished. The critical path
+is now writing, not computing.
 
 **Next, in priority order**
 
