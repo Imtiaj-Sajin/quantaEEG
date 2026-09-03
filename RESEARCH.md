@@ -47,7 +47,7 @@ kernel beat the reference at any significance level, and quantum kernels are
 **Second update (2026-09-03), and it changes the paper.** §4.4 was measuring
 something it did not intend to. Every density-matrix kernel there was evaluated
 in the **sensor frame**, while every strong classical baseline in the same
-suite is invariant under congruence `C → ACAᵀ` — the group that EEG's nuisance
+suite is invariant under congruence `C → ACAᵀ`, the group that EEG's nuisance
 transformations actually generate. Referring the states to a training-set
 reference state makes the quantum kernels *exactly* affine-invariant (§4.6,
 proved, verified to 1e-15), relieves concentration 4.7–9.5×, and lifts
@@ -59,14 +59,14 @@ what proves it: the classical Riemannian kernel in the same SVM, same frame,
 same budget, scores second of 23, and **no quantum kernel differs from it**
 (Δ −0.015 to +0.008, all p > 0.18). The gain belongs to the frame and the
 kernel formulation, not to quantum structure. Cross-subject transfer agrees
-with power to spare — all nine geometries tie, spread 0.014 (§4.7).
+with power to spare, all nine geometries tie, spread 0.014 (§4.7).
 
 So the paper remains an **Option A/B negative result (§6), but for a better
 reason and with a much sharper mechanism**: not "quantum kernels concentrate"
 but "quantum information geometry has the wrong invariance group for EEG;
 supply the missing invariance and the quantum kernels become indistinguishable
 from their classical twins." That also diagnoses, concretely, how the
-optimistic literature manufactures wins — compare a whitened quantum kernel
+optimistic literature manufactures wins, compare a whitened quantum kernel
 against an unwhitened classical baseline and a spurious advantage appears.
 
 ---
@@ -539,7 +539,7 @@ the PennyLane 0.38 → 0.45 upgrade: the circuit kernels are bit-identical.)
 Every density-matrix kernel in §4.4 was evaluated in the **sensor frame**:
 `ρ = C/tr(C)`, with `C` as the electrodes deliver it. The classical baselines
 were not. `pyriemann.tangentspace.TangentSpace.fit` estimates a reference mean
-`M` and `transform` maps `C ↦ log(M^{-1/2} C M^{-1/2})` — verified in the
+`M` and `transform` maps `C ↦ log(M^{-1/2} C M^{-1/2})`, verified in the
 library source, not inferred. MDM compares affine-invariant distances; CSP
 solves a generalised eigenproblem. **All three strong classical pipelines are
 congruence-invariant and all four quantum kernels are not.**
@@ -586,7 +586,7 @@ about an order of magnitude larger than the whole discriminative signal.**
 
 The construction is not a classical pre-processing hack smuggled in.
 `ρ ↦ WρW/tr(WρW)` is a filtering (Lüders) operation with Kraus operator `W`
-followed by renormalisation — a legitimate quantum operation, so the
+followed by renormalisation, a legitimate quantum operation, so the
 SWAP-test implementation path is untouched. It is state preparation.
 
 #### Consequence 1: most of the concentration was the frame (n = 14)
@@ -632,10 +632,10 @@ p = 0.059. Read carelessly, that is a quantum win.
 
 #### It is not a quantum win. The new control says so.
 
-`control/riemann-kernel-SVM` — the affine-invariant Riemannian kernel in an
+`control/riemann-kernel-SVM`: the affine-invariant Riemannian kernel in an
 SVM, i.e. the density-matrix kernels' **exact classical twin**: same input,
 same classifier, same tuning budget, same reference frame, only the geometry
-differs — scores **0.6215, second of 23**. Paired against it:
+differs, scores **0.6215, second of 23**. Paired against it:
 
 | Quantum kernel (reference frame) | Δ vs Riemannian twin | p |
 |---|---|---|
@@ -652,7 +652,7 @@ reference frame, and using an SPD kernel in an SVM rather than a tangent-space
 projection. The quantum geometry adds nothing on top.
 
 This is exactly what the control was built for. Without it, this run would
-have supported "quantum kernels beat tuned classical baselines" at p = 0.059 —
+have supported "quantum kernels beat tuned classical baselines" at p = 0.059, 
 and that claim would have been false.
 
 #### Why this matters beyond our own result
@@ -788,8 +788,8 @@ the sensor frame converges fast only because it converges to near-chance.
 The meaningful comparison is cross-frame and absolute:
 
 > **At 10⁴ shots per Gram entry the reference frame already beats the sensor
-> frame at infinite shots** — 0.5652 vs 0.5323 for HS-overlap, 0.5644 vs
-> 0.5543 for HS-RBF — and the margin widens from there.
+> frame at infinite shots**, 0.5652 vs 0.5323 for HS-overlap, 0.5644 vs
+> 0.5543 for HS-RBF, and the margin widens from there.
 
 Below 10³ shots both frames collapse to chance, so the frame does not rescue a
 starved estimator; it raises the ceiling that a well-fed one can reach.
@@ -804,7 +804,7 @@ Caveat to carry: some fits hit the `max_iter` cap (2×10⁶) at the noisiest
 budgets. The cap is identical across frames, shot levels and hyperparameters,
 so it cannot bias the comparison, but it bounds a tail rather than resolving
 it. Note also that the reference state here is fitted on all of a subject's
-trials — it is label-free, and this study asks about estimation cost rather
+trials, it is label-free, and this study asks about estimation cost rather
 than generalisation, so shot levels are comparable to each other but the
 absolute values are not comparable to the nested-CV benchmark.
 
@@ -862,7 +862,7 @@ independently at 5 qubits against a stronger baseline family.
 | HS-overlap | 0.5321 | 0.4956 | −0.0365 |
 
 At 5 qubits the sensor-frame kernels are **at chance**, and significantly below
-the reference baseline after Holm correction (p = 0.0005–0.0071) — the only
+the reference baseline after Holm correction (p = 0.0005–0.0071), the only
 Holm-surviving results in the whole filter-bank family. The frame effect is
 therefore *larger* at 5 qubits than at 3 (≈ +0.14 versus ≈ +0.09).
 
@@ -870,7 +870,7 @@ Note this does **not** contradict §4.1b(b), but it does qualify it. That
 section measured Gram *variance* against channel count and found it rises;
 this measures *accuracy* against band count. Higher kernel variance evidently
 does not convert into accuracy, and the two dimension-increases are not the
-same operation — adding bands produces strong block structure with
+same operation, adding bands produces strong block structure with
 near-degenerate cross-blocks, adding channels does not. The §9 item to re-run
 the channel sweep in the reference frame is what settles this properly; until
 then, do not quote §4.1b(b)'s "run it wider" corollary without this caveat.
@@ -898,8 +898,8 @@ correction is worth 2–3× more on IV-2a than on PhysioNet.**
 That is not a coincidence and it retro-explains §4.5. The reference state is a
 Fréchet mean estimated from the *training* covariances, so 288 trials per
 subject give a far better estimate of it than 45 do. §4.5 found that more data
-made the sensor-frame quantum kernels relatively *worse* — the gap widened
-from 0.032 to 0.079 — and concluded the kernels could not use the extra data.
+made the sensor-frame quantum kernels relatively *worse*, the gap widened
+from 0.032 to 0.079, and concluded the kernels could not use the extra data.
 The correct reading is narrower: a kernel with the wrong invariance cannot use
 extra data, while the classical baselines can. Give it the right frame and the
 extra data becomes usable, in fact more usable than the classical methods find
@@ -923,8 +923,8 @@ frame, not the trial count.
 | HS-RBF-ref | −0.0028 | 0.445 |
 | HS-overlap-ref | −0.0033 | 0.426 |
 
-The top eight pipelines on IV-2a — five quantum reference-frame kernels, both
-SPD-kernel controls and `TS+LR` — span **0.0049 in total**. Nothing separates
+The top eight pipelines on IV-2a (five quantum reference-frame kernels, both
+SPD-kernel controls and `TS+LR`) span **0.0049 in total**. Nothing separates
 them. `control/riemann-kernel-SVM` reaches 0.7657 in 15.7 s/subject against
 `Bures-RBF-ref` at 0.7649 in 117.7 s: identical accuracy for **7.5× the cost**.
 
@@ -991,7 +991,7 @@ cannot hold. Inter-subject shift is dominated by congruence `C → A C Aᵀ`. Th
 affine-invariant Riemannian distance is invariant under the whole congruence
 group; Bures and QRE are invariant only under its orthogonal subgroup in the
 sensor frame, and, once referred to a reference state, **exactly** as invariant
-as AIRM — never more. So the quantum distances can at best match, and in the
+as AIRM, never more. So the quantum distances can at best match, and in the
 sensor frame they must be strictly worse. Running the experiment without
 noticing this would have produced a result that looked empirical but was
 algebraically forced.
@@ -999,8 +999,8 @@ algebraically forced.
 The restated hypothesis, which is still open and still worth testing:
 congruence is not all of the shift. Subjects differ in conditioning, effective
 rank, and how spiky their spatial spectrum is, and those survive whitening.
-Bures and QRE weight the eigenvalue spectrum differently from AIRM — QRE
-penalises support mismatch, Bures compresses large ratios — so **within the
+Bures and QRE weight the eigenvalue spectrum differently from AIRM, QRE
+penalises support mismatch, Bures compresses large ratios, so **within the
 reference frame**, where all three share an invariance group, they may still
 order transfer differently. That is a fair test of geometry against geometry
 and it is the version to run.
@@ -1086,7 +1086,7 @@ to spare: all nine geometries tie (§4.7).
       FBCSP bar; the classical-twin control replicates at a second register
       size; sensor-frame kernels fall to chance at 5 qubits.
 - [x] IV-2a extended replication, n = 9 (§4.10). Frame effect +0.164 to +0.187,
-      **9/9 subjects for every kernel**, dz 1.7–2.0 — two to three times
+      **9/9 subjects for every kernel**, dz 1.7–2.0, two to three times
       larger than on PhysioNet, because 288 trials estimate the reference state
       far better than 45 do. Classical-twin control replicates a third time.
       Core-15 rows reproduce to max |Δ| = 0.0001.

@@ -108,7 +108,7 @@ bash paper/get_iop_class.sh
 ```
 
 Then build per `paper/README.md`, including the `BIBINPUTS`/`TEXINPUTS` exports
-— without them BibTeX silently emits an empty bibliography and the failure
+without them BibTeX silently emits an empty bibliography and the failure
 surfaces much later as a misleading `missing \item`.
 
 ### 4. Long runs: threads and batching
@@ -135,5 +135,5 @@ a killed run loses at most one subject. `merge.py` de-duplicates on
 `(subject, pipeline, fold)`, so re-running a batch is safe.
 
 Verify processes with PowerShell `Get-CimInstance Win32_Process`, not
-`tasklist`/`ps` under Git Bash — those have returned empty output unreliably
+`tasklist`/`ps` under Git Bash, those have returned empty output unreliably
 here, and two concurrent runs writing the same tag will corrupt each other.

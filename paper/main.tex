@@ -29,68 +29,50 @@
 
 \begin{document}
 
-\title[The wrong invariance: quantum kernels for EEG]{Quantum kernels for EEG
-decoding have the wrong invariance: a reference-state correction, and the
-control that shows it is not a quantum effect}
+\title[Quantum kernels for EEG decoding]{Quantum kernels for EEG decoding:
+invariance, not quantum structure, explains the advantage}
 
-\author{Imtiaj Sajin}
-\address{%% TODO: department, institution, city, country
-Affiliation to be completed}
-\ead{imtiajsajin@gmail.com}
+\author{Md. Imtiaj Alam Sajin}
+\address{Department of Computer Science, American International
+University-Bangladesh (AIUB), Dhaka, Bangladesh}
+\ead{26-94090-2@student.aiub.edu, imtiajsajin@gmail.com}
 
 \begin{abstract}
 \textit{Objective.}
-Quantum machine learning is increasingly proposed for electroencephalography
-(EEG) decoding, yet published claims of benefit rarely include the controls
-needed to attribute performance to quantum structure rather than to
-preprocessing, tuning, or the coordinate frame in which the data are expressed.
-We ask whether quantum kernels improve motor-imagery decoding against properly
-tuned classical baselines under matched conditions, and, if they do not, why.
+Quantum machine learning is often proposed for EEG decoding, but such claims
+rarely include the controls needed to show the quantum part is doing the work.
+We ask whether quantum kernels beat well-tuned classical baselines under
+matched conditions, and if not, why.
 
 \textit{Approach.}
-A trace-normalised EEG spatial covariance matrix is formally a quantum density
-matrix on $\log_2 n_{\mathrm{ch}}$ qubits, making quantum information geometry
-applicable without dimensionality reduction or ad-hoc angle encoding. We
-benchmark Hilbert--Schmidt, Uhlmann-fidelity, Bures and quantum-relative-entropy
-kernels against tuned Riemannian, CSP and filter-bank baselines on PhysioNet
-EEGMMIDB (\NSubjects{} subjects) and BCI Competition IV-2a (\BciNSubjects{}
-subjects), with nested cross-validation giving every pipeline an identical
-tuning budget. We then identify an asymmetry in that comparison: the quantum
-quantities are invariant only under orthogonal congruence, whereas EEG's
-nuisance transformations form the full congruence group and every strong
-classical baseline is invariant under it. We prove that referring each state to
-a training-set Fr\'echet mean restores exact affine invariance, and we add a
-classical-twin control --- an SPD-manifold kernel in the same classifier, on the
-same data, in the same frame, differing only in the metric.
+A trace-normalised EEG covariance matrix is a quantum density matrix, so
+quantum information geometry applies directly. We benchmark Hilbert--Schmidt,
+fidelity, Bures and quantum-relative-entropy kernels against tuned Riemannian,
+CSP and filter-bank baselines on two motor-imagery datasets, with the same
+nested cross-validation budget for every pipeline. An asymmetry then stands
+out: the quantum quantities are invariant only under orthogonal congruence,
+while EEG's nuisances span the full congruence group the classical baselines
+already handle. Borrowing recentring from Riemannian transfer learning, we
+refer each state to a training-set Fr\'echet mean, prove this restores exact
+affine invariance, and add a classical twin differing only in metric.
 
 \textit{Main results.}
-In the sensor frame the classical baselines won on both datasets. Referring the
-states to a reference state raised off-diagonal Gram variance by
-\GramGainMin--\GramGainMax$\times$ and improved every kernel --- by
-\PhysFrameMin{} to \PhysFrameMax{} on PhysioNet and \BciFrameMin{} to
-\BciFrameMax{} on IV-2a, where every kernel improved in every subject ---
-reversing the sign of the headline comparison, from \HeadSensorDelta{}
-($p=\HeadSensorP$) in favour of the best classical pipeline to
-\HeadRefDelta{} ($p=\HeadRefP$) against it. The classical-twin control shows
-this is not a quantum effect: across four settings spanning two datasets, three
-and five qubits, and within- versus cross-subject evaluation, no quantum kernel
-was distinguishable from its classical twin (PhysioNet \TwinDeltaMin{} to
-\TwinDeltaMax, $\min p = \TwinMinP$). Parity also held against filter-bank CSP
-(\FbcspDelta, $p=\FbcspP$) and in leave-one-subject-out transfer, where all
-nine geometries fell within \TransferSpread{} with no comparison significant,
-a genuine null given a Wilcoxon floor of $\TransferFloor$. Under finite-shot
-estimation, near-ceiling accuracy required $10^5$--$10^6$ shots per Gram entry.
+In the sensor frame the classical baselines won on both datasets. Recentring
+raised off-diagonal Gram variance several-fold and improved every kernel, by up
+to \PhysFrameMax{} on PhysioNet and \BciFrameMax{} on IV-2a, the latter in every
+subject. The headline comparison reversed, from $\HeadSensorDelta$ in favour of
+the best classical pipeline to $\HeadRefDelta$ against it. The twin control
+shows this is not a quantum effect: in four settings spanning two datasets, two
+register sizes and both within- and cross-subject evaluation, no quantum kernel
+was distinguishable from its classical twin (smallest $p=\TwinMinP$). Parity
+held against filter-bank CSP and in cross-subject transfer too.
 
 \textit{Significance.}
-We find no evidence of quantum advantage for motor-imagery decoding, and
-identify the mechanism as an invariance mismatch rather than kernel
-concentration alone: quantum information geometry is invariant under the wrong
-group for EEG, and once the missing invariance is supplied the quantum kernels
-are indistinguishable from their classical counterparts. The reference-state
-correction is a precondition for any fair comparison of these kernel families,
-and its omission offers a concrete route by which favourable results may arise
-without quantum structure contributing anything. All code and results are
-released to support replication.
+We find no quantum advantage here, and trace the cause to an invariance
+mismatch rather than kernel concentration. Supply the missing invariance and
+the quantum kernels simply match their classical counterparts. Recentring is a
+precondition for a fair comparison, and omitting it is a concrete route to a
+false positive.
 \end{abstract}
 
 \noindent{\it Keywords}: quantum machine learning, brain--computer interface,
@@ -111,7 +93,9 @@ methods: common spatial patterns (CSP) \cite{ramoser2000} and, more recently,
 classifiers built on the Riemannian geometry of spatial covariance matrices
 \cite{barachant2012,congedo2017}. Large-scale benchmarking finds that
 covariance tangent-space projection and CSP consistently define the strongest
-methodological families across public motor-imagery datasets.
+methodological families across public motor-imagery datasets; Lotte \etal
+\cite{lotte2018} and Yger \etal \cite{yger2017} review the field and the
+Riemannian branch of it respectively.
 
 In parallel, a growing literature applies quantum machine learning (QML) to
 EEG, typically reporting improvements over a classical comparator
@@ -125,6 +109,18 @@ ablation}, which tests whether the quantum resource contributes anything at
 all, and a \emph{dimension-matched classical comparator}, without which an
 apparent quantum effect is confounded with the dimensionality reduction applied
 before encoding.
+
+Quantum kernels are the natural object of study here. Supervised quantum
+models with fixed encodings are kernel methods \cite{schuld2019,
+schuld2021kernel}, so a kernel comparison captures the whole model class
+rather than one architecture, and it sidesteps the trainability problems
+that afflict variational circuits \cite{mcclean2018,cerezo2021}. What is
+known about their usefulness is mixed. There is a constructed problem with
+a proven exponential separation \cite{liu2021}, but on natural data the
+advantage is bounded by how much the quantum kernel's inductive bias
+happens to match the target \cite{kubler2021,huang2021}, and general
+surveys \cite{biamonte2017} have not translated into demonstrated wins on
+biological signals.
 
 The wider QML literature gives strong reasons for caution. Bowles \etal
 \cite{bowles2024} benchmarked twelve quantum models across 160 datasets and
@@ -153,8 +149,8 @@ both of the missing controls, and paired subject-wise statistics with
 multiple-comparison correction, replicated on IV-2a and extended to
 filter-bank baselines and cross-subject transfer.
 
-Third, and centrally, we show that the comparison such benchmarks perform ---
-ours included, in its first form --- is confounded by the coordinate frame. The
+Third, and centrally, we show that the comparison such benchmarks perform, 
+ours included, in its first form, is confounded by the coordinate frame. The
 quantum quantities above are invariant under orthogonal congruence only, while
 EEG's nuisance transformations (electrode gain, reference choice, source
 mixing, and the change from one subject to the next) generate the full
@@ -173,6 +169,21 @@ quantum kernel is distinguishable from that twin in any of four settings. The
 practical implication is uncomfortable but concrete: a quantum kernel compared
 against a classical baseline in a different frame will show an advantage of
 roughly the size we report, produced entirely by the frame.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig0_eeg_to_state.pdf}
+\caption{\label{fig:eeg}From scalp EEG to a quantum state, computed from real
+recordings rather than simulated. (a) Band-passed sensorimotor traces for one
+left-hand and one right-hand trial. (b) Scalp topography of mu/beta power,
+right minus left: power falls over the hemisphere contralateral to the imagined
+hand, which is the physiological effect every decoder in this study exploits.
+(c) The spatial covariance of a single trial over the eight decoding channels.
+(d) The same matrix divided by its trace. It is now a density matrix, and
+(e) its eigenvalues are non-negative and sum to one, so they are a population
+distribution. The step from (c) to (d) is the whole encoding: no dimensionality
+reduction, no rotation-angle embedding.}
+\end{figure}
 
 We state our scope plainly. At the channel counts considered here (8--64,
 i.e.\ 3--6 qubits) every kernel we evaluate is classically computable in
@@ -274,11 +285,15 @@ K_{\mathrm{Bures}}(\rho,\sigma) &=& \exp\left(-\gamma\,
    d_{B}^{2}(\rho,\sigma)\right), \qquad
 d_{B}^{2} = 2\left(1-\sqrt{F(\rho,\sigma)}\right).
 \end{eqnarray}
-Here $d_B$ is the Bures distance, the geodesic distance of the Bures metric on
+Here $d_B$ is the Bures distance \cite{bhatia2019}, the geodesic distance
+of the Bures metric on
 state space, which for unit-trace matrices coincides with the
 Bures--Wasserstein distance occasionally used in the Riemannian EEG literature
 as a distance but, to our knowledge, never as a kernel. The bandwidth
-$\gamma$ is set by the median heuristic computed \emph{on the training split
+$\gamma$ is a bandwidth, and bandwidth is known to control quantum-kernel
+expressivity and to be decisive for whether such kernels generalise at all
+\cite{shaydulin2022}. It is set by the median heuristic computed
+\emph{on the training split
 only}, with a multiplier selected in the inner cross-validation loop.
 
 \subsection{Reference states, and the invariance the sensor frame lacks}
@@ -305,9 +320,21 @@ classifier and CSP are congruence-invariant by construction. Every strong
 classical baseline in our suite therefore possesses an invariance that none of
 the sensor-frame quantum kernels possess.
 
-We remove the asymmetry by referring each state to a \emph{reference state}
-$M$, the Fr\'echet mean of the \emph{training} covariances, via the whitening
-$W = M^{-1/2}$:
+The repair is not new, and we want to be plain about that. Whitening
+covariances by their Fr\'echet mean is \emph{Riemannian recentring}, introduced
+by Zanini \etal \cite{zanini2018} to align sessions and subjects and extended
+by Rodrigues \etal \cite{rodrigues2019} into Riemannian Procrustes Analysis;
+He and Wu \cite{he2020} give a Euclidean counterpart. In the classical setting
+it is understood as a domain-adaptation step, applied because it helps in
+transfer, and it is optional: the affine-invariant methods it is applied to are
+already congruence-invariant without it.
+
+Our point is that for quantum kernels the same operation plays a different and
+stronger role. It is not an optional aid to transfer but the step that supplies
+an invariance the kernels structurally lack, and which the baselines they are
+being compared against already have. We therefore refer each state to a
+\emph{reference state} $M$, the Fr\'echet mean of the \emph{training}
+covariances, via the whitening $W = M^{-1/2}$:
 \begin{equation}
 \tilde{\rho}_i \;=\; \frac{W C_i W}{\mathrm{tr}\,(W C_i W)}.
 \label{eq:refstate}
@@ -338,6 +365,13 @@ comparison against the classical baselines becomes like for like. Second, and
 less obviously, the quantum kernels can now at best \emph{match} the
 Riemannian metric on any nuisance that is a congruence; parity, not
 superiority, is the ceiling the algebra permits.
+
+To state the contribution precisely: the alignment is borrowed, the reason for
+needing it is not. What we add is the observation that quantum kernels lack an
+invariance the classical baselines already possess, a proof that recentring
+supplies exactly that invariance for the quantum quantities, and the control in
+\sref{sec:refresults} showing that once it is supplied nothing quantum remains
+to distinguish them.
 
 Equation~\eref{eq:refstate} is not classical preprocessing smuggled into a
 quantum method. The map $\rho \mapsto W\rho W/\mathrm{tr}(W\rho W)$ is a
@@ -402,7 +436,10 @@ the kernel is the state overlap $|\langle\phi(x)|\phi(z)\rangle|^{2}$. The IQP
 map uses data-dependent $ZZ$ couplings; the ring map uses fixed CNOTs. The
 third panel is the entanglement ablation: the identical circuit with every
 entangling gate deleted, which factorises the kernel into single-qubit terms
-and isolates what entanglement contributes.}
+and isolates what entanglement contributes. The figure is rendered by Qiskit
+from a circuit that is checked against the executed PennyLane circuit before
+drawing: the two agree on full Gram matrices to $<10^{-15}$, so the diagram
+cannot drift from the code it documents.}
 \end{figure}
 
 \subsection{Classical baselines and controls}
@@ -427,8 +464,11 @@ inner search budget. All fitted transformations (tangent-space reference mean,
 scalers, PCA, and the kernel bandwidth) are refit within each training split,
 so no information leaks across folds.
 
-Across subjects we use the Wilcoxon signed-rank test on paired per-subject
-accuracies, with Holm correction across the family of comparisons, and report
+Across subjects we follow the standard recommendation for comparing
+classifiers over multiple datasets \cite{demsar2006} and use the Wilcoxon
+signed-rank test on paired per-subject
+accuracies, with Holm correction \cite{holm1979} across the family of
+comparisons, and report
 the paired effect size $d_z$. Per-subject optimality varies substantially in
 motor-imagery decoding, so paired non-parametric testing (rather than
 comparison of grand means) is the appropriate inference.
@@ -682,7 +722,8 @@ per subject.}
 \centering
 \includegraphics[width=\textwidth]{fig8_twin.pdf}
 \caption{\label{fig:twin}The decisive control. Each quantum kernel is compared
-against a classical SPD-manifold kernel used in the same support vector
+against a classical SPD-manifold kernel \cite{barachant2013} used in the
+same support vector
 machine, on the same covariances, with the same tuning budget, in the same
 reference frame; only the metric differs. Points are mean paired differences
 with 95\% confidence intervals. Every interval crosses zero in all four
@@ -696,6 +737,7 @@ Since the reference-frame kernels reach the top of the table, the relevant
 question becomes whether they do so against the strongest classical family
 rather than against CSP and tangent-space alone. We therefore repeated the
 comparison with a filter bank of four sub-bands spanning the same passband,
+in the manner of filter-bank CSP \cite{ang2008},
 giving filter-bank CSP and filter-bank tangent-space baselines. The same
 construction enlarges the quantum register at no methodological cost: four
 sub-bands over eight channels is a $32$-dimensional covariance, hence a single
@@ -791,9 +833,9 @@ broader QML benchmarking literature \cite{bowles2024}, but the route by which
 we reach it differs from a bare negative result in a way we think matters, and
 it passes through a stage at which the opposite conclusion looked correct.
 
-Evaluated in the sensor frame, the density-matrix kernels---the most principled
+Evaluated in the sensor frame, the density-matrix kernels, the most principled
 construction here, requiring no dimensionality reduction and mapping onto a
-hardware-native SWAP test---performed \emph{worst} of all pipelines, and
+hardware-native SWAP test, performed \emph{worst} of all pipelines, and
 \sref{sec:concentration} appeared to explain why: EEG covariances are mutually
 so similar that their quantum overlaps saturate near unity. That explanation is
 incomplete. Concentration is a symptom of a deeper mismatch, and it is largely
@@ -814,8 +856,8 @@ is worth being explicit that this is what our own experiments supported at that
 point, because the only thing standing between it and publication was a control
 that is not currently standard.
 
-That control---an SPD kernel in the same classifier, same data, same frame,
-differing only in the metric---removes the claim entirely. Across four settings
+That control, an SPD kernel in the same classifier, same data, same frame,
+differing only in the metric, removes the claim entirely. Across four settings
 no quantum kernel separates from its classical twin, and the twin is itself
 among the strongest pipelines we evaluated. The gain therefore belongs to the
 reference frame and to the kernel formulation, both of which are available
@@ -830,8 +872,8 @@ decoding benefit over its classical counterparts, and reports to the contrary
 should be checked for a frame asymmetry before they are believed. The second is
 methodological: the dimension-matched control that this literature has begun to
 adopt is necessary but not sufficient. Its natural analogue for geometric
-methods---a \emph{metric}-matched control, identical in every respect but the
-metric---is what distinguishes a claim about quantum structure from a claim
+methods, a \emph{metric}-matched control, identical in every respect but the
+metric, is what distinguishes a claim about quantum structure from a claim
 about preprocessing.
 
 \subsection{Relation to prior work}
@@ -869,7 +911,8 @@ weaker still in genuinely few-trial calibration settings.
 models sampling only, not gate error, decoherence or readout bias. All of these
 favour the quantum side, so none weakens a negative result; they do mean
 hardware performance would be worse, not better. We also survey a specific
-family of kernels: variational and quantum neural-network approaches are
+family of kernels: deep architectures such as EEGNet \cite{lawhern2018},
+and variational or quantum neural-network approaches, are
 outside our scope.
 
 \subsection{What would change the conclusion}
@@ -883,8 +926,8 @@ ones.
 Non-congruence shift is the natural candidate, because it is exactly what our
 argument does not cover. Cross-session rather than cross-subject transfer is
 attractive here: the congruence component is milder, so residual differences in
-conditioning and spectral shape---on which the quantum relative entropy and the
-Bures distance weight differently from the affine-invariant metric---carry
+conditioning and spectral shape, on which the quantum relative entropy and the
+Bures distance weight differently from the affine-invariant metric, carry
 proportionally more of the shift.
 
 Regimes where the reference state is poorly estimated are the second. Our
@@ -917,8 +960,8 @@ restores exact affine invariance, relieves concentration by
 reverses the sign of the classical-versus-quantum comparison.
 
 It would be straightforward to stop there and report a quantum advantage. The
-control that prevents this---a classical SPD kernel identical in every respect
-but the metric---shows that no quantum kernel is distinguishable from its
+control that prevents this, a classical SPD kernel identical in every respect
+but the metric, shows that no quantum kernel is distinguishable from its
 classical twin in any of four settings, including against filter-bank CSP and
 in cross-subject transfer, where all nine geometries fall within
 \TransferSpread. The improvement is real and useful, and it is entirely

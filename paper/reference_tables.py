@@ -280,7 +280,7 @@ unbiased estimate with variance $(1-k^2)/S$; we sample each unordered pair
 binomially and project the Gram matrix back to the positive semi-definite cone.
 The reference frame needs \emph{more} shots to approach its own ceiling,
 because that ceiling is higher, but it dominates the sensor frame in absolute
-terms from $10^4$ shots upwards --- above which it exceeds what the sensor
+terms from $10^4$ shots upwards, above which it exceeds what the sensor
 frame achieves with unlimited shots.}
 \begin{indented}
 \item[]\begin{tabular}{@{}ll""" + "c" * (len(shot_levels) + 1) + r"""@{}}
@@ -295,7 +295,7 @@ Kernel & Frame & """ + " & ".join(
             cells = []
             for s in shot_levels + [-1]:
                 v = row[row.shots == s][frame]
-                cells.append(f"{float(v.iloc[0]):.3f}" if len(v) else "---")
+                cells.append(f"{float(v.iloc[0]):.3f}" if len(v) else "n/a")
             cells[-1] = f"\\textbf{{{cells[-1]}}}"
             out.append(f"{kern} & {frame.capitalize()} & " + " & ".join(cells) + r" \\")
     out.append(r"""\br

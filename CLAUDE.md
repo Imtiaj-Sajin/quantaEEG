@@ -85,7 +85,7 @@ strong classical baseline is invariant under congruence `C → ACAᵀ`, the grou
 EEG's nuisances actually generate. Referring states to a training-set
 reference state (`reference_whitener`) makes them exactly affine-invariant,
 which relieves concentration and lifts accuracy enough to reverse the headline
-comparison — but the `control/riemann-kernel-SVM` twin matches every quantum
+comparison, but the `control/riemann-kernel-SVM` twin matches every quantum
 kernel to within noise, so the gain is the frame, not quantum structure. Read
 RESEARCH.md §4.6–§4.9 before proposing new experiments.
 

@@ -80,85 +80,20 @@ def _cnot(ax, x, yc, yt, color=INK_2, r=0.13):
     ax.plot([x, x], [yt - r, yt + r], color=color, lw=1.1, zorder=5)
 
 
-def _draw_iqp(ax, nq=3, entangle=True, ring=False):
-    """Draw one layer, returning the x extent so the wires can be sized to it."""
-    ops = []            # (kind, x, ...) collected first, so wires fit the content
-    x = 0.55
-    for w in range(nq):
-        ops.append(("g", x, nq - 1 - w, "H", BLUE, 0.44))
-    x += 0.72
-    for w in range(nq):
-        ops.append(("g", x, nq - 1 - w, r"$R_Z$", BLUE, 0.44))
-
-    if entangle and ring:
-        x += 0.70
-        for w in range(nq):
-            ops.append(("c", x, nq - 1 - w, nq - 1 - ((w + 1) % nq), AQUA))
-            x += 0.60
-        x -= 0.60
-    elif entangle:
-        x += 0.68
-        for w in range(nq - 1):
-            yc, yt = nq - 1 - w, nq - 2 - w
-            ops.append(("c", x, yc, yt, ORANGE))
-            ops.append(("g", x + 0.60, yt, r"$R_{ZZ}$", ORANGE, 0.62))
-            ops.append(("c", x + 1.20, yc, yt, ORANGE))
-            x += 1.80
-        x -= 1.80 - 1.20
-
-    x_end = x + 0.45
-    for w in range(nq):
-        y = nq - 1 - w
-        ax.plot([0.15, x_end], [y, y], color=INK_2, lw=1.0, zorder=1)
-        ax.text(-0.02, y, f"$q_{w}$", ha="right", va="center",
-                fontsize=8.5, color=INK_2)
-    for op in ops:
-        if op[0] == "g":
-            _gate(ax, op[1], op[2], op[3], op[4], w=op[5])
-        else:
-            _cnot(ax, op[1], op[2], op[3], op[4])
-    return x_end
-
-
 def fig_circuits(out: Path) -> bool:
-    F._style()
-    # Width ratios follow the drawn circuit widths, so the three panels share
-    # one horizontal scale instead of being stretched to equal boxes.
-    fig, axes = plt.subplots(1, 3, figsize=(9.4, 2.45),
-                             gridspec_kw={"width_ratios": [4.5, 2.9, 1.9],
-                                          "wspace": 0.16})
-    specs = [
-        (dict(entangle=True, ring=False), "IQP feature map",
-         "data-dependent $ZZ$ coupling"),
-        (dict(entangle=True, ring=True), "Ring CNOT feature map",
-         "fixed entanglers"),
-        (dict(entangle=False), "Entanglement ablation",
-         "identical, entanglers deleted"),
-    ]
-    for ax, (kw, title, sub) in zip(axes, specs):
-        x_end = _draw_iqp(ax, nq=3, **kw)
-        ax.set_xlim(-0.42, x_end + 0.08)
-        ax.set_ylim(-0.95, 2.75)
-        ax.set_aspect("equal")
-        ax.axis("off")
-        ax.text(-0.42, 2.60, title, fontsize=9.5, fontweight="bold", color=INK,
-                ha="left", va="bottom")
-        ax.text(-0.42, -0.72, sub, fontsize=8, color=INK_MUTED, ha="left",
-                va="center")
+    """Delegate to the Qiskit renderer.
 
-    F._caption(fig, (
-        "Circuit feature maps at three qubits, one layer shown. Rotation "
-        "angles carry the PCA-reduced tangent-space features;\n"
-        "the kernel is the state overlap. The third panel is the Bowles et al. "
-        "ablation: the same circuit with every\nentangling gate removed, which "
-        "isolates what entanglement contributes."))
-    F._save(fig, out, "fig5_circuits")
-    return True
+    This used to draw the circuits by hand in matplotlib. That is a hazard: a
+    hand-drawn diagram can silently stop matching the circuit the experiments
+    run. The figure is now produced by `figures_circuits`, which builds the
+    circuit in Qiskit and verifies it against the executed PennyLane circuit
+    before drawing anything. Kept as a thin wrapper so the existing entry point
+    cannot regenerate the old, unverified version.
+    """
+    from .figures_circuits import fig_circuits as _qiskit_circuits
 
+    return _qiskit_circuits(out)
 
-# ==========================================================================
-# Figure 6: why the sensor frame is wrong
-# ==========================================================================
 
 def _schematic(ax):
     """States clustered about the mean, versus spread about the identity."""

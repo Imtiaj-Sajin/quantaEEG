@@ -110,20 +110,24 @@ standalone viewing, and writes to `results/figures/`.
 
 ## Before submission: checklist
 
-- [x] **Verify every `[CHECK]` entry in `refs.bib`.** Done 2026-09-03: all ten
-      were resolved to a DOI and confirmed field by field against the CrossRef
-      record. No entry carries the flag any more; add it back for any reference
-      cited from memory in future.
+- [ ] **Verify the six `[CHECK]` entries in `refs.bib`.** The original ten were
+      cleared on 2026-09-03. The reference list was then expanded from 15 to 35
+      entries: fourteen of the new ones were verified against the publisher
+      record at the time of adding, six canonical ones (biamonte2017,
+      cerezo2021, schuld2019, demsar2006, holm1979, bhatia2019) were not and
+      still carry the flag. A DOI lookup each will clear them.
 - [x] **Compile at least once.** Done 2026-09-03, the first successful build.
       It caught `\tfrac`, undefined under `iopams`, which the static checker
       cannot see.
-- [ ] **Fill the affiliation in `main.tex`** (still a placeholder).
+- [x] **Affiliation filled** (AIUB, Dhaka), 2026-09-03.
 - [ ] **Complete the `\ack` section** (funding, compute).
 - [ ] Add co-authors if applicable.
 - [ ] **Read the PDF end to end.** It compiles and every number is generated
       from a CSV, but nobody has yet read it as a reader would.
-- [ ] Check JNE's current author guidelines: word limits and the structured
-      abstract format are enforced, and do change.
+- [x] **Abstract within the 300-word limit.** Cut from 473 to 299 words on
+      2026-09-03 and measured from the rendered PDF, not the source, since
+      macros expand.
+- [ ] Check JNE's other author guidelines: limits do change.
 
 ## Scope note carried into the paper
 
@@ -149,4 +153,4 @@ quantum. See [../RESEARCH.md](../RESEARCH.md) §4.6–§4.10.
 Every experiment the argument needs is done: PhysioNet at three and five
 qubits, IV-2a, cross-subject transfer, filter-bank/FBCSP baselines, and a
 shot-noise analysis. The remaining work is editorial rather than
-computational — the three unticked checklist items above.
+computational, the three unticked checklist items above.
