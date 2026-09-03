@@ -19,6 +19,7 @@ import pandas as pd
 from scipy.stats import wilcoxon
 
 import cross_tables as ct
+import reference_tables as rt
 
 REFERENCE = "classical/TS+LR"
 TAG = "motor8_q4"
@@ -277,6 +278,21 @@ def main(argv=None) -> int:
         print(f"  + BCI IV-2a: {df_b.subject.nunique()} subjects")
     else:
         print("  ! BCI IV-2a results absent; manuscript will be single-dataset")
+
+    # Reference-frame results. Each builder no-ops if its inputs are missing,
+    # so a checkout with only the core run still produces a valid manuscript.
+    ref = rt.load(res)
+    built = []
+    if rt.table_frame(ref, paired, fmt_p, esc, out):
+        built.append("frame effect")
+    if rt.table_twin(ref, paired, fmt_p, esc, out):
+        built.append("twin control")
+    if rt.table_transfer(ref, paired, fmt_p, esc, out):
+        built.append("transfer")
+    if rt.table_shots(ref, out):
+        built.append("shots")
+    rt.macros(ref, paired, fmt_p, esc, mac)
+    print(f"  + reference-frame tables: {', '.join(built) if built else 'none'}")
 
     mdest = Path(args.macros_out)
     mdest.parent.mkdir(parents=True, exist_ok=True)

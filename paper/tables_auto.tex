@@ -176,3 +176,116 @@ Dimension-matched control & PhysioNet & $+0.0163$ & 0.173 & 18/30 \\
 \end{tabular}
 \end{indented}
 \end{table}
+
+
+%% -------------------------------------------------- Table: frame effect
+\begin{table}[htbp]
+\caption{\label{tab:frame}Effect of referring the density-matrix kernels to a
+reference state. Each kernel is evaluated twice under an identical protocol,
+differing only in whether the states are expressed in the sensor frame
+(\eref{eq:density}) or relative to the training-set Fr\'echet mean
+(\eref{eq:refstate}). $\Delta$ is the mean per-subject accuracy gain from the
+reference frame, tested by paired Wilcoxon signed-rank across subjects. Every
+kernel improves on both datasets; on IV-2a every kernel improves in every
+subject.}
+\begin{indented}
+\item[]\begin{tabular}{@{}llccccc@{}}
+\br
+Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & Better \\
+\mr
+PhysioNet ($n=30$) & Fidelity & 0.523 & 0.630 & $\bf +0.1064$ & $<$0.001 & 23/30 \\
+ & HS overlap & 0.532 & 0.621 & $\bf +0.0889$ & 0.002 & 21/30 \\
+ & HS-RBF & 0.549 & 0.606 & $\bf +0.0570$ & 0.049 & 19/30 \\
+ & Bures-RBF & 0.552 & 0.611 & $\bf +0.0585$ & 0.009 & 20/30 \\
+ & QRE-RBF & 0.559 & 0.609 & $\bf +0.0504$ & 0.027 & 20/30 \\
+\ms
+IV-2a ($n=9$) & Fidelity & 0.580 & 0.767 & $\bf +0.1873$ & 0.004 & \textbf{9/9} \\
+ & HS overlap & 0.586 & 0.762 & $\bf +0.1760$ & 0.004 & \textbf{9/9} \\
+ & HS-RBF & 0.595 & 0.763 & $\bf +0.1678$ & 0.004 & \textbf{9/9} \\
+ & Bures-RBF & 0.600 & 0.765 & $\bf +0.1646$ & 0.004 & \textbf{9/9} \\
+ & QRE-RBF & 0.599 & 0.764 & $\bf +0.1644$ & 0.004 & \textbf{9/9} \\
+\br
+\end{tabular}
+\end{indented}
+\end{table}
+
+
+%% ------------------------------------------------------ Table: twin control
+\begin{table}[htbp]
+\caption{\label{tab:twin}The decisive control. Each quantum kernel is compared
+against an SPD-manifold kernel used in the same support vector machine, on the
+same covariances, with the same tuning budget, in the same reference frame:
+only the metric differs. The comparator is the stronger of the two classical
+kernels in each setting, which is the conservative choice. Columns give the
+best quantum kernel in that setting, the classical twin, their difference, and
+the smallest $p$ obtained by \emph{any} of the five quantum kernels against the
+twin. No quantum kernel is distinguishable from its classical twin in any
+setting.}
+\begin{indented}
+\item[]\begin{tabular}{@{}lccccc@{}}
+\br
+Setting & $n$ & Quantum & Twin & $\Delta$ (range over 5) & $\min p$ \\
+\mr
+PhysioNet, 3\,q & 30 & 0.630 & 0.621 & $[-0.0151, +0.0081]$ & 0.183 \\
+PhysioNet, 5\,q, filter bank & 30 & 0.648 & 0.637 & $[+0.0000, +0.0111]$ & 0.234 \\
+PhysioNet, transfer (LOSO) & 30 & 0.647 & 0.635 & $[+0.0000, +0.0119]$ & 0.072 \\
+BCI IV-2a, 3\,q & 9 & 0.767 & 0.766 & $[-0.0033, +0.0016]$ & 0.426 \\
+\br
+\end{tabular}
+\end{indented}
+\end{table}
+
+
+%% --------------------------------------------------- Table: transfer
+\begin{table}[htbp]
+\caption{\label{tab:transfer}Cross-subject transfer, leave-one-subject-out:
+each model is trained on the pooled trials of every other subject.
+Hyperparameters are selected by subject-grouped inner cross-validation on the
+training subjects only. In the reference frame each subject is whitened by its
+own Fr\'echet mean, which uses no labels and is therefore legitimate
+unsupervised adaptation for the held-out subject. $\Delta$ is the gain from the
+reference frame, paired by held-out subject. Every method improves; in the
+reference frame no method is distinguishable from any other.}
+\begin{indented}
+\item[]\begin{tabular}{@{}lccccc@{}}
+\br
+Pipeline & Sensor & Reference & $\Delta$ & $p$ & Better \\
+\mr
+quantum/HS-overlap & 0.552 & 0.647 & $+0.0948$ & $<$0.001 & 24/30 \\
+classical/TS+LR & 0.604 & 0.644 & $+0.0400$ & 0.010 & 18/30 \\
+quantum/QRE-RBF & 0.576 & 0.641 & $+0.0659$ & 0.002 & 21/30 \\
+quantum/Bures-RBF & 0.561 & 0.640 & $+0.0785$ & $<$0.001 & 22/30 \\
+quantum/Fidelity & 0.559 & 0.636 & $+0.0763$ & $<$0.001 & 21/30 \\
+control/riemann-kernel-SVM & 0.587 & 0.635 & $+0.0474$ & 0.004 & 19/30 \\
+quantum/HS-RBF & 0.564 & 0.635 & $+0.0711$ & 0.002 & 20/30 \\
+control/logeuclid-kernel-SVM & 0.576 & 0.633 & $+0.0570$ & 0.001 & 20/30 \\
+classical/MDM & 0.553 & 0.633 & $+0.0800$ & $<$0.001 & 19/30 \\
+\br
+\end{tabular}
+\end{indented}
+\end{table}
+
+
+%% ------------------------------------------------------- Table: shot budget
+\begin{table}[htbp]
+\caption{\label{tab:shots}Accuracy under finite-shot estimation.
+$\mathrm{tr}(\rho\sigma)$ is the SWAP-test observable, so $S$ shots give an
+unbiased estimate with variance $(1-k^2)/S$; we sample each unordered pair
+binomially and project the Gram matrix back to the positive semi-definite cone.
+The reference frame needs \emph{more} shots to approach its own ceiling,
+because that ceiling is higher, but it dominates the sensor frame in absolute
+terms from $10^4$ shots upwards --- above which it exceeds what the sensor
+frame achieves with unlimited shots.}
+\begin{indented}
+\item[]\begin{tabular}{@{}llcccccc@{}}
+\br
+Kernel & Frame & $10^{2}$ & $10^{3}$ & $10^{4}$ & $10^{5}$ & $10^{6}$ & $\infty$ \\
+\mr
+HS-RBF & Sensor & 0.492 & 0.504 & 0.511 & 0.538 & 0.533 & \textbf{0.554} \\
+HS-RBF & Reference & 0.482 & 0.529 & 0.564 & 0.586 & 0.590 & \textbf{0.609} \\
+HS-overlap & Sensor & 0.510 & 0.507 & 0.532 & 0.538 & 0.527 & \textbf{0.532} \\
+HS-overlap & Reference & 0.491 & 0.518 & 0.565 & 0.589 & 0.607 & \textbf{0.618} \\
+\br
+\end{tabular}
+\end{indented}
+\end{table}
