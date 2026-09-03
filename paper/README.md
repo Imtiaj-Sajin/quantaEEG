@@ -10,7 +10,9 @@ Significance*), Harvard-numeric references via `iopart-num`.
 |---|---|
 | `main.tex` | The manuscript. |
 | `macros_auto.tex` | **Auto-generated: never edit.** Every number quoted in the prose, as `\newcommand` macros. Read in the preamble. |
-| `tables_auto.tex` | **Auto-generated: never edit.** The four table floats. Read in the body. |
+| `tables_auto.tex` | **Auto-generated: never edit.** The ten table floats. Read in the body. |
+| `cross_tables.py` | Second-dataset (IV-2a) tables and macros. |
+| `reference_tables.py` | Reference-frame tables and macros: frame effect, twin control, transfer, shots. |
 | `make_tables.py` | Regenerates both of the above from `results/*.csv`. |
 | `check_tex.py` | Static checks with no LaTeX needed: undefined macros, unresolved citations, dangling refs, unbalanced environments, missing figures. |
 | `get_iop_class.sh` | Fetches the IOP class files (not on CTAN, not committed). |
@@ -35,7 +37,7 @@ hand-transcribed manuscript silently rots.
 
 ## Building
 
-**The draft compiles cleanly: 17 pages, 0 undefined references, 0 overfull
+**The draft compiles cleanly: 25 pages, 0 undefined references, 0 overfull
 boxes, 0 BibTeX warnings** (MiKTeX/`latexmk`, 2026-09-03).
 
 ### The `-outdir` BibTeX trap
@@ -108,17 +110,20 @@ standalone viewing, and writes to `results/figures/`.
 
 ## Before submission: checklist
 
-- [ ] **Verify every `[CHECK]` entry in `refs.bib`.** Those are canonical works
-      cited from standing knowledge; the papers are right, but volume/issue/page
-      metadata was not re-checked against the publisher record. A DOI lookup per
-      entry is enough. (The two entries that were missing author lists have now
-      been verified and completed.)
-- [ ] Fill the affiliation in `main.tex` (currently a placeholder).
-- [ ] Complete the `\ack` section (funding, compute).
+- [x] **Verify every `[CHECK]` entry in `refs.bib`.** Done 2026-09-03: all ten
+      were resolved to a DOI and confirmed field by field against the CrossRef
+      record. No entry carries the flag any more; add it back for any reference
+      cited from memory in future.
+- [x] **Compile at least once.** Done 2026-09-03, the first successful build.
+      It caught `\tfrac`, undefined under `iopams`, which the static checker
+      cannot see.
+- [ ] **Fill the affiliation in `main.tex`** (still a placeholder).
+- [ ] **Complete the `\ack` section** (funding, compute).
 - [ ] Add co-authors if applicable.
-- [ ] Compile once and read the PDF end to end.
-- [ ] Check JNE's current author guidelines, word limits and the structured
-      abstract format are enforced and do change.
+- [ ] **Read the PDF end to end.** It compiles and every number is generated
+      from a CSV, but nobody has yet read it as a reader would.
+- [ ] Check JNE's current author guidelines: word limits and the structured
+      abstract format are enforced, and do change.
 
 ## Scope note carried into the paper
 
@@ -129,15 +134,19 @@ critiques, and removing it would make the paper indefensible.
 
 ## Status
 
-Complete first draft, **compiling to 12 pages**: abstract, introduction,
-methods, results, discussion, limitations, conclusion, data-availability
-statement, four tables, three figures, 14 references. Reports a **negative
-result with an identified mechanism**, the framing is deliberate and is argued
-for in [../RESEARCH.md](../RESEARCH.md) §6.
+Complete draft, **compiling to 25 pages**: abstract, introduction, methods,
+results, discussion, limitations, conclusion, data-availability statement,
+ten tables, nine figures, 15 references.
 
-Not yet included, and the obvious next additions:
+The argument is a **negative result with an identified mechanism**, and the
+mechanism changed on 2026-09-03. It is no longer kernel concentration but an
+**invariance mismatch**: the quantum quantities are invariant under unitary
+conjugation while EEG's nuisances act by congruence, so the original benchmark
+was in part measuring a difference of invariance groups. Correcting it reverses
+the headline comparison; the classical-twin control then shows the gain is not
+quantum. See [../RESEARCH.md](../RESEARCH.md) §4.6–§4.10.
 
-- Cross-subject transfer experiment (RESEARCH.md §6, Option C), the strongest
-  candidate for a positive finding, and the setting the discussion flags.
-- BCI Competition IV-2a replication for comparability with published claims.
-- Shot-noise analysis.
+Every experiment the argument needs is done: PhysioNet at three and five
+qubits, IV-2a, cross-subject transfer, filter-bank/FBCSP baselines, and a
+shot-noise analysis. The remaining work is editorial rather than
+computational — the three unticked checklist items above.
