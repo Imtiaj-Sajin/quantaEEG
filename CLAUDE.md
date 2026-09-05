@@ -71,9 +71,14 @@ src/qeeg/
   shots.py          finite-shot SWAP-test estimation
   benchmark.py      nested-CV runner + paired statistics (--suite core |
                     extended | filterbank)
+  equivalence.py    TOST equivalence tests against the classical twin
   concentration.py  kernel variance vs qubit count
   merge.py          combine batched runs
-  figures.py        publication figures (validated palette)
+  circuits_qiskit.py  Qiskit feature maps, verified against the PennyLane ones
+  figures.py          figures 1-4 (validated palette)
+  figures_eeg.py      figure 0: scalp EEG -> covariance -> density matrix
+  figures_circuits.py figure 5: the circuit diagrams, rendered from Qiskit
+  figures_reference.py figures 6-9: invariance, frame effect, twin, transfer
 results/            CSV/JSON outputs + figures/
 paper/              journal manuscript (see below)
 RESEARCH.md         the actual research document
@@ -87,16 +92,17 @@ reference state (`reference_whitener`) makes them exactly affine-invariant,
 which relieves concentration and lifts accuracy enough to reverse the headline
 comparison, but the `control/riemann-kernel-SVM` twin matches every quantum
 kernel to within noise, so the gain is the frame, not quantum structure. Read
-RESEARCH.md §4.6–§4.9 before proposing new experiments.
+RESEARCH.md §4.6–§4.10 before proposing new experiments.
 
 ## The manuscript
 
 `paper/` holds a full draft targeting **Journal of Neural Engineering** (IOP,
-Q1) in `iopart` format with JNE's required structured abstract.
+Q1) on IOP's official `iopjournal` class, with JNE's required structured
+abstract (*Objective / Approach / Main results / Significance*).
 
 **The one rule: no number is ever typed into `main.tex` by hand.** Every figure
 quoted in the prose is a LaTeX macro (`\PrimaryDelta`, `\BestClassicalAcc`, …)
-and all four tables are generated from the result CSVs by
+and all eleven tables are generated from the result CSVs by
 `python paper/make_tables.py`. After any new benchmark run, re-run it and the
 manuscript is consistent by construction. This is deliberate: the study is
 ongoing, numbers will change, and a hand-transcribed manuscript rots silently.
@@ -111,23 +117,38 @@ cd paper && latexmk -pdf main.tex
 cross-references, unbalanced environments and missing figures, the things that
 would otherwise only surface on first compile.
 
-**Compiles.** First successful build 2026-09-03 with MiKTeX/`latexmk`: 17 pages,
-0 undefined references, 0 overfull boxes, 15 bibliography entries. Run
-`bash paper/get_iop_class.sh` once first (`iopart.cls` is not on CTAN). Note
-the `-outdir` BibTeX trap documented in `paper/README.md`: without `BIBINPUTS`
-set, BibTeX silently produces an empty bibliography and the error surfaces as
-a misleading `missing \item` from `main.bbl`.
+**Compiles.** MiKTeX/`latexmk`: 20 pages, 0 warnings, 0 overfull boxes, 11
+tables, 10 figures, 35 references. Run `bash paper/get_iop_class.sh` once
+first: it downloads IOP's own `ioplatextemplate.zip` and extracts
+`iopjournal.cls` + `orcid.pdf` (neither is on CTAN).
 
-`check_tex.py` is a pre-flight, not a substitute for compiling: it cannot see
-undefined macros that come from a package the class does not load (`\tfrac`
-under `iopams`) or environments the class never defines. Compile before
-believing the draft is sound.
+**The class was migrated from `iopart` to `iopjournal` on 2026-09-05.**
+`iopart` is legacy and is not in IOP's current package at all; ours had come
+from a third-party mirror that could not be verified against anything. Do not
+revert. `iopjournal` defines none of the iopart-isms (`\sref`, `\eref`,
+`\submitto`, `\ead`, `\address`, `indented`, `\br`/`\mr`) and adds
+`\articletype`, `\orcid`, `\funding`, `\roles`, `\data`, plus an
+`[anonymous]` option for double-anonymous review. Mapping table in
+`paper/README.md`.
 
-**Before submitting**, work through `paper/README.md`'s checklist. The most
-important item: `refs.bib` marks each entry `[VERIFIED]` (checked against the
-publisher record during this study) or `[CHECK]` (canonical work cited from
-standing knowledge, the paper is right, the volume/page metadata was not
-re-checked). Every `[CHECK]` needs a DOI lookup.
+Note the `-outdir` BibTeX trap documented in `paper/README.md`: without
+`BIBINPUTS` set, BibTeX silently produces an empty bibliography and the error
+surfaces as a misleading `missing \item` from `main.bbl`.
+
+`check_tex.py` is a pre-flight, not a substitute for compiling, and the
+migration proved it three times over. It cannot see: an undefined macro from a
+package the class does not load; a heading the class emits itself (our
+`\section*{References}` printed twice); a bibliography style that *typesets*
+the `note` field; or `$<$0.001` nested inside `$p=...$`, which closes math mode
+and renders `<` as `¡`. All four shipped in a build with a clean exit code.
+**Read the rendered PDF, not just the log.**
+
+**Before submitting**, work through `paper/README.md`'s checklist. Reference
+provenance now lives in a `verified` field, NOT `note`: `iopart-num`
+*typesets* `note`, so bookkeeping there was printing into the bibliography of
+the submitted PDF. No entry carries `[CHECK]` any more; two (`holm1979`,
+`demsar2006`) are `[NO DOI]` because they genuinely have none and still want
+a manual eyeball.
 
 ## How to run
 
@@ -194,27 +215,46 @@ is identical at 3 qubits and the two are directly comparable.
    variance at 0.428× per qubit vs 0.716× with entanglers removed, 2.5× faster
    in log-slope, 29× vs 3.7× loss over 2→6 qubits. This supplies a *mechanism*
    for why deleting entanglement improves QML models.
-3. **More data widens the gap, it does not close it.** On IV-2a (288 trials)
-   the classical-quantum gap is 0.079 versus 0.032 on PhysioNet (45 trials);
-   against the weakest quantum kernel, 0.183 versus 0.088. Classical methods
-   gained ~0.15 from the extra data, density-matrix kernels ~0.05. This kills
-   the "the quantum model was starved" defence. Ranking is stable across the
-   two datasets (Spearman 0.882) with the same four quantum kernels last on
-   both. Fisher-combined p < 0.001.
+3. **More data widens the gap in the sensor frame.** On IV-2a (288 trials) the
+   classical-quantum gap is 0.079 versus 0.032 on PhysioNet (45 trials). This
+   kills the "the quantum model was starved" defence. Ranking is stable across
+   the two datasets (Spearman 0.882). **Reinterpreted in §4.10:** a kernel with
+   the wrong invariance cannot use extra data, while the classical baselines
+   can. Give it the right frame and the extra data becomes *more* valuable to
+   the quantum kernels than to the classical ones, which is why the frame
+   correction is worth 2-3× more on IV-2a.
 4. **Two distinct concentration mechanisms.** Circuit kernels concentrate from
-   qubit count; density-matrix kernels concentrate from the *data* (EEG
-   covariances are intrinsically similar), dimension-independent, and actually
-   *relieved* by adding channels. Corollary: the density-matrix route should
-   use more channels, not fewer.
+   qubit count; density-matrix kernels concentrate from the *data*. **Qualified
+   in §4.9:** that was measured in the sensor frame, and most of it is an
+   artefact of the frame (variance rises 4.7-9.5× on recentring). Do not quote
+   the "run it wider" corollary until the channel sweep is redone in the
+   reference frame; adding *bands* made the sensor frame worse, not better.
+5. **The frame is the whole effect (§4.6-§4.10).** Recentring reverses the
+   headline comparison on both datasets, but the metric-matched classical twin
+   matches every quantum kernel: TOST puts the two families within ±0.032
+   accuracy across all 20 comparisons. The gain is the frame and the
+   SPD-kernel-in-an-SVM formulation, neither of which is quantum.
 
 ## Where to take it next
 
-Highest value first (see RESEARCH.md §6, §9):
+Everything the argument needs is done: PhysioNet at 3 and 5 qubits, IV-2a,
+cross-subject transfer, filter-bank/FBCSP baselines, shot noise, and TOST
+equivalence. **The critical path is now editorial, not computational.**
 
-- **Cross-subject transfer**, not within-subject accuracy. Hypothesis: quantum
-  distances (Bures, quantum relative entropy) are more robust to inter-subject
-  covariance shift than affine-invariant Riemannian ones. This targets the
-  field's actual bottleneck (the calibration problem).
-- Add MOABB + BCI Competition IV-2a for comparability with published claims.
-- Shot-noise simulation: everything is currently infinite-shot.
-- Quantum relative entropy `S(ρ‖σ)` as an additional divergence.
+Outstanding, in order:
+
+1. **Author confirmation.** Order, and the CRediT `\roles{}` draft in
+   `main.tex`, are marked NOT FINAL. Only the corresponding author can settle
+   who did what.
+2. **`\funding{}`** currently states no specific grant. Correct it if that is
+   wrong; IOP parse that section.
+3. **Read the PDF end to end.** Nobody has yet read it as a reader would.
+4. Optional: cross-*session* transfer. IV-2a has two sessions and `Epochs`
+   already carries a `session` field, so it is runnable. §6 names it as the
+   most promising remaining place for a real quantum effect, which makes it
+   the obvious "did you try it?" question at review. Currently framed as
+   future work with a stated reason.
+
+Do **not** add more datasets for their own sake. Two datasets with Spearman
+0.882 already separate "property of the method" from "property of the data";
+a third changes no reviewer's mind. Mechanism and controls do.
