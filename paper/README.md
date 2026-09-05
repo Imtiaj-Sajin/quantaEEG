@@ -1,8 +1,69 @@
 # Manuscript
 
-Draft targeting **Journal of Neural Engineering** (IOP Publishing, Q1), 
-`iopart.cls`, structured abstract (*Objective / Approach / Main results /
-Significance*), Harvard-numeric references via `iopart-num`.
+Draft targeting **Journal of Neural Engineering** (IOP Publishing, Q1),
+structured abstract (*Objective / Approach / Main results / Significance*),
+numeric references via `iopart-num`.
+
+> **Template status: built on the legacy class.** We use `iopart.cls`. IOP's
+> current package ships `iopjournal.cls` instead. This is not a submission
+> blocker, but read "Which IOP class" below before submitting.
+
+## Which IOP class, and what was actually verified
+
+Checked against IOP's own sources on 2026-09-05, not from memory.
+
+**Conforms:**
+
+| Requirement | Source | Ours |
+|---|---|---|
+| Structured abstract *Objective / Approach / Main results / Significance* | JNE "About" page, verbatim | matches exactly |
+| Abstract ≤ 300 words | JNE guidelines | **299** (measured from the rendered PDF) |
+| Paper ≤ 12 000 words / 14 journal pages | JNE "About" page | **8 921** excluding the reference list |
+| Numeric reference style | `iopart-num` | 35 entries, all resolved |
+| Every macro used is class-provided | checked against `iopart.cls` | all present, compiles with 0 warnings |
+
+**Does not conform, and why it is not fatal:**
+
+IOP's official package (`ioplatextemplate.zip`, dated 2025/07, linked from
+their LaTeX template page) contains **`iopjournal.cls`
+`[2024/01/31]`** — and `iopart.cls` is *not in it at all*. `iopart` is the
+legacy class. IOP state plainly that "it is not essential to use this class
+file" and "any common variant of TeX is acceptable", and their own template
+says "It is not necessary to format your article in the style used for
+published articles in the journal". So an `iopart` submission should be
+accepted. It is simply not the current template.
+
+Two further caveats worth knowing:
+
+- **Provenance of our `iopart.cls` is unverified.** `get_iop_class.sh` pulls it
+  from a third-party GitHub mirror and asserts it is "byte-identical to the
+  version IOP ships". Nothing checks that, and IOP no longer distributes
+  `iopart.cls` to compare against. The file does look authentic (it carries
+  IOP maintainer comments, e.g. `\JNE` "added 30/11/2004 GMD"), but that is
+  evidence, not proof.
+- **`iopjournal` carries metadata commands `iopart` has no equivalent for**,
+  and IOP's production system likely consumes them: `\articletype`,
+  `\orcid{}`, `\funding{}`, `\roles{}` (CRediT taxonomy), `\data{}`,
+  `\suppdata{}`. It also provides an `[anonymous]` option that strips authors,
+  affiliations and acknowledgements for double-anonymous review — **JNE lets
+  authors choose single- or double-anonymous**, so if you want the latter,
+  that option does the work for you.
+
+**If you migrate**, `iopjournal.cls` compiles cleanly with this toolchain
+(verified: IOP's own template builds to 2 pages here) and needs only
+`fancyhdr`, `xcolor`, `graphicx`, `hyperref`. But it defines *none* of the
+iopart-isms this manuscript uses, so the edit is real:
+
+| `iopart` (ours) | `iopjournal` |
+|---|---|
+| `\documentclass[12pt]{iopart}` | `\documentclass{iopjournal}` |
+| `\address{}` / `\ead{}` | `\affil{}` / `\email{}` |
+| `\submitto{\JNE}` + `\maketitle` | `\articletype{Paper}` |
+| keywords as literal text | `\keywords{}` |
+| `\sref \eref \fref \tref` | plain `\ref` |
+| `\br \mr \ms`, `\begin{indented}` | `\hline`, plain `table` |
+| data availability as `\section*` | `\data{}` |
+| — | `\orcid \funding \roles \suppdata` |
 
 ## Files
 
@@ -131,6 +192,15 @@ standalone viewing, and writes to `results/figures/`.
 - [x] **Abstract within the 300-word limit.** Cut from 473 to 299 words on
       2026-09-03 and measured from the rendered PDF, not the source, since
       macros expand.
+- [x] **Abstract, length and structured-abstract headings checked against
+      IOP's own pages**, 2026-09-05. Abstract 299/300 words; body 8921/12000;
+      headings match JNE's four verbatim. See "Which IOP class" above.
+- [ ] **Decide: stay on `iopart` or migrate to `iopjournal`.** IOP's current
+      package ships `iopjournal.cls` and does not include `iopart.cls`. Not a
+      blocker (IOP accept any common TeX), but `iopjournal` is what they
+      distribute now and it carries `\orcid`, `unding`, `oles` (CRediT)
+      and `\data` metadata commands plus the `[anonymous]` option for
+      double-anonymous review. Migration notes are in the table above.
 - [ ] Check JNE's other author guidelines: limits do change.
 
 ## Scope note carried into the paper
