@@ -15,8 +15,12 @@ results/_*/
 # Large cached datasets live in ~/mne_data, never in the repo.
 mne_data/
 
-# LaTeX build products
-paper/build/
+# LaTeX build products. The compiled PDF IS tracked -- it is the artefact
+# people actually want to read, and a reader should not need a TeX toolchain
+# plus the non-CTAN IOP class files just to see the manuscript. Everything
+# else in build/ is intermediate.
+paper/build/*
+!paper/build/main.pdf
 *.aux
 *.bbl
 *.blg

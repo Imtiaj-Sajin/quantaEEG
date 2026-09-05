@@ -110,12 +110,16 @@ standalone viewing, and writes to `results/figures/`.
 
 ## Before submission: checklist
 
-- [ ] **Verify the six `[CHECK]` entries in `refs.bib`.** The original ten were
-      cleared on 2026-09-03. The reference list was then expanded from 15 to 35
-      entries: fourteen of the new ones were verified against the publisher
-      record at the time of adding, six canonical ones (biamonte2017,
-      cerezo2021, schuld2019, demsar2006, holm1979, bhatia2019) were not and
-      still carry the flag. A DOI lookup each will clear them.
+- [x] **Verify the `[CHECK]` entries in `refs.bib`.** No entry carries the flag
+      any more. The original ten were cleared 2026-09-03; four of the six added
+      later (biamonte2017, cerezo2021, schuld2019, bhatia2019) were confirmed
+      against CrossRef on 2026-09-05 and now carry DOIs.
+      **Two cannot be DOI-verified and are flagged `[NO DOI]` instead:**
+      `holm1979` (Scand. J. Statist. 6:65--70, 1979 predates DOI assignment;
+      JSTOR only) and `demsar2006` (JMLR registers no DOIs). Their metadata is
+      from standing knowledge and has *not* been checked against a publisher
+      record — eyeball those two once before submitting. Re-running a CrossRef
+      lookup on them will not help; that has been tried.
 - [x] **Compile at least once.** Done 2026-09-03, the first successful build.
       It caught `\tfrac`, undefined under `iopams`, which the static checker
       cannot see.
