@@ -221,6 +221,48 @@ BCI IV-2a, 3\,q & 9 & 0.767 & 0.766 & $[-0.0033, +0.0016]$ & 0.426 \\
 \end{table}
 
 
+%% --------------------------------------------------- Table: equivalence
+\begin{table}[htbp]
+\caption{\label{tab:equiv}Equivalence of each quantum kernel to its classical
+twin, by two one-sided tests on the paired per-subject differences. A
+non-significant difference would only be an absence of evidence; TOST instead
+takes a \emph{difference} as its null, so rejecting it supports equivalence.
+The margin $m=0.02$ accuracy was fixed in advance and is
+smaller than the weakest effect this paper claims as real (the reference-frame
+correction is worth $+0.050$ to $+0.187$). CI is the 90\,\% interval, which
+corresponds to TOST at $\alpha=0.05$; ``bound'' is the smallest margin at which
+equivalence would hold, so a reader preferring a stricter margin can read the
+answer off directly.}
+\begin{tabular}{@{}llcccccc@{}}
+\hline
+Setting & Kernel & $n$ & $\Delta$ & 90\,\% CI & $p_{\mathrm{TOST}}$ &
+Equiv. & Bound \\
+\hline
+PhysioNet, 3 qubits & Fidelity & 30 & $+0.0081$ & $[-0.0042, +0.0205]$ & 0.0568 & --- & 0.0205 \\
+ & HS overlap & 30 & $-0.0005$ & $[-0.0130, +0.0120]$ & 0.0066 & \checkmark & 0.0130 \\
+ & HS-RBF & 30 & $-0.0151$ & $[-0.0317, +0.0016]$ & 0.3090 & --- & 0.0317 \\
+ & Bures-RBF & 30 & $-0.0109$ & $[-0.0255, +0.0038]$ & 0.1487 & --- & 0.0255 \\
+ & QRE-RBF & 30 & $-0.0121$ & $[-0.0267, +0.0025]$ & 0.1833 & --- & 0.0267 \\
+PhysioNet, 5 qubits & Fidelity & 30 & $+0.0111$ & $[-0.0045, +0.0268]$ & 0.1711 & --- & 0.0268 \\
+ & HS overlap & 30 & $+0.0022$ & $[-0.0148, +0.0192]$ & 0.0431 & \checkmark & 0.0192 \\
+ & HS-RBF & 30 & $+0.0000$ & $[-0.0159, +0.0159]$ & 0.0204 & \checkmark & 0.0159 \\
+ & Bures-RBF & 30 & $+0.0017$ & $[-0.0111, +0.0145]$ & 0.0109 & \checkmark & 0.0145 \\
+ & QRE-RBF & 30 & $+0.0015$ & $[-0.0125, +0.0155]$ & 0.0163 & \checkmark & 0.0155 \\
+Transfer (LOSO) & Fidelity & 30 & $+0.0007$ & $[-0.0097, +0.0112]$ & 0.0020 & \checkmark & 0.0112 \\
+ & HS overlap & 30 & $+0.0119$ & $[+0.0002, +0.0235]$ & 0.1231 & --- & 0.0235 \\
+ & HS-RBF & 30 & $+0.0000$ & $[-0.0154, +0.0154]$ & 0.0175 & \checkmark & 0.0154 \\
+ & Bures-RBF & 30 & $+0.0052$ & $[-0.0080, +0.0183]$ & 0.0327 & \checkmark & 0.0183 \\
+ & QRE-RBF & 30 & $+0.0067$ & $[-0.0068, +0.0201]$ & 0.0514 & --- & 0.0201 \\
+BCI IV-2a, 3 qubits & Fidelity & 9 & $+0.0016$ & $[-0.0049, +0.0080]$ & 0.0004 & \checkmark & 0.0080 \\
+ & HS overlap & 9 & $-0.0033$ & $[-0.0109, +0.0043]$ & 0.0018 & \checkmark & 0.0109 \\
+ & HS-RBF & 9 & $-0.0028$ & $[-0.0084, +0.0028]$ & 0.0002 & \checkmark & 0.0084 \\
+ & Bures-RBF & 9 & $-0.0008$ & $[-0.0073, +0.0058]$ & 0.0003 & \checkmark & 0.0073 \\
+ & QRE-RBF & 9 & $-0.0019$ & $[-0.0081, +0.0043]$ & 0.0003 & \checkmark & 0.0081 \\
+\hline
+\end{tabular}
+\end{table}
+
+
 %% --------------------------------------------------- Table: transfer
 \begin{table}[htbp]
 \caption{\label{tab:transfer}Cross-subject transfer, leave-one-subject-out:

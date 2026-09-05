@@ -300,11 +300,14 @@ def main(argv=None) -> int:
         built.append("frame effect")
     if rt.table_twin(ref, paired, fmt_p, esc, out):
         built.append("twin control")
+    if rt.table_equivalence(res, out):
+        built.append("equivalence (TOST)")
     if rt.table_transfer(ref, paired, fmt_p, esc, out):
         built.append("transfer")
     if rt.table_shots(ref, out):
         built.append("shots")
     rt.macros(ref, paired, fmt_p, esc, mac)
+    rt.equivalence_macros(res, mac)
     print(f"  + reference-frame tables: {', '.join(built) if built else 'none'}")
 
     mdest = Path(args.macros_out)

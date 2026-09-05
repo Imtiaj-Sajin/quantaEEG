@@ -17,8 +17,8 @@ Checked against IOP's own sources on 2026-09-05, not from memory.
 | Requirement | Source | Ours |
 |---|---|---|
 | Structured abstract *Objective / Approach / Main results / Significance* | JNE "About" page, verbatim | matches exactly |
-| Abstract ≤ 300 words | JNE guidelines | **298** (measured from the rendered PDF) |
-| Paper ≤ 12 000 words / 14 journal pages | JNE "About" page | **8 921** excluding the reference list |
+| Abstract ≤ 300 words | JNE guidelines | **298** (measured from the rendered PDF; re-check after any abstract edit, the margin is 2 words) |
+| Paper ≤ 12 000 words / 14 journal pages | JNE "About" page | **10 551** excluding the reference list |
 | Numeric reference style | `iopart-num` | 35 entries, all resolved |
 | Every macro used is class-provided | checked against `iopjournal.cls` | all present, compiles with 0 warnings |
 
@@ -102,7 +102,7 @@ hand-transcribed manuscript silently rots.
 
 ## Building
 
-**The draft compiles cleanly: 19 pages, 0 undefined references, 0 overfull
+**The draft compiles cleanly: 20 pages, 0 undefined references, 0 overfull
 boxes, 0 BibTeX warnings** (MiKTeX/`latexmk`, 2026-09-05, `iopjournal`).
 
 ### The `-outdir` BibTeX trap
@@ -216,9 +216,10 @@ critiques, and removing it would make the paper indefensible.
 
 ## Status
 
-Complete draft, **compiling to 19 pages** on IOP's `iopjournal` class:
+Complete draft, **compiling to 20 pages** on IOP's `iopjournal` class:
 abstract, introduction, methods, results, discussion, limitations,
-conclusion, structured end matter, ten tables, ten figures, 35 references.
+conclusion, structured end matter, eleven tables, ten figures, 35
+references.
 
 The argument is a **negative result with an identified mechanism**, and the
 mechanism changed on 2026-09-03. It is no longer kernel concentration but an

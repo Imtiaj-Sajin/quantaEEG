@@ -63,38 +63,39 @@ University-Bangladesh (AIUB), Dhaka, Bangladesh}
 \textit{Objective.}
 Quantum machine learning is often proposed for EEG decoding, but such claims
 rarely include the controls needed to show the quantum part is doing the work.
-We ask whether quantum kernels beat well-tuned classical baselines under
-matched conditions, and if not, why.
+We ask whether quantum kernels beat well-tuned classical baselines, and if not,
+why.
 
 \textit{Approach.}
 A trace-normalised EEG covariance matrix is a quantum density matrix, so
 quantum information geometry applies directly. We benchmark Hilbert--Schmidt,
 fidelity, Bures and quantum-relative-entropy kernels against tuned Riemannian,
-CSP and filter-bank baselines on two motor-imagery datasets, with the same
-nested cross-validation budget for every pipeline. An asymmetry then stands
-out: the quantum quantities are invariant only under orthogonal congruence,
-while EEG's nuisances span the full congruence group the classical baselines
-already handle. Borrowing recentring from Riemannian transfer learning, we
-refer each state to a training-set Fr\'echet mean, prove this restores exact
-affine invariance, and add a classical twin differing only in metric.
+CSP and filter-bank baselines on two motor-imagery datasets under one nested
+cross-validation budget. An asymmetry then stands out:
+the quantum quantities are invariant only under orthogonal congruence, while
+EEG's nuisances span the full congruence group the classical baselines already
+handle. Borrowing recentring from Riemannian transfer learning, we refer each
+state to a training-set Fr\'echet mean, prove this restores exact affine
+invariance, and add a twin differing only in metric.
 
 \textit{Main results.}
 In the sensor frame the classical baselines won on both datasets. Recentring
 raised off-diagonal Gram variance several-fold and improved every kernel, by up
 to \PhysFrameMax{} on PhysioNet and \BciFrameMax{} on IV-2a, the latter in every
-subject. The headline comparison reversed, from $\HeadSensorDelta$ in favour of
+subject, reversing the headline comparison from $\HeadSensorDelta$ in favour of
 the best classical pipeline to $\HeadRefDelta$ against it. The twin control
-shows this is not a quantum effect: in four settings spanning two datasets, two
-register sizes and both within- and cross-subject evaluation, no quantum kernel
-was distinguishable from its classical twin (smallest $p\TwinMinP$). Parity
-held against filter-bank CSP and in cross-subject transfer too.
+shows this is not quantum. Across four settings spanning two datasets,
+two register sizes and both within- and cross-subject evaluation, two one-sided
+tests place the two families within $\pm\EquivWorstBound$ accuracy of each
+other in all \EquivN{} comparisons, and within a pre-specified
+$\pm\EquivMargin$ in \EquivPass{} of them. Parity held against filter-bank CSP
+and in cross-subject transfer too.
 
 \textit{Significance.}
-We find no quantum advantage here, and trace the cause to an invariance
-mismatch rather than kernel concentration. Supply the missing invariance and
-the quantum kernels simply match their classical counterparts. Recentring is a
-precondition for a fair comparison, and omitting it is a concrete route to a
-false positive.
+We find no quantum advantage, and trace it to an invariance mismatch rather
+than kernel concentration: supply the missing invariance and the quantum
+kernels match their classical counterparts. Recentring is a precondition for a
+fair comparison, and omitting it is a concrete route to a false positive.
 \end{abstract}
 
 \keywords{quantum machine learning, brain--computer interface,
@@ -206,8 +207,12 @@ reduction, no rotation-angle embedding.}
 We state our scope plainly. At the channel counts considered here (8--64,
 i.e.\ 3--6 qubits) every kernel we evaluate is classically computable in
 $O(n_{\mathrm{ch}}^3)$. We make no claim of quantum speedup; the object of
-study is whether quantum \emph{geometry} improves decoding, evaluated by
-noiseless simulation under conditions maximally favourable to the quantum side.
+study is whether quantum \emph{geometry} improves decoding. Every quantum
+kernel is evaluated by exact state-vector simulation: there is no gate error,
+no decoherence and no readout bias, and section~\ref{sec:shots} adds only sampling
+noise. Hardware would make the quantum side worse, never better, so the
+comparison throughout is maximally generous to it and a negative result here
+is not weakened by the idealisation.
 
 %% =====================================================================
 \section{Methods}
@@ -491,6 +496,24 @@ the paired effect size $d_z$. Per-subject optimality varies substantially in
 motor-imagery decoding, so paired non-parametric testing (rather than
 comparison of grand means) is the appropriate inference.
 
+Two points about the correction structure, since several families appear
+below. Holm correction is applied \emph{within} each family, and the families
+are the pre-specified ones: the suite-wide comparison against the reference
+pipeline, the pre-specified contrasts of table~\ref{tab:key}, and the
+metric-matched twin comparisons. These were fixed by the design of the study
+--- one family per question asked --- and not selected after inspecting
+results; no comparison reported here was chosen because it was significant. We
+deliberately do not apply a single global correction across every family,
+because the questions are logically distinct and a global correction would
+make the null results, which are the paper's actual claims, easier rather than
+harder to obtain.
+
+Where the claim is that two methods are the \emph{same}, a non-significant
+difference is not sufficient evidence, so we additionally report two one-sided
+tests (TOST) on the paired differences against a margin fixed in advance
+(table~\ref{tab:equiv}). The margin, its justification and the achieved
+equivalence bounds are given there.
+
 \subsection{Implementation}
 
 Analyses use MNE-Python \cite{mne2013}, pyRiemann, scikit-learn and PennyLane
@@ -696,8 +719,12 @@ best sensor-frame quantum kernel loses by \HeadSensorDelta{}
 ($p\HeadSensorP$, classical better in \HeadSensorBetter{} subjects); the best
 reference-frame kernel, \HeadRefKernel, instead leads by
 $\left|\HeadRefDelta\right|$ ($p\HeadRefP$, classical better in only
-\HeadRefBetter). Read on its own, that is a quantum advantage at the
-conventional margin of significance.
+\HeadRefBetter). This does not reach conventional significance, and we do not
+claim it as an effect. We dwell on it because it is the size and shape of
+result that this literature routinely reports as a positive finding, and
+because everything needed to present it as one --- two datasets, a consistent
+direction, a larger margin on the better-powered data --- is in hand at this
+point in the analysis.
 
 \emph{Third, it is not a quantum advantage, and the control that establishes
 this is the central result of this paper.} A reference-frame quantum kernel
@@ -711,11 +738,32 @@ within- versus cross-subject evaluation.
 In none of them is any quantum kernel distinguishable from its classical twin
 (figure~\ref{fig:twin}).
 On PhysioNet the differences span \TwinDeltaMin{} to \TwinDeltaMax{} with a
-smallest $p$ of \TwinMinP{}; the twin itself, \TwinName, reaches \TwinAcc{}
-and is the second-best pipeline of the whole extended suite. The apparent
-quantum advantage is therefore attributable to two things, neither of them
-quantum: expressing the states in the reference frame, and using an SPD-manifold
-kernel in a support vector machine rather than a tangent-space projection.
+smallest $p$ of \TwinMinP{} in that setting; the twin itself, \TwinName,
+reaches \TwinAcc{} and is the second-best pipeline of the whole extended suite.
+The apparent quantum advantage is therefore attributable to two things, neither
+of them quantum: expressing the states in the reference frame, and using an
+SPD-manifold kernel in a support vector machine rather than a tangent-space
+projection.
+
+A non-significant difference is only an absence of evidence, and the claim we
+are making deserves better than that, so we test equivalence directly
+(table~\ref{tab:equiv}). Two one-sided tests on the paired differences, with a
+margin of $\pm\EquivMargin$ accuracy fixed in advance, establish equivalence in
+\EquivPass{} of \EquivN{} comparisons; across all \EquivN{} the agreement is
+within $\pm\EquivWorstBound$. The evidence is strongest exactly where it should
+be, on the better-powered dataset: on IV-2a all \EquivBciN{} comparisons are
+equivalent, with the widest interval reaching only $\EquivBciWorst$.
+
+Two honest qualifications. First, the \EquivFailQuantum{} comparisons that miss
+the $\pm\EquivMargin$ margin in the quantum kernel's favour are balanced by
+\EquivFailClassical{} that miss it in the twin's, which is the pattern expected
+of noise about zero rather than of a suppressed effect. Second, exactly
+\EquivNZeroExcluded{} of the \EquivN{} intervals excludes zero at all:
+\EquivZeroExclName, at $\EquivZeroExclDelta$. We do not read that as an
+advantage --- it is one comparison of \EquivN{}, it does not survive the
+family, and its interval still lies inside $\pm\EquivWorstBound$ --- but it is
+the single place in this study where a quantum kernel is nominally ahead of a
+metric-matched classical control, and a reader is entitled to see it named.
 
 We stress the counterfactual. Without this control, the same experiments
 support the claim that quantum kernels outperform tuned classical baselines at
@@ -911,11 +959,14 @@ Five limitations bound our conclusions. (i) We study two datasets but one
 binary paradigm, left hand versus right hand; other motor-imagery classes and
 other BCI paradigms (P300, SSVEP) are untested. The trial-count concern that a
 single dataset would leave open is addressed by section~\ref{sec:crossdataset}.
-(ii) A null result establishes the absence of a detectable difference, not the
-absence of any difference. Our metric-matched comparisons are paired and
-subject-wise, and at $n=\NSubjects$ the Wilcoxon test has resolution to
-$\TransferFloor$, but an effect materially smaller than the differences we
-report would not be detected here.
+(ii) Our central claim is an equivalence, and equivalence is bounded rather
+than absolute. Two one-sided tests place the quantum kernels and their
+classical twins within $\pm\EquivWorstBound$ accuracy of one another across all
+\EquivN{} comparisons (table~\ref{tab:equiv}), so we can exclude differences
+larger than that, but not smaller ones. The TOST implementation is the paired
+$t$ form and assumes the per-subject differences are approximately normal; at
+$n=\NSubjects$ that is mild, at $n=\BciNSubjects$ it is a real limitation and
+the IV-2a bounds should be read as indicative.
 (iii) Our invariance argument concerns congruence. Inter-subject and
 inter-session shift is dominated by, but not exhausted by, that group;
 differences in conditioning, effective rank and spectral shape survive

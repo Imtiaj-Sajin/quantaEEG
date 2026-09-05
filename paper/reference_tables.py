@@ -215,6 +215,86 @@ Setting & $n$ & Quantum & Twin & $\Delta$ (range over 5) & $\min p$ \\
 
 
 # --------------------------------------------------------------------------
+# Table: equivalence (TOST) against the classical twin
+# --------------------------------------------------------------------------
+
+def table_equivalence(res: Path, out: list[str], margin: float = 0.02) -> bool:
+    """Two one-sided tests, so the null being rejected is a *difference*.
+
+    A non-significant difference does not establish sameness. This table is
+    what turns "we could not tell them apart" into "they agree to within a
+    stated margin", which is the claim the paper actually needs.
+    """
+    p = res / "equivalence_twin.csv"
+    if not p.exists():
+        return False
+    d = pd.read_csv(p)
+
+    out.append(r"""
+%% --------------------------------------------------- Table: equivalence
+\begin{table}[htbp]
+\caption{\label{tab:equiv}Equivalence of each quantum kernel to its classical
+twin, by two one-sided tests on the paired per-subject differences. A
+non-significant difference would only be an absence of evidence; TOST instead
+takes a \emph{difference} as its null, so rejecting it supports equivalence.
+The margin $m=""" + f"{margin:g}" + r"""$ accuracy was fixed in advance and is
+smaller than the weakest effect this paper claims as real (the reference-frame
+correction is worth $+0.050$ to $+0.187$). CI is the 90\,\% interval, which
+corresponds to TOST at $\alpha=0.05$; ``bound'' is the smallest margin at which
+equivalence would hold, so a reader preferring a stricter margin can read the
+answer off directly.}
+\begin{tabular}{@{}llcccccc@{}}
+\hline
+Setting & Kernel & $n$ & $\Delta$ & 90\,\% CI & $p_{\mathrm{TOST}}$ &
+Equiv. & Bound \\
+\hline""")
+    prev = None
+    for _, r in d.iterrows():
+        lead = r["setting"] if r["setting"] != prev else ""
+        prev = r["setting"]
+        mark = r"\checkmark" if r["equivalent"] else "---"
+        out.append(
+            f"{lead} & {r['kernel']} & {int(r['n'])} & ${r['mean']:+.4f}$ & "
+            f"$[{r['ci_low']:+.4f}, {r['ci_high']:+.4f}]$ & "
+            f"{r['p_tost']:.4f} & {mark} & {r['bound']:.4f} \\\\"
+        )
+    out.append(r"""\hline
+\end{tabular}
+\end{table}
+""")
+    return True
+
+
+def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
+    p = res / "equivalence_twin.csv"
+    if not p.exists():
+        return
+    d = pd.read_csv(p)
+    zero_excl = d[(d.ci_low > 0) | (d.ci_high < 0)]
+    defs = {
+        "EquivMargin": f"{margin:g}",
+        "EquivN": f"{len(d)}",
+        "EquivPass": f"{int(d.equivalent.sum())}",
+        "EquivWorstBound": f"{d['bound'].max():.3f}",
+        "EquivFailQuantum": f"{int((d[~d.equivalent]['mean'] > 0).sum())}",
+        "EquivFailClassical": f"{int((d[~d.equivalent]['mean'] < 0).sum())}",
+        "EquivNZeroExcluded": f"{len(zero_excl)}",
+        "EquivBciPass": f"{int(d[d.setting.str.contains('IV-2a')].equivalent.sum())}",
+        "EquivBciN": f"{int((d.setting.str.contains('IV-2a')).sum())}",
+        "EquivBciWorst":
+            f"{d[d.setting.str.contains('IV-2a')]['bound'].max():.4f}",
+    }
+    if len(zero_excl):
+        r = zero_excl.iloc[0]
+        defs["EquivZeroExclName"] = f"{r['kernel']} ({r['setting']})"
+        defs["EquivZeroExclDelta"] = f"{r['mean']:+.4f}"
+    out.append("\n%% ------------------------------ equivalence macros\n")
+    for k, v in defs.items():
+        out.append(f"\\newcommand{{\\{k}}}{{{v}}}")
+    out.append("")
+
+
+# --------------------------------------------------------------------------
 # Table: cross-subject transfer
 # --------------------------------------------------------------------------
 
