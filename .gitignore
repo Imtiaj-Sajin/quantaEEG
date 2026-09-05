@@ -28,14 +28,18 @@ paper/build/*
 *.log
 *.xdv
 
-# Third-party IOP class files -- fetched by paper/get_iop_class.sh, not
-# redistributed here.
+# Third-party IOP files -- fetched by paper/get_iop_class.sh from IOP's own
+# package, not redistributed here.
+paper/iopjournal.cls
+paper/orcid.pdf
+paper/iopart-num.bst
+# Legacy: the manuscript used iopart until 2026-09-05. Kept so a stale
+# checkout does not accidentally commit them.
 paper/iopart.cls
 paper/iopart1*.clo
 paper/iopams.sty
 paper/setstack.sty
 paper/harvard.sty
-paper/iopart-num.bst
 
 # Screening/smoke outputs. Superseded by the tagged production runs; keeping
 # them invites quoting a 2-subject pilot as if it were the n=30 result.

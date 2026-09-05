@@ -2,24 +2,26 @@
 %%  Quantum kernels for EEG decoding: a controlled benchmark
 %%
 %%  Target journal : Journal of Neural Engineering (IOP, Q1)
-%%  Document class : iopart.cls  (IOP Publishing; on CTAN as "iopart")
+%%  Document class : iopjournal.cls (IOP Publishing, official package)
+%%                    Fetch with: bash paper/get_iop_class.sh
 %%
 %%  Build:   latexmk -pdf main.tex
 %%  Tables and inline numbers come from tables_auto.tex, which is
 %%  regenerated from the result CSVs by:  python paper/make_tables.py
 %%  Never edit numbers by hand.
 %% =====================================================================
-\documentclass[12pt]{iopart}
+\documentclass{iopjournal}
 
 \usepackage{graphicx}
-%% iopams loads amsmath/amssymb in the order iopart.cls requires. Loading
-%% amsmath directly clashes with the class's own \equation* definition.
-\usepackage{iopams}
+%% iopjournal has no quarrel with amsmath, unlike the legacy iopart
+%% class, so these can be loaded directly.
+\usepackage{amsmath,amssymb}
 \usepackage[colorlinks=true,allcolors=blue]{hyperref}
 
 %% Prefer the paper-mode figures: no in-figure title or note (the \caption
 %% supplies both) and a white canvas. Generate with:
 %%     PYTHONPATH=src python -m qeeg.figures --paper
+%%     PYTHONPATH=src python -m qeeg.figures_reference --paper
 \graphicspath{{../results/figures_paper/}{../results/figures/}{figures/}}
 
 %% Auto-generated \newcommand macros for every number quoted in the prose.
@@ -29,13 +31,33 @@
 
 \begin{document}
 
-\title[Quantum kernels for EEG decoding]{Quantum kernels for EEG decoding:
-invariance, not quantum structure, explains the advantage}
+%% iopjournal prints the article type under a "Journal Name" placeholder that
+%% IOP replace in production. JNE article types: Paper, Note, Topical Review,
+%% Comment, Reply.
+\articletype{Paper}
 
-\author{Md. Imtiaj Alam Sajin}
-\address{Department of Computer Science, American International
+%% \title takes ONE argument here; iopart's optional short-title form is not
+%% supported by this class.
+\title{Quantum kernels for EEG decoding: invariance, not quantum structure,
+explains the advantage}
+
+%% AUTHORSHIP IS NOT FINAL -- CONFIRM BEFORE SUBMITTING.
+%% Order below is the usual convention (student first, supervisor last).
+%% Names and ORCIDs were taken from the ORCID public records, not typed from
+%% memory: 0009-0009-2423-1835 -> "Md. Imtiaj Alam Sajin";
+%% 0000-0003-3741-6651 -> "Muhammad Hasibur Rashid Chayon" (Associate
+%% Professor, AIUB). No ORCID was supplied for S I Saif; add one if he has it,
+%% since IOP collect ORCIDs at submission.
+\author{Md. Imtiaj Alam Sajin$^{1,*}$\orcid{0009-0009-2423-1835},
+Samiul Islam Saif$^{1}$ and
+Muhammad Hasibur Rashid Chayon$^{1}$\orcid{0000-0003-3741-6651}}
+
+\affil{$^1$Department of Computer Science, American International
 University-Bangladesh (AIUB), Dhaka, Bangladesh}
-\ead{26-94090-2@student.aiub.edu, imtiajsajin@gmail.com}
+
+\affil{$^*$Author to whom any correspondence should be addressed.}
+
+\email{26-94090-2@student.aiub.edu}
 
 \begin{abstract}
 \textit{Objective.}
@@ -64,7 +86,7 @@ subject. The headline comparison reversed, from $\HeadSensorDelta$ in favour of
 the best classical pipeline to $\HeadRefDelta$ against it. The twin control
 shows this is not a quantum effect: in four settings spanning two datasets, two
 register sizes and both within- and cross-subject evaluation, no quantum kernel
-was distinguishable from its classical twin (smallest $p=\TwinMinP$). Parity
+was distinguishable from its classical twin (smallest $p\TwinMinP$). Parity
 held against filter-bank CSP and in cross-subject transfer too.
 
 \textit{Significance.}
@@ -75,13 +97,9 @@ precondition for a fair comparison, and omitting it is a concrete route to a
 false positive.
 \end{abstract}
 
-\noindent{\it Keywords}: quantum machine learning, brain--computer interface,
+\keywords{quantum machine learning, brain--computer interface,
 electroencephalography, quantum kernels, Riemannian geometry, motor imagery,
-benchmarking
-
-\submitto{\JNE}
-
-\maketitle
+benchmarking}
 
 %% =====================================================================
 \section{Introduction}
@@ -93,8 +111,8 @@ methods: common spatial patterns (CSP) \cite{ramoser2000} and, more recently,
 classifiers built on the Riemannian geometry of spatial covariance matrices
 \cite{barachant2012,congedo2017}. Large-scale benchmarking finds that
 covariance tangent-space projection and CSP consistently define the strongest
-methodological families across public motor-imagery datasets; Lotte \etal
-\cite{lotte2018} and Yger \etal \cite{yger2017} review the field and the
+methodological families across public motor-imagery datasets; Lotte \textit{et al}
+\cite{lotte2018} and Yger \textit{et al} \cite{yger2017} review the field and the
 Riemannian branch of it respectively.
 
 In parallel, a growing literature applies quantum machine learning (QML) to
@@ -122,11 +140,11 @@ happens to match the target \cite{kubler2021,huang2021}, and general
 surveys \cite{biamonte2017} have not translated into demonstrated wins on
 biological signals.
 
-The wider QML literature gives strong reasons for caution. Bowles \etal
+The wider QML literature gives strong reasons for caution. Bowles \textit{et al}
 \cite{bowles2024} benchmarked twelve quantum models across 160 datasets and
 found that out-of-the-box classical models generally outperformed them; more
 pointedly, removing entanglement often left performance equal or better.
-Thanasilp \etal \cite{thanasilp2024} proved that quantum kernel values
+Thanasilp \textit{et al} \cite{thanasilp2024} proved that quantum kernel values
 concentrate exponentially in qubit count toward a fixed value, collapsing the
 model to a trivial one. Neither result has been systematically tested on EEG.
 
@@ -134,10 +152,10 @@ This paper makes four contributions.
 
 First, we identify a \emph{principled} quantum encoding for EEG. An EEG trial's
 spatial covariance matrix is symmetric positive definite; normalised to unit
-trace it is a bona fide quantum density matrix. This is an identity, not an
-analogy, and it makes quantum information geometry (Uhlmann fidelity, the
-Bures metric, von Neumann entropy) applicable to EEG natively, with no lossy
-squeezing of features into rotation angles. The Hilbert--Schmidt overlap
+trace it is a bona fide quantum density matrix (figure~\ref{fig:eeg}). This is
+an identity, not an analogy, and it makes quantum information geometry (Uhlmann
+fidelity, the Bures metric, von Neumann entropy) applicable to EEG natively,
+with no lossy squeezing of features into rotation angles. The Hilbert--Schmidt overlap
 $\mathrm{tr}(\rho\sigma)$ is moreover exactly the quantity a SWAP test
 estimates, so the construction maps onto a hardware-native primitive. Related
 tooling exists \cite{pyriemannqiskit2023}, but its quantum step operates on
@@ -249,11 +267,11 @@ satisfies $\rho_i \succeq 0$ and $\mathrm{tr}\,\rho_i = 1$: it is a density
 matrix on an $n_{\mathrm{ch}}$-dimensional Hilbert space, that is, on
 $\log_2 n_{\mathrm{ch}}$ qubits. Sweeping the channel count over powers of two
 therefore sweeps the register size with no change of method, a property we
-exploit in \sref{sec:concentration}.
+exploit in section~\ref{sec:concentration}.
 
 \subsection{Density-matrix kernels}
 
-Equation~\eref{eq:density} makes the following quantum-information quantities
+Equation~(\ref{eq:density}) makes the following quantum-information quantities
 directly available as kernels between trials.
 
 The \emph{Hilbert--Schmidt overlap}
@@ -272,7 +290,7 @@ is the quantum generalisation of the Bhattacharyya coefficient. We evaluate it
 via the eigenvalues of the symmetrised product, which is numerically stable for
 the matrix sizes involved.
 
-Both quantities proved severely concentrated on EEG (\sref{sec:concentration}),
+Both quantities proved severely concentrated on EEG (section~\ref{sec:concentration}),
 so we additionally define bandwidth-parameterised kernels that retain the
 quantum geometry while restoring a length scale, exactly as a radial basis
 function (RBF) kernel does for the Euclidean distance:
@@ -299,7 +317,7 @@ only}, with a multiplier selected in the inner cross-validation loop.
 \subsection{Reference states, and the invariance the sensor frame lacks}
 \label{sec:reference}
 
-Equation~\eref{eq:density} expresses each state in the frame the electrodes
+Equation~(\ref{eq:density}) expresses each state in the frame the electrodes
 happen to define. That frame is not neutral.
 
 The nuisance transformations of EEG act on the spatial covariance by
@@ -322,8 +340,8 @@ the sensor-frame quantum kernels possess.
 
 The repair is not new, and we want to be plain about that. Whitening
 covariances by their Fr\'echet mean is \emph{Riemannian recentring}, introduced
-by Zanini \etal \cite{zanini2018} to align sessions and subjects and extended
-by Rodrigues \etal \cite{rodrigues2019} into Riemannian Procrustes Analysis;
+by Zanini \textit{et al} \cite{zanini2018} to align sessions and subjects and extended
+by Rodrigues \textit{et al} \cite{rodrigues2019} into Riemannian Procrustes Analysis;
 He and Wu \cite{he2020} give a Euclidean counterpart. In the classical setting
 it is understood as a domain-adaptation step, applied because it helps in
 transfer, and it is optional: the affine-invariant methods it is applied to are
@@ -342,13 +360,11 @@ covariances, via the whitening $W = M^{-1/2}$:
 
 %% iopart.cls defines no theorem environments and loading amsthm alongside it
 %% is not worth the risk; the statement is set in the class's own \indented.
-\begin{indented}
-\item[]\textbf{Proposition.}\ \emph{Under a common congruence
+\textbf{Proposition.}\ \emph{Under a common congruence
 $C_i \mapsto A C_i A^{\mathsf{T}}$ with $A$ invertible, the kernels
 $\mathrm{tr}(\tilde\rho\tilde\sigma)$, $F(\tilde\rho,\tilde\sigma)$,
 $d_B(\tilde\rho,\tilde\sigma)$ and $J(\tilde\rho,\tilde\sigma)$ are
 invariant.}
-\end{indented}
 
 \noindent\emph{Proof.} The affine-invariant mean is equivariant,
 $M \mapsto AMA^{\mathsf{T}}$. Put $B = (AMA^{\mathsf{T}})^{-1/2}A$. Then
@@ -360,7 +376,8 @@ above is invariant under a common unitary. \hfill$\square$
 
 In the reference frame the quantum kernels are thus \emph{exactly}
 affine-invariant, sharing the invariance group of the affine-invariant
-Riemannian metric. Two consequences follow, and we test both. First, the
+Riemannian metric. Figure~\ref{fig:reference} sets out the geometry and
+verifies the invariance numerically. Two consequences follow, and we test both. First, the
 comparison against the classical baselines becomes like for like. Second, and
 less obviously, the quantum kernels can now at best \emph{match} the
 Riemannian metric on any nuisance that is a congruence; parity, not
@@ -370,10 +387,10 @@ To state the contribution precisely: the alignment is borrowed, the reason for
 needing it is not. What we add is the observation that quantum kernels lack an
 invariance the classical baselines already possess, a proof that recentring
 supplies exactly that invariance for the quantum quantities, and the control in
-\sref{sec:refresults} showing that once it is supplied nothing quantum remains
+section~\ref{sec:refresults} showing that once it is supplied nothing quantum remains
 to distinguish them.
 
-Equation~\eref{eq:refstate} is not classical preprocessing smuggled into a
+Equation~(\ref{eq:refstate}) is not classical preprocessing smuggled into a
 quantum method. The map $\rho \mapsto W\rho W/\mathrm{tr}(W\rho W)$ is a
 filtering (L\"uders) operation with Kraus operator $W$ followed by
 renormalisation, so it is state preparation and the SWAP-test implementation
@@ -408,9 +425,10 @@ logarithms.
 
 For comparison with the prevailing approach, we also evaluate
 parameterised-circuit embedding kernels
-$K(x,z) = |\langle \phi(x) | \phi(z) \rangle|^{2}$, where $\phi$ is an
+$K(x,z) = |\langle \phi(x) | \phi(z) \rangle|^{2}$ (figure~\ref{fig:circuits}),
+where $\phi$ is an
 instantaneous-quantum-polynomial (IQP) style feature map of the
-Havlíček \etal family \cite{havlicek2019}, built from Hadamard and $R_Z$
+Havlíček \textit{et al} family \cite{havlicek2019}, built from Hadamard and $R_Z$
 rotations with data-dependent $ZZ$ couplings. Inputs are Riemannian
 tangent-space features reduced by PCA to the number of qubits and scaled to a
 rotation-angle range; the angle scale is itself a tuned hyperparameter. A
@@ -488,19 +506,19 @@ Analyses use MNE-Python \cite{mne2013}, pyRiemann, scikit-learn and PennyLane
 
 \subsection{Quantum kernels do not outperform tuned classical baselines}
 
-\Tref{tab:main} reports within-subject performance for all \NPipelines{}
-pipelines; \Fref{fig:benchmark} shows the same data with per-subject spread.
+Table~\ref{tab:main} reports within-subject performance for all \NPipelines{}
+pipelines; Figure~\ref{fig:benchmark} shows the same data with per-subject spread.
 Quantum kernels occupy five of the bottom six positions. Absolute accuracies
 are modest because EEGMMIDB contains many near-chance subjects, which is
 precisely why paired testing is required.
 
 The primary pre-specified comparison, best classical versus best quantum, is
 significant: \BestClassicalName{} exceeded \BestQuantumName{} by
-$\Delta=\PrimaryDelta$ ($p=\PrimaryP$, $d_z=\PrimaryDz$), and was superior in
-\PrimaryBetter{} subjects (\Tref{tab:key}).
+$\Delta=\PrimaryDelta$ ($p\PrimaryP$, $d_z=\PrimaryDz$), and was superior in
+\PrimaryBetter{} subjects (Table~\ref{tab:key}).
 
-Against the Riemannian tangent-space reference (\Tref{tab:tests},
-\Fref{fig:paired}), \NSurviveHolm{} of \NFamilyTests{} comparisons survived
+Against the Riemannian tangent-space reference (Table~\ref{tab:tests},
+Figure~\ref{fig:paired}), \NSurviveHolm{} of \NFamilyTests{} comparisons survived
 Holm correction. Only two reached $p<0.05$ uncorrected, and in both the quantum
 model was \emph{worse}. No quantum kernel exceeded the reference at any
 significance level.
@@ -526,10 +544,10 @@ means. Points left of zero indicate worse performance than the reference.}
 \subsection{The controls: entanglement and dimension matching}
 
 Both control ablations point in the direction predicted by \cite{bowles2024},
-but neither reaches significance on accuracy (\Tref{tab:key}). Removing
-entanglement changed accuracy by $\AblationDelta$ ($p=\AblationP$, superior in
+but neither reaches significance on accuracy (Table~\ref{tab:key}). Removing
+entanglement changed accuracy by $\AblationDelta$ ($p\AblationP$, superior in
 \AblationBetter{} subjects); the dimension-matched linear SVM exceeded the IQP
-circuit kernel by $\DimDelta$ ($p=\DimP$).
+circuit kernel by $\DimDelta$ ($p\DimP$).
 
 We regard the honest reading as follows: deleting the quantum resource did not
 harm performance and numerically helped, but accuracy alone, measured on a
@@ -544,12 +562,12 @@ Raw overlap kernels are severely concentrated on EEG. Off-diagonal Gram entries
 had mean $0.991\pm0.010$ (Hilbert--Schmidt) and $0.988\pm0.010$ (fidelity):
 every pair of trials appears $\approx99\%$ identical, the Gram matrix is
 effectively rank-one, and the classifier has nothing to separate. This is the
-pathology proved by Thanasilp \etal \cite{thanasilp2024}, here reproduced on
+pathology proved by Thanasilp \textit{et al} \cite{thanasilp2024}, here reproduced on
 real biological data rather than synthetic constructions.
 
-Exploiting \eref{eq:density}, we swept register size by varying the channel
+Exploiting (\ref{eq:density}), we swept register size by varying the channel
 count over powers of two ($4/8/16/32/64$ channels $=2$--$6$ qubits) with no
-change of method (\Tref{tab:concentration}, \Fref{fig:concentration}). Two
+change of method (Table~\ref{tab:concentration}, Figure~\ref{fig:concentration}). Two
 findings emerge.
 
 First, \textbf{entanglement accelerates the collapse}. The entangled IQP kernel
@@ -583,7 +601,7 @@ kernel (orange, dashed) decays fastest.}
 \label{sec:crossdataset}
 
 Repeating the entire benchmark on BCI Competition IV-2a reproduces the
-ordering and sharpens it (\Tref{tab:bci}, \Fref{fig:cross}). The best classical
+ordering and sharpens it (Table~\ref{tab:bci}, Figure~\ref{fig:cross}). The best classical
 pipeline reached \BciBestClassicalAcc{} against \BciBestQuantumAcc{} for the
 best quantum kernel and \BciWorstQuantumAcc{} for the worst, a
 classical-versus-quantum gap of \GapBci{} where PhysioNet gave \GapPhysio{},
@@ -594,7 +612,7 @@ The direction of that change is the point. Classical methods gained roughly
 0.15 accuracy from the six-fold increase in trials; the density-matrix kernels
 gained about 0.05. \textbf{More and cleaner data made the quantum kernels
 relatively worse, not better}, which is the opposite of what a data-starvation
-explanation predicts, and exactly what \sref{sec:concentration} implies: a
+explanation predicts, and exactly what section~\ref{sec:concentration} implies: a
 kernel whose off-diagonal entries all sit near unity gains no additional
 structure from additional trials, while the classical methods gain a great
 deal.
@@ -605,12 +623,12 @@ lowest positions are occupied by the same four quantum kernels on both
 datasets with zero rank shift. This is a property of the methods, not of the
 dataset.
 
-Statistically (\Tref{tab:cross}), on IV-2a the best classical pipeline beat the
-best quantum kernel by $\BciPrimaryDelta$ ($p=\BciPrimaryP$,
+Statistically (Table~\ref{tab:cross}), on IV-2a the best classical pipeline beat the
+best quantum kernel by $\BciPrimaryDelta$ ($p\BciPrimaryP$,
 $d_z=\BciPrimaryDz$) in \BciPrimaryBetter{} subjects, and beat the
 density-matrix kernel by $\BciDensDelta$ ($d_z=\BciDensDz$) in
 \BciDensBetter{} subjects. Combining the two independent datasets by Fisher's
-method gives $p=\FisherPrimaryP$ and $p=\FisherDensP$ respectively.
+method gives $p\FisherPrimaryP$ and $p\FisherDensP$ respectively.
 
 One caveat must be stated precisely rather than left to the reader. With $n$
 pairs the two-sided signed-rank test cannot return a $p$ below $2^{1-n}$; at
@@ -619,7 +637,7 @@ $n=\BciNSubjects$ that floor is \BciWilcoxonFloor{}, so a Holm correction over
 effect size. Ten of the fourteen IV-2a family comparisons sit exactly at that
 floor. Reporting them as "not significant after correction" would misdescribe
 a saturated test as a null result, which is why the pre-specified comparisons
-in \Tref{tab:cross}, which require no family correction, carry the inference.
+in Table~\ref{tab:cross}, which require no family correction, carry the inference.
 
 \begin{figure}[htbp]
 \centering
@@ -637,12 +655,12 @@ result}
 \label{sec:refresults}
 
 Every result above evaluates the density-matrix kernels in the sensor frame.
-\Sref{sec:reference} argued that this is not neutral: the quantum kernels are
+Section~\ref{sec:reference} argued that this is not neutral: the quantum kernels are
 invariant only under orthogonal congruence, while the tangent-space, MDM and
 CSP baselines they are being compared against are invariant under the full
 congruence group that EEG's nuisances generate. We now re-run the entire
 benchmark with the density-matrix kernels expressed relative to a training-set
-reference state (\eref{eq:refstate}), changing nothing else. The core
+reference state ((\ref{eq:refstate})), changing nothing else. The core
 pipelines reproduce their published values to $\le 0.0001$, so the two suites
 are directly comparable.
 
@@ -658,7 +676,7 @@ by an order of magnitude more than that entire discriminative spread. The
 kernel was measuring the frame, not the trial.
 
 \emph{Second, accuracy improves substantially and consistently}
-(\tref{tab:frame}). On PhysioNet every kernel improves, by \PhysFrameMin{} to
+(table~\ref{tab:frame}). On PhysioNet every kernel improves, by \PhysFrameMin{} to
 \PhysFrameMax{} ($n=\PhysFrameN$, all $p \le \PhysFrameMaxP$). On IV-2a the
 same corrections are worth \BciFrameMin{} to \BciFrameMax{}, and every kernel
 improves in \emph{every} subject. That the effect is two to three times larger
@@ -666,7 +684,7 @@ on IV-2a is expected rather than surprising: the reference state is a
 Fr\'echet mean estimated from training covariances, and \BciNTrials{} trials
 per subject estimate it far better than \NTrials{} do.
 
-This also revises the interpretation of \sref{sec:crossdataset}. There, more
+This also revises the interpretation of section~\ref{sec:crossdataset}. There, more
 data widened the classical--quantum gap, which we read as evidence that the
 quantum kernels could not exploit additional trials. The narrower and correct
 reading is that a kernel with the wrong invariance cannot exploit them. Given
@@ -675,9 +693,9 @@ quantum kernels than to the classical baselines.
 
 The headline comparison consequently reverses. Against \HeadBestClassical, the
 best sensor-frame quantum kernel loses by \HeadSensorDelta{}
-($p=\HeadSensorP$, classical better in \HeadSensorBetter{} subjects); the best
+($p\HeadSensorP$, classical better in \HeadSensorBetter{} subjects); the best
 reference-frame kernel, \HeadRefKernel, instead leads by
-$\left|\HeadRefDelta\right|$ ($p=\HeadRefP$, classical better in only
+$\left|\HeadRefDelta\right|$ ($p\HeadRefP$, classical better in only
 \HeadRefBetter). Read on its own, that is a quantum advantage at the
 conventional margin of significance.
 
@@ -686,11 +704,12 @@ this is the central result of this paper.} A reference-frame quantum kernel
 differs from a classical Riemannian kernel in exactly one respect: the metric.
 Both consume the same covariances, both are used as precomputed kernels in the
 same support vector machine, both receive the same tuning budget, and after
-\eref{eq:refstate} both are affine-invariant. \Tref{tab:twin} reports that
+(\ref{eq:refstate}) both are affine-invariant. Table~\ref{tab:twin} reports that
 comparison in four independent settings: two datasets, two register sizes, and
 within- versus cross-subject evaluation.
 
-In none of them is any quantum kernel distinguishable from its classical twin.
+In none of them is any quantum kernel distinguishable from its classical twin
+(figure~\ref{fig:twin}).
 On PhysioNet the differences span \TwinDeltaMin{} to \TwinDeltaMax{} with a
 smallest $p$ of \TwinMinP{}; the twin itself, \TwinName, reaches \TwinAcc{}
 and is the second-best pipeline of the whole extended suite. The apparent
@@ -700,12 +719,12 @@ kernel in a support vector machine rather than a tangent-space projection.
 
 We stress the counterfactual. Without this control, the same experiments
 support the claim that quantum kernels outperform tuned classical baselines at
-$p=\HeadRefP$, on two datasets, with the gap widening on the better one. That
+$p\HeadRefP$, on two datasets, with the gap widening on the better one. That
 claim would have been false. It is also, we suggest, the mechanism by which
 favourable results are obtained elsewhere in this literature: a quantum kernel
 that operates on whitened or aligned covariances, compared against a classical
 baseline that does not, will show an advantage of roughly the size reported in
-\tref{tab:frame} that has nothing to do with quantum structure.
+table~\ref{tab:frame} that has nothing to do with quantum structure.
 
 \begin{figure}[htbp]
 \centering
@@ -728,7 +747,7 @@ machine, on the same covariances, with the same tuning budget, in the same
 reference frame; only the metric differs. Points are mean paired differences
 with 95\% confidence intervals. Every interval crosses zero in all four
 settings. Note the axis range: the entire plot spans eight accuracy points,
-against a frame effect (\fref{fig:frame}) of up to nineteen.}
+against a frame effect (figure~\ref{fig:frame}) of up to nineteen.}
 \end{figure}
 
 \subsection{Filter-bank baselines and a larger register}
@@ -745,8 +764,8 @@ density matrix on five qubits rather than three.
 
 Parity survives. The best quantum kernel reaches \FbcspBestAcc{} against
 \FbcspAcc{} for filter-bank CSP, a difference of \FbcspDelta{}
-($p=\FbcspP$), and the classical-twin control replicates at this register size
-as well (\tref{tab:twin}). The frame effect is larger here than at three
+($p\FbcspP$), and the classical-twin control replicates at this register size
+as well (table~\ref{tab:twin}). The frame effect is larger here than at three
 qubits, \FbFrameMin{} to \FbFrameMax; in the sensor frame the five-qubit
 kernels fall to chance and are the only comparisons in that family to survive
 Holm correction, in the unfavourable direction.
@@ -756,9 +775,9 @@ Holm correction, in the unfavourable direction.
 
 Within-subject accuracy is not the field's bottleneck; transfer to a new user
 is. It is also the setting in which a different geometry is most often
-conjectured to help. \Tref{tab:transfer} reports leave-one-subject-out
-evaluation over \TransferN{} subjects, training on the pooled trials of all
-others.
+conjectured to help. Table~\ref{tab:transfer} and figure~\ref{fig:transfer}(a)
+report leave-one-subject-out evaluation over \TransferN{} subjects, training on
+the pooled trials of all others.
 
 The invariance argument makes a sharp prediction here. Inter-subject shift is
 dominated by congruence, so in the sensor frame the quantum distances must be
@@ -780,7 +799,7 @@ All results so far assume noiseless, infinite-shot simulation. Since
 $\mathrm{tr}(\rho\sigma)$ is the SWAP-test observable, $S$ shots give an
 unbiased estimate with variance $(1-k^2)/S$, which we simulate by sampling
 each unordered Gram entry binomially and projecting back to the positive
-semi-definite cone (\tref{tab:shots}).
+semi-definite cone (table~\ref{tab:shots} and figure~\ref{fig:transfer}(b)).
 
 The variance gain reported above does \emph{not} translate into a
 proportionate saving in shots; the reference frame requires more shots to
@@ -836,7 +855,7 @@ it passes through a stage at which the opposite conclusion looked correct.
 Evaluated in the sensor frame, the density-matrix kernels, the most principled
 construction here, requiring no dimensionality reduction and mapping onto a
 hardware-native SWAP test, performed \emph{worst} of all pipelines, and
-\sref{sec:concentration} appeared to explain why: EEG covariances are mutually
+section~\ref{sec:concentration} appeared to explain why: EEG covariances are mutually
 so similar that their quantum overlaps saturate near unity. That explanation is
 incomplete. Concentration is a symptom of a deeper mismatch, and it is largely
 removable. Uhlmann fidelity, the Bures distance, the Hilbert--Schmidt overlap
@@ -847,10 +866,10 @@ decoding is the classical state of the art. Comparing the two families in the
 sensor frame therefore measures, in part, a difference of invariance groups
 rather than a difference of geometries.
 
-Correcting this (\eref{eq:refstate}) relieves concentration by
+Correcting this ((\ref{eq:refstate})) relieves concentration by
 \GramGainMin--\GramGainMax$\times$, lifts every kernel on both datasets, and
 reverses the sign of the headline comparison. Taken alone, that is a
-publishable claim of quantum advantage at $p=\HeadRefP$, replicated on a second
+publishable claim of quantum advantage at $p\HeadRefP$, replicated on a second
 dataset, with the effect \emph{growing} on the better-powered one. We think it
 is worth being explicit that this is what our own experiments supported at that
 point, because the only thing standing between it and publication was a control
@@ -891,7 +910,7 @@ tangent-space or spatial-filtering front end remains an untested explanation.
 Five limitations bound our conclusions. (i) We study two datasets but one
 binary paradigm, left hand versus right hand; other motor-imagery classes and
 other BCI paradigms (P300, SSVEP) are untested. The trial-count concern that a
-single dataset would leave open is addressed by \sref{sec:crossdataset}.
+single dataset would leave open is addressed by section~\ref{sec:crossdataset}.
 (ii) A null result establishes the absence of a detectable difference, not the
 absence of any difference. Our metric-matched comparisons are paired and
 subject-wise, and at $n=\NSubjects$ the Wilcoxon test has resolution to
@@ -907,7 +926,7 @@ the correction is only as good as that estimate; its markedly larger benefit on
 IV-2a (\BciFrameMin{} to \BciFrameMax) than on PhysioNet (\PhysFrameMin{} to
 \PhysFrameMax) is consistent with this, and implies the correction will be
 weaker still in genuinely few-trial calibration settings.
-(v) Simulation is noiseless, and although \sref{sec:shots} adds shot noise it
+(v) Simulation is noiseless, and although section~\ref{sec:shots} adds shot noise it
 models sampling only, not gate error, decoherence or readout bias. All of these
 favour the quantum side, so none weakens a negative result; they do mean
 hardware performance would be worse, not better. We also survey a specific
@@ -976,19 +995,43 @@ support the opposite conclusion. All code and results are released to support
 replication.
 
 %% =====================================================================
-\ack
-%% TODO: funding, computing resources, acknowledgements.
+%% These are iopjournal's structured end-matter commands. All of them except
+%% \suppdata are suppressed automatically by the [anonymous] class option, so
+%% do NOT hand-anonymise the file for double-anonymous review -- add the
+%% option instead.
 
-\section*{Data availability statement}
-The PhysioNet EEG Motor Movement/Imagery Database is publicly available at
-\url{https://physionet.org/content/eegmmidb/1.0.0/}. All analysis code,
-configuration and result files supporting this study are openly available at
-\url{https://github.com/Imtiaj-Sajin/quantaEEG}.
+%% TODO: computing resources, and anyone who helped but is not an author.
+\ack{The authors thank the PhysioNet and MOABB maintainers for curating and
+openly distributing the datasets used here.}
+
+%% TODO: replace with real funder names and grant numbers, or state that no
+%% specific grant was received. Do not leave this as prose if a grant exists;
+%% IOP parse this section.
+\funding{No specific grant from any funding agency in the public, commercial
+or not-for-profit sectors was received for this work.}
+
+%% TODO: CONFIRM. Drafted from the project record, using CRediT terms
+%% (https://credit.niso.org). The corresponding author must verify that each
+%% listed contribution is accurate and that every author meets authorship
+%% criteria; a contribution that does not meet them belongs in \ack instead.
+\roles{\textbf{Md. Imtiaj Alam Sajin}: conceptualisation, methodology,
+software, formal analysis, investigation, data curation, visualisation,
+writing -- original draft. \textbf{Samiul Islam Saif}: software,
+investigation. \textbf{Muhammad Hasibur Rashid Chayon}: supervision, writing
+-- review and editing.}
+
+\data{The PhysioNet EEG Motor Movement/Imagery Database is publicly available
+at \url{https://physionet.org/content/eegmmidb/1.0.0/}, and BCI Competition
+IV-2a via MOABB at \url{https://www.bbci.de/competition/iv/}. All analysis
+code, configuration and result files supporting this study, including the
+per-fold scores behind every table and figure, are openly available at
+\url{https://github.com/Imtiaj-Sajin/quantaEEG}.}
 
 \section*{Conflicts of interest}
-The author declares no conflicts of interest.
+The authors declare no conflicts of interest.
 
-\section*{References}
+%% No \section*{References} here: under iopjournal the thebibliography
+%% environment emits that heading itself, and adding our own printed it twice.
 \bibliographystyle{iopart-num}
 \bibliography{refs}
 

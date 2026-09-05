@@ -4,9 +4,9 @@ Draft targeting **Journal of Neural Engineering** (IOP Publishing, Q1),
 structured abstract (*Objective / Approach / Main results / Significance*),
 numeric references via `iopart-num`.
 
-> **Template status: built on the legacy class.** We use `iopart.cls`. IOP's
-> current package ships `iopjournal.cls` instead. This is not a submission
-> blocker, but read "Which IOP class" below before submitting.
+> **Template status: migrated to IOP's official class**, 2026-09-05. Built with
+> `iopjournal.cls [2024/01/31]`, taken from IOP's own `ioplatextemplate.zip`.
+> It previously used the legacy `iopart.cls` from a third-party mirror.
 
 ## Which IOP class, and what was actually verified
 
@@ -17,46 +17,32 @@ Checked against IOP's own sources on 2026-09-05, not from memory.
 | Requirement | Source | Ours |
 |---|---|---|
 | Structured abstract *Objective / Approach / Main results / Significance* | JNE "About" page, verbatim | matches exactly |
-| Abstract ≤ 300 words | JNE guidelines | **299** (measured from the rendered PDF) |
+| Abstract ≤ 300 words | JNE guidelines | **298** (measured from the rendered PDF) |
 | Paper ≤ 12 000 words / 14 journal pages | JNE "About" page | **8 921** excluding the reference list |
 | Numeric reference style | `iopart-num` | 35 entries, all resolved |
-| Every macro used is class-provided | checked against `iopart.cls` | all present, compiles with 0 warnings |
+| Every macro used is class-provided | checked against `iopjournal.cls` | all present, compiles with 0 warnings |
 
-**Does not conform, and why it is not fatal:**
+**The class, and how it got here.** `get_iop_class.sh` downloads
+`ioplatextemplate.zip` from IOP's LaTeX template page and extracts
+`iopjournal.cls` and `orcid.pdf` (the glyph `\orcid{}` embeds). It refuses to
+proceed unless the class declares itself, and echoes the version and copyright
+line so a silent substitution would be visible. `iopart-num.bst` still comes
+from CTAN; IOP ship no `.bst`.
 
-IOP's official package (`ioplatextemplate.zip`, dated 2025/07, linked from
-their LaTeX template page) contains **`iopjournal.cls`
-`[2024/01/31]`** — and `iopart.cls` is *not in it at all*. `iopart` is the
-legacy class. IOP state plainly that "it is not essential to use this class
-file" and "any common variant of TeX is acceptable", and their own template
-says "It is not necessary to format your article in the style used for
-published articles in the journal". So an `iopart` submission should be
-accepted. It is simply not the current template.
+`iopart.cls` is *not in IOP's package at all* — it is the legacy class, and it
+had been taken from a third-party GitHub mirror whose claimed byte-identity to
+IOP's copy could not be checked against anything. That is why migrating was
+worth doing even though IOP state that using their class is "not essential"
+and that "any common variant of TeX is acceptable".
 
-Two further caveats worth knowing:
+**What the migration changed**, kept here because the same edits are needed if
+anyone restores a file from git history:
 
-- **Provenance of our `iopart.cls` is unverified.** `get_iop_class.sh` pulls it
-  from a third-party GitHub mirror and asserts it is "byte-identical to the
-  version IOP ships". Nothing checks that, and IOP no longer distributes
-  `iopart.cls` to compare against. The file does look authentic (it carries
-  IOP maintainer comments, e.g. `\JNE` "added 30/11/2004 GMD"), but that is
-  evidence, not proof.
-- **`iopjournal` carries metadata commands `iopart` has no equivalent for**,
-  and IOP's production system likely consumes them: `\articletype`,
-  `\orcid{}`, `\funding{}`, `\roles{}` (CRediT taxonomy), `\data{}`,
-  `\suppdata{}`. It also provides an `[anonymous]` option that strips authors,
-  affiliations and acknowledgements for double-anonymous review — **JNE lets
-  authors choose single- or double-anonymous**, so if you want the latter,
-  that option does the work for you.
-
-**If you migrate**, `iopjournal.cls` compiles cleanly with this toolchain
-(verified: IOP's own template builds to 2 pages here) and needs only
-`fancyhdr`, `xcolor`, `graphicx`, `hyperref`. But it defines *none* of the
-iopart-isms this manuscript uses, so the edit is real:
-
-| `iopart` (ours) | `iopjournal` |
+| `iopart` (was) | `iopjournal` (now) |
 |---|---|
 | `\documentclass[12pt]{iopart}` | `\documentclass{iopjournal}` |
+| `\usepackage{iopams}` | `\usepackage{amsmath,amssymb}` |
+| `\title[short]{long}` | `\title{...}`, one argument only |
 | `\address{}` / `\ead{}` | `\affil{}` / `\email{}` |
 | `\submitto{\JNE}` + `\maketitle` | `\articletype{Paper}` |
 | keywords as literal text | `\keywords{}` |
@@ -64,6 +50,24 @@ iopart-isms this manuscript uses, so the edit is real:
 | `\br \mr \ms`, `\begin{indented}` | `\hline`, plain `table` |
 | data availability as `\section*` | `\data{}` |
 | — | `\orcid \funding \roles \suppdata` |
+
+Three traps this migration hit, none of them visible to `check_tex.py`:
+
+1. **`thebibliography` emits its own "References" heading** under this class,
+   so keeping our `\section*{References}` printed it twice.
+2. **`iopart-num` typesets the `note` field.** Our reference-provenance
+   bookkeeping was being printed into the bibliography of the submitted PDF.
+   It now lives in a `verified` field, which BibTeX ignores. Do not move it
+   back into `note`.
+3. **`$p=\Macro$` breaks when the macro holds a bound.** `$<$0.001` inside
+   `$...$` closes math mode and OT1 then renders `<` as an inverted
+   exclamation mark: the manuscript read "p =¡0.001". P-value macros now carry
+   their own relation (`fmt_p_eq`) and the prose writes `$p\Macro$`.
+
+**Double-anonymous review:** JNE lets authors choose. If you want it, use
+`\documentclass[anonymous]{iopjournal}`, which suppresses authors,
+affiliations, `\ack`, `\funding` and `\roles` automatically. Do not hand-strip
+the file.
 
 ## Files
 
@@ -76,7 +80,7 @@ iopart-isms this manuscript uses, so the edit is real:
 | `reference_tables.py` | Reference-frame tables and macros: frame effect, twin control, transfer, shots. |
 | `make_tables.py` | Regenerates both of the above from `results/*.csv`. |
 | `check_tex.py` | Static checks with no LaTeX needed: undefined macros, unresolved citations, dangling refs, unbalanced environments, missing figures. |
-| `get_iop_class.sh` | Fetches the IOP class files (not on CTAN, not committed). |
+| `get_iop_class.sh` | Fetches IOP's official package: `iopjournal.cls` + `orcid.pdf`, plus `iopart-num.bst` from CTAN. Not committed. |
 | `refs.bib` | Bibliography. **Read its header before submitting.** |
 | `build/main.pdf` | Compiled output. |
 
@@ -98,8 +102,8 @@ hand-transcribed manuscript silently rots.
 
 ## Building
 
-**The draft compiles cleanly: 25 pages, 0 undefined references, 0 overfull
-boxes, 0 BibTeX warnings** (MiKTeX/`latexmk`, 2026-09-03).
+**The draft compiles cleanly: 19 pages, 0 undefined references, 0 overfull
+boxes, 0 BibTeX warnings** (MiKTeX/`latexmk`, 2026-09-05, `iopjournal`).
 
 ### The `-outdir` BibTeX trap
 
@@ -122,7 +126,7 @@ later passes resolve:
 
 ```bash
 grep -E "Warning" build/main.log | grep -viE "font|miktex|update"   # expect none
-grep -c bibitem build/main.bbl                                       # expect 15
+grep -c bibitem build/main.bbl                                       # expect 35
 ```
 
 The build uses [Tectonic](https://tectonic-typesetting.github.io/): a single
@@ -142,20 +146,19 @@ cd paper && tectonic -X compile main.tex --outdir build
 Output: `paper/build/main.pdf`.
 
 MiKTeX or TeX Live work too (`latexmk -pdf main.tex`), but note that
-**`iopart.cls` is not on CTAN**, IOP distributes it separately, so no TeX
-distribution installs it automatically. `get_iop_class.sh` fetches it plus
-`iopart10/12.clo`, `iopams.sty`, `setstack.sty`, `harvard.sty` and
-`iopart-num.bst`. These are third-party files and are **not committed** to the
-repo; for a real submission take the official copy from
-[IOP's author pages](https://publishingsupport.iopscience.iop.org/questions/latex-template/).
+**`iopjournal.cls` is not on CTAN**: IOP distribute it in their own zip, so
+no TeX distribution installs it automatically. Run `get_iop_class.sh` first.
+The fetched files are third-party and are **not committed** to this repo.
 
-### Two class quirks worth knowing
+### Class quirks worth knowing
 
-- **Do not `\usepackage{amsmath}`.** It clashes with `iopart.cls`'s own
-  `\equation*`. Load `iopams` instead, which pulls in amsmath/amssymb in the
-  order the class expects.
-- **No `align` environment.** `iopart` provides `eqnarray` for multi-line
-  displays; `align` is undefined and will halt the build.
+- `iopjournal` loads `fancyhdr`, `xcolor` and `graphicx` itself and has no
+  quarrel with `amsmath`, so the `iopams` workaround the legacy `iopart`
+  build needed is gone.
+- `\tabular` is redefined to set tables at 8pt automatically, which is why
+  the wide result tables no longer need narrowing by hand.
+- `\title` takes **one** argument; `iopart`'s `\title[short]{long}` form is
+  a silent error here.
 
 ### Figures
 
@@ -198,7 +201,8 @@ standalone viewing, and writes to `results/figures/`.
 - [ ] **Decide: stay on `iopart` or migrate to `iopjournal`.** IOP's current
       package ships `iopjournal.cls` and does not include `iopart.cls`. Not a
       blocker (IOP accept any common TeX), but `iopjournal` is what they
-      distribute now and it carries `\orcid`, `unding`, `oles` (CRediT)
+      distribute now and it carries `\orcid`, `unding`, `
+oles` (CRediT)
       and `\data` metadata commands plus the `[anonymous]` option for
       double-anonymous review. Migration notes are in the table above.
 - [ ] Check JNE's other author guidelines: limits do change.
@@ -212,9 +216,9 @@ critiques, and removing it would make the paper indefensible.
 
 ## Status
 
-Complete draft, **compiling to 25 pages**: abstract, introduction, methods,
-results, discussion, limitations, conclusion, data-availability statement,
-ten tables, nine figures, 15 references.
+Complete draft, **compiling to 19 pages** on IOP's `iopjournal` class:
+abstract, introduction, methods, results, discussion, limitations,
+conclusion, structured end matter, ten tables, ten figures, 35 references.
 
 The argument is a **negative result with an identified mechanism**, and the
 mechanism changed on 2026-09-03. It is no longer kernel concentration but an

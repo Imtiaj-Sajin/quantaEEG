@@ -17,6 +17,13 @@ shots_folds_motor8.csv                  accuracy versus shot budget, n=30
 
 from __future__ import annotations
 
+
+def fmt_p_eq(p):
+    """Relation-carrying p-value; see make_tables.fmt_p_eq."""
+    rel = "<" if p < 0.001 else "="
+    val = "0.001" if p < 0.001 else f"{p:.3f}"
+    return r"\ensuremath{{}" + rel + r"{}}" + val
+
 from pathlib import Path
 
 import numpy as np
@@ -97,7 +104,7 @@ def table_frame(d: dict, paired, fmt_p, esc, out: list[str]) -> bool:
 
     # Datasets are stacked vertically rather than side by side: at 12pt the
     # iopart text block is too narrow for a nine-column table, and \footnotesize
-    # inside \begin{indented} is reset by the class, so the fix has to be
+    # inside  is reset by the class, so the fix has to be
     # structural rather than typographic.
     out.append(r"""
 %% -------------------------------------------------- Table: frame effect
@@ -105,16 +112,15 @@ def table_frame(d: dict, paired, fmt_p, esc, out: list[str]) -> bool:
 \caption{\label{tab:frame}Effect of referring the density-matrix kernels to a
 reference state. Each kernel is evaluated twice under an identical protocol,
 differing only in whether the states are expressed in the sensor frame
-(\eref{eq:density}) or relative to the training-set Fr\'echet mean
-(\eref{eq:refstate}). $\Delta$ is the mean per-subject accuracy gain from the
+((\ref{eq:density})) or relative to the training-set Fr\'echet mean
+((\ref{eq:refstate})). $\Delta$ is the mean per-subject accuracy gain from the
 reference frame, tested by paired Wilcoxon signed-rank across subjects. Every
 kernel improves on both datasets; on IV-2a every kernel improves in every
 subject.}
-\begin{indented}
-\item[]\begin{tabular}{@{}llccccc@{}}
-\br
+\begin{tabular}{@{}llccccc@{}}
+\hline
 Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & Better \\
-\mr""")
+\hline""")
 
     blocks = [("PhysioNet", d["phys_per"])]
     if have_bci:
@@ -122,7 +128,7 @@ Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & Better \\
 
     for bi, (dname, per) in enumerate(blocks):
         if bi:
-            out.append(r"\ms")
+            out.append(r"\hline")
         first = True
         for a, b, label in FRAME_PAIRS:
             if a not in per.columns or b not in per.columns:
@@ -138,9 +144,8 @@ Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & Better \\
                 f"$\\bf {s['delta']:+.4f}$ & {fmt_p(s['p'])} & {better} \\\\"
             )
 
-    out.append(r"""\br
+    out.append(r"""\hline
 \end{tabular}
-\end{indented}
 \end{table}
 """)
     return True
@@ -182,11 +187,10 @@ best quantum kernel in that setting, the classical twin, their difference, and
 the smallest $p$ obtained by \emph{any} of the five quantum kernels against the
 twin. No quantum kernel is distinguishable from its classical twin in any
 setting.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lccccc@{}}
-\br
+\begin{tabular}{@{}lccccc@{}}
+\hline
 Setting & $n$ & Quantum & Twin & $\Delta$ (range over 5) & $\min p$ \\
-\mr""")
+\hline""")
 
     for label, per, kernels, twins in settings:
         twin = _best_twin(per, twins)
@@ -203,9 +207,8 @@ Setting & $n$ & Quantum & Twin & $\Delta$ (range over 5) & $\min p$ \\
             f"{fmt_p(min(v['p'] for v in stats.values()))} \\\\"
         )
 
-    out.append(r"""\br
+    out.append(r"""\hline
 \end{tabular}
-\end{indented}
 \end{table}
 """)
     return True
@@ -232,11 +235,10 @@ own Fr\'echet mean, which uses no labels and is therefore legitimate
 unsupervised adaptation for the held-out subject. $\Delta$ is the gain from the
 reference frame, paired by held-out subject. Every method improves; in the
 reference frame no method is distinguishable from any other.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lccccc@{}}
-\br
+\begin{tabular}{@{}lccccc@{}}
+\hline
 Pipeline & Sensor & Reference & $\Delta$ & $p$ & Better \\
-\mr""")
+\hline""")
     for pipe in order:
         if pipe not in sen.columns:
             continue
@@ -251,9 +253,8 @@ Pipeline & Sensor & Reference & $\Delta$ & $p$ & Better \\
             f"${diff.mean():+.4f}$ & {fmt_p(p)} & "
             f"{int((diff > 0).sum())}/{len(diff)} \\\\"
         )
-    out.append(r"""\br
+    out.append(r"""\hline
 \end{tabular}
-\end{indented}
 \end{table}
 """)
     return True
@@ -282,13 +283,12 @@ The reference frame needs \emph{more} shots to approach its own ceiling,
 because that ceiling is higher, but it dominates the sensor frame in absolute
 terms from $10^4$ shots upwards, above which it exceeds what the sensor
 frame achieves with unlimited shots.}
-\begin{indented}
-\item[]\begin{tabular}{@{}ll""" + "c" * (len(shot_levels) + 1) + r"""@{}}
-\br
+\begin{tabular}{@{}ll""" + "c" * (len(shot_levels) + 1) + r"""@{}}
+\hline
 Kernel & Frame & """ + " & ".join(
         f"$10^{{{int(round(np.log10(s)))}}}$" for s in shot_levels
     ) + r""" & $\infty$ \\
-\mr""")
+\hline""")
     for kern in sorted(sh.kernel.unique()):
         for frame in ("sensor", "reference"):
             row = piv[(piv.kernel == kern)]
@@ -298,9 +298,8 @@ Kernel & Frame & """ + " & ".join(
                 cells.append(f"{float(v.iloc[0]):.3f}" if len(v) else "n/a")
             cells[-1] = f"\\textbf{{{cells[-1]}}}"
             out.append(f"{kern} & {frame.capitalize()} & " + " & ".join(cells) + r" \\")
-    out.append(r"""\br
+    out.append(r"""\hline
 \end{tabular}
-\end{indented}
 \end{table}
 """)
     return True
@@ -344,7 +343,7 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
             defs["TwinAcc"] = f"{per[twin].mean():.3f}"
             defs["TwinDeltaMin"] = f"{min(v['delta'] for v in st.values()):+.4f}"
             defs["TwinDeltaMax"] = f"{max(v['delta'] for v in st.values()):+.4f}"
-            defs["TwinMinP"] = fmt_p(min(v["p"] for v in st.values()))
+            defs["TwinMinP"] = fmt_p_eq(min(v["p"] for v in st.values()))
         # Headline reversal, sensor versus reference frame.
         cl = [c for c in per.columns if c.startswith("classical/")]
         if cl and ks:
@@ -355,10 +354,10 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
             s1, s2 = paired(per, best_cl, bq_s), paired(per, best_cl, bq_r)
             defs["HeadBestClassical"] = esc(best_cl)
             defs["HeadSensorDelta"] = f"{s1['delta']:+.4f}"
-            defs["HeadSensorP"] = fmt_p(s1["p"])
+            defs["HeadSensorP"] = fmt_p_eq(s1["p"])
             defs["HeadSensorBetter"] = f"{s1['n_better']}/{s1['n']}"
             defs["HeadRefDelta"] = f"{s2['delta']:+.4f}"
-            defs["HeadRefP"] = fmt_p(s2["p"])
+            defs["HeadRefP"] = fmt_p_eq(s2["p"])
             defs["HeadRefBetter"] = f"{s2['n_better']}/{s2['n']}"
             defs["HeadRefKernel"] = esc(bq_r)
 
@@ -373,7 +372,7 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
             bq = per[ks].mean().idxmax()
             s = paired(per, bq, "classical/FBCSP+LDA")
             defs["FbcspDelta"] = f"{s['delta']:+.4f}"
-            defs["FbcspP"] = fmt_p(s["p"])
+            defs["FbcspP"] = fmt_p_eq(s["p"])
             defs["FbcspBestAcc"] = f"{per[bq].mean():.3f}"
             defs["FbcspAcc"] = f"{per['classical/FBCSP+LDA'].mean():.3f}"
 

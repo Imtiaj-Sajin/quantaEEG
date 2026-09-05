@@ -61,9 +61,30 @@ def paired(per: pd.DataFrame, a: str, b: str) -> dict:
 
 
 def fmt_p(p: float) -> str:
+    r"""Format a p-value for LaTeX, safe in both text and math mode.
+
+    Do NOT return ``$<$0.001``. These strings land in macros that the prose
+    then wraps in math, e.g. ``$p=\FisherPrimaryP$``. The inner ``$`` closes
+    math mode, the ``<`` falls into text mode, and OT1 renders it as an
+    inverted exclamation mark: the manuscript read "p =¡0.001" in two
+    places before this was caught. ``\ensuremath`` works in either context.
+    """
     if p < 0.001:
-        return r"$<$0.001"
+        return r"\ensuremath{<}0.001"
     return f"{p:.3f}"
+
+
+def fmt_p_eq(p: float) -> str:
+    r"""p-value *including its relation*, for prose written as ``$p\Macro$``.
+
+    Table cells want a bare ``0.230`` under a ``$p$`` column header, but prose
+    cannot: writing ``$p=\Macro$`` renders "p = <0.001" once the value is a
+    bound rather than a number. Carrying the relation inside the macro keeps
+    both readings correct whichever side of 0.001 the value falls on.
+    """
+    rel = "<" if p < 0.001 else "="
+    val = "0.001" if p < 0.001 else f"{p:.3f}"
+    return r"\ensuremath{{}" + rel + r"{}}" + val
 
 
 def table_main(summary: pd.DataFrame, out: list[str]) -> None:
@@ -75,11 +96,10 @@ EEGMMIDB left- versus right-hand motor imagery. Accuracy and AUC are means over
 subjects of the per-subject nested cross-validation score; SD is between
 subjects. Runtime is mean wall-clock seconds per subject for the full
 hyperparameter search. Rows are ordered by accuracy.}
-\begin{indented}
-\item[]\begin{tabular}{@{}llcccc@{}}
-\br
+\begin{tabular}{@{}llcccc@{}}
+\hline
 Pipeline & Group & Accuracy & SD & AUC & Runtime (s) \\
-\mr""")
+\hline""")
     for _, r in summary.sort_values("acc_mean", ascending=False).iterrows():
         name = esc(r["pipeline"])
         best = r["acc_mean"] == summary["acc_mean"].max()
@@ -89,9 +109,8 @@ Pipeline & Group & Accuracy & SD & AUC & Runtime (s) \\
             f"{r['acc_std']:.3f} & {r['auc_mean']:.3f} & "
             f"{r['sec_per_subject']:.2f} \\\\"
         )
-    out.append(r"""\br
+    out.append(r"""\hline
 \end{tabular}
-\end{indented}
 \end{table}
 """)
 
@@ -105,20 +124,18 @@ reference across subjects (Wilcoxon signed-rank, two-sided). $\Delta$ is the
 mean per-subject accuracy difference; $d_z$ is the paired effect size;
 $p_{\mathrm{Holm}}$ is corrected across the whole family of comparisons. No
 comparison survives correction.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lccccc@{}}
-\br
+\begin{tabular}{@{}lccccc@{}}
+\hline
 Pipeline & $\Delta$ accuracy & $p$ & $p_{\mathrm{Holm}}$ & $d_z$ & Better in \\
-\mr""")
+\hline""")
     for _, r in tests.sort_values("delta_acc", ascending=False).iterrows():
         out.append(
             f"{esc(r['pipeline'])} & ${r['delta_acc']:+.4f}$ & {fmt_p(r['p_value'])} & "
             f"{fmt_p(r['p_holm'])} & ${r['cohens_d']:+.3f}$ & "
             f"{int(r['n_better'])}/{int(r['n_subjects'])} \\\\"
         )
-    out.append(r"""\br
+    out.append(r"""\hline
 \end{tabular}
-\end{indented}
 \end{table}
 """)
 
@@ -134,11 +151,10 @@ dimension-matched control contrasts it with a linear SVM on exactly the same
 PCA features. Only the primary classical-versus-quantum contrast is
 statistically significant; both ablations point in the expected direction but
 do not reach significance on accuracy at $n=30$.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lcccc@{}}
-\br
+\begin{tabular}{@{}lcccc@{}}
+\hline
 Comparison & $\Delta$ accuracy & $p$ & $d_z$ & Better in \\
-\mr""")
+\hline""")
     for a, b, label in KEY_COMPARISONS:
         if a not in per.columns or b not in per.columns:
             continue
@@ -148,9 +164,8 @@ Comparison & $\Delta$ accuracy & $p$ & $d_z$ & Better in \\
             f"{label} & {sig}${s['delta']:+.4f}$}} & {sig}{fmt_p(s['p'])}}} & "
             f"${s['dz']:+.3f}$ & {s['n_better']}/{s['n']} \\\\"
         )
-    out.append(r"""\br
+    out.append(r"""\hline
 \end{tabular}
-\end{indented}
 \end{table}
 """)
 
@@ -166,20 +181,18 @@ The statistic is the variance of the off-diagonal Gram entries; a factor below
 one means concentration worsens with scale. The entangled circuit kernel
 concentrates $2.5\times$ faster in log-slope than the same circuit with
 entanglers removed.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lcccc@{}}
-\br
+\begin{tabular}{@{}lcccc@{}}
+\hline
 Kernel & Log-slope / qubit & Factor / qubit & Var (2 qubits) & Var (6 qubits) \\
-\mr""")
+\hline""")
     for _, r in decay.sort_values("variance_factor_per_qubit").iterrows():
         out.append(
             f"{esc(r['kernel'])} & ${r['log_variance_slope_per_qubit']:+.3f}$ & "
             f"{r['variance_factor_per_qubit']:.3f} & "
             f"{r['variance_first']:.5f} & {r['variance_last']:.5f} \\\\"
         )
-    out.append(r"""\br
+    out.append(r"""\hline
 \end{tabular}
-\end{indented}
 \end{table}
 """)
 
@@ -205,14 +218,14 @@ def macros(df: pd.DataFrame, summary: pd.DataFrame, tests: pd.DataFrame,
         "BestQuantumName": esc(best_q["pipeline"]),
         "BestQuantumAcc": f"{best_q['acc_mean']:.3f}",
         "PrimaryDelta": f"{prim['delta']:+.3f}",
-        "PrimaryP": fmt_p(prim["p"]),
+        "PrimaryP": fmt_p_eq(prim["p"]),
         "PrimaryDz": f"{prim['dz']:.2f}",
         "PrimaryBetter": f"{prim['n_better']}/{prim['n']}",
         "AblationDelta": f"{abl['delta']:+.4f}",
-        "AblationP": fmt_p(abl["p"]),
+        "AblationP": fmt_p_eq(abl["p"]),
         "AblationBetter": f"{abl['n_better']}/{abl['n']}",
         "DimDelta": f"{dim['delta']:+.4f}",
-        "DimP": fmt_p(dim["p"]),
+        "DimP": fmt_p_eq(dim["p"]),
         "NSurviveHolm": f"{int((tests.p_holm < 0.05).sum())}",
         "NFamilyTests": f"{len(tests)}",
         "FastestName": esc(fastest["pipeline"]),

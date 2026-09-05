@@ -9,11 +9,10 @@ EEGMMIDB left- versus right-hand motor imagery. Accuracy and AUC are means over
 subjects of the per-subject nested cross-validation score; SD is between
 subjects. Runtime is mean wall-clock seconds per subject for the full
 hyperparameter search. Rows are ordered by accuracy.}
-\begin{indented}
-\item[]\begin{tabular}{@{}llcccc@{}}
-\br
+\begin{tabular}{@{}llcccc@{}}
+\hline
 Pipeline & Group & Accuracy & SD & AUC & Runtime (s) \\
-\mr
+\hline
 classical/CSP+LDA & Classical & \textbf{0.611} & 0.154 & 0.636 & 1.99 \\
 classical/TS+LR & Classical & 0.595 & 0.174 & 0.625 & 2.69 \\
 classical/TS+RBF-SVM & Classical & 0.590 & 0.168 & 0.605 & 6.27 \\
@@ -29,9 +28,8 @@ quantum/Bures-RBF-SVM & Quantum & 0.552 & 0.109 & 0.567 & 12.40 \\
 quantum/HS-RBF-SVM & Quantum & 0.549 & 0.101 & 0.567 & 5.85 \\
 quantum/HS-overlap-SVM & Quantum & 0.532 & 0.076 & 0.578 & 2.09 \\
 quantum/Fidelity-SVM & Quantum & 0.523 & 0.082 & 0.557 & 4.68 \\
-\br
+\hline
 \end{tabular}
-\end{indented}
 \end{table}
 
 
@@ -42,11 +40,10 @@ reference across subjects (Wilcoxon signed-rank, two-sided). $\Delta$ is the
 mean per-subject accuracy difference; $d_z$ is the paired effect size;
 $p_{\mathrm{Holm}}$ is corrected across the whole family of comparisons. No
 comparison survives correction.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lccccc@{}}
-\br
+\begin{tabular}{@{}lccccc@{}}
+\hline
 Pipeline & $\Delta$ accuracy & $p$ & $p_{\mathrm{Holm}}$ & $d_z$ & Better in \\
-\mr
+\hline
 classical/CSP+LDA & $+0.0168$ & 0.156 & 1.000 & $+0.261$ & 17/30 \\
 classical/TS+RBF-SVM & $-0.0047$ & 0.905 & 1.000 & $-0.105$ & 16/30 \\
 control/logeuclid-TS+LR & $-0.0121$ & 0.405 & 1.000 & $-0.140$ & 13/30 \\
@@ -61,9 +58,8 @@ quantum/Bures-RBF-SVM & $-0.0425$ & 0.081 & 0.978 & $-0.375$ & 12/30 \\
 quantum/HS-RBF-SVM & $-0.0452$ & 0.111 & 1.000 & $-0.358$ & 13/30 \\
 quantum/HS-overlap-SVM & $-0.0625$ & 0.048 & 0.628 & $-0.438$ & 12/30 \\
 quantum/Fidelity-SVM & $-0.0714$ & 0.013 & 0.179 & $-0.498$ & 10/30 \\
-\br
+\hline
 \end{tabular}
-\end{indented}
 \end{table}
 
 
@@ -76,17 +72,15 @@ dimension-matched control contrasts it with a linear SVM on exactly the same
 PCA features. Only the primary classical-versus-quantum contrast is
 statistically significant; both ablations point in the expected direction but
 do not reach significance on accuracy at $n=30$.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lcccc@{}}
-\br
+\begin{tabular}{@{}lcccc@{}}
+\hline
 Comparison & $\Delta$ accuracy & $p$ & $d_z$ & Better in \\
-\mr
+\hline
 Best classical vs.\ best quantum & \textbf{$+0.0323$} & \textbf{0.002} & $+0.576$ & 24/30 \\
 Entanglement ablation & {$+0.0106$} & {0.309} & $+0.236$ & 17/30 \\
 Dimension-matched control & {$+0.0163$} & {0.173} & $+0.275$ & 18/30 \\
-\br
+\hline
 \end{tabular}
-\end{indented}
 \end{table}
 
 
@@ -99,20 +93,18 @@ The statistic is the variance of the off-diagonal Gram entries; a factor below
 one means concentration worsens with scale. The entangled circuit kernel
 concentrates $2.5\times$ faster in log-slope than the same circuit with
 entanglers removed.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lcccc@{}}
-\br
+\begin{tabular}{@{}lcccc@{}}
+\hline
 Kernel & Log-slope / qubit & Factor / qubit & Var (2 qubits) & Var (6 qubits) \\
-\mr
+\hline
 IQP-entangled & $-0.850$ & 0.428 & 0.07824 & 0.00273 \\
 IQP-product & $-0.334$ & 0.716 & 0.09821 & 0.02633 \\
 Bures-RBF & $-0.283$ & 0.753 & 0.09509 & 0.03171 \\
 HS-RBF & $-0.180$ & 0.835 & 0.09318 & 0.04631 \\
 Fidelity & $+0.369$ & 1.447 & 0.00026 & 0.00125 \\
 HS-overlap & $+0.419$ & 1.520 & 0.00051 & 0.00356 \\
-\br
+\hline
 \end{tabular}
-\end{indented}
 \end{table}
 
 
@@ -122,11 +114,11 @@ HS-overlap & $+0.419$ & 1.520 & 0.00051 & 0.00356 \\
 comparison. Protocol, channels, tuning budget and pipelines are
 identical; only the data differs. Quantum kernels occupy the four
 lowest positions on both datasets.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lccc@{}}
-\br
+
+\begin{tabular}{@{}lccc@{}}
+\hline
 Pipeline & Acc (IV-2a) & AUC (IV-2a) & Acc (Phys.) \\
-\mr
+\hline
 classical/TS+LR & \textbf{0.763} & 0.822 & 0.595 \\
 classical/TS+RBF-SVM & 0.755 & 0.811 & 0.590 \\
 classical/CSP+LDA & 0.751 & 0.808 & 0.611 \\
@@ -142,9 +134,8 @@ quantum/Bures-RBF-SVM & 0.600 & 0.630 & 0.552 \\
 quantum/HS-RBF-SVM & 0.595 & 0.621 & 0.549 \\
 quantum/HS-overlap-SVM & 0.586 & 0.629 & 0.532 \\
 quantum/Fidelity-SVM & 0.580 & 0.616 & 0.523 \\
-\br
+\hline
 \end{tabular}
-\end{indented}
 \end{table}
 
 
@@ -155,14 +146,13 @@ Fisher's method. Positive $\Delta$ favours the first-named pipeline. At $n=9$ th
 two-sided signed-rank test cannot return $p<0.0039$, so the IV-2a entries marked
 $\dagger$ sit at that floor: the test is saturated rather than merely significant.
 Both classical-versus-quantum contrasts hold in every one of the nine IV-2a subjects.}
-\begin{indented}
-\item[]\begin{tabular}{@{}llccc@{}}
-\br
+\begin{tabular}{@{}llccc@{}}
+\hline
 Comparison & Dataset & $\Delta$ acc & $p$ & Better \\
-\mr
+\hline
 Best classical vs.\ best quantum & PhysioNet & $+0.0323$ & 0.002 & 24/30 \\
  & IV-2a & $+0.0662$ & 0.004$^\dagger$ & 9/9 \\
- & \textit{Fisher combined} & & \textbf{$<$0.001} & \\
+ & \textit{Fisher combined} & & \textbf{\ensuremath{<}0.001} & \\
 \noalign{\smallskip}
 Entanglement ablation & PhysioNet & $+0.0106$ & 0.309 & 17/30 \\
  & IV-2a & $+0.0100$ & 0.203 & 7/9 \\
@@ -172,9 +162,8 @@ Dimension-matched control & PhysioNet & $+0.0163$ & 0.173 & 18/30 \\
  & IV-2a & $+0.0178$ & 0.129 & 7/9 \\
  & \textit{Fisher combined} & & 0.107 & \\
 \noalign{\smallskip}
-\br
+\hline
 \end{tabular}
-\end{indented}
 \end{table}
 
 
@@ -183,30 +172,28 @@ Dimension-matched control & PhysioNet & $+0.0163$ & 0.173 & 18/30 \\
 \caption{\label{tab:frame}Effect of referring the density-matrix kernels to a
 reference state. Each kernel is evaluated twice under an identical protocol,
 differing only in whether the states are expressed in the sensor frame
-(\eref{eq:density}) or relative to the training-set Fr\'echet mean
-(\eref{eq:refstate}). $\Delta$ is the mean per-subject accuracy gain from the
+((\ref{eq:density})) or relative to the training-set Fr\'echet mean
+((\ref{eq:refstate})). $\Delta$ is the mean per-subject accuracy gain from the
 reference frame, tested by paired Wilcoxon signed-rank across subjects. Every
 kernel improves on both datasets; on IV-2a every kernel improves in every
 subject.}
-\begin{indented}
-\item[]\begin{tabular}{@{}llccccc@{}}
-\br
+\begin{tabular}{@{}llccccc@{}}
+\hline
 Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & Better \\
-\mr
-PhysioNet ($n=30$) & Fidelity & 0.523 & 0.630 & $\bf +0.1064$ & $<$0.001 & 23/30 \\
+\hline
+PhysioNet ($n=30$) & Fidelity & 0.523 & 0.630 & $\bf +0.1064$ & \ensuremath{<}0.001 & 23/30 \\
  & HS overlap & 0.532 & 0.621 & $\bf +0.0889$ & 0.002 & 21/30 \\
  & HS-RBF & 0.549 & 0.606 & $\bf +0.0570$ & 0.049 & 19/30 \\
  & Bures-RBF & 0.552 & 0.611 & $\bf +0.0585$ & 0.009 & 20/30 \\
  & QRE-RBF & 0.559 & 0.609 & $\bf +0.0504$ & 0.027 & 20/30 \\
-\ms
+\hline
 IV-2a ($n=9$) & Fidelity & 0.580 & 0.767 & $\bf +0.1873$ & 0.004 & \textbf{9/9} \\
  & HS overlap & 0.586 & 0.762 & $\bf +0.1760$ & 0.004 & \textbf{9/9} \\
  & HS-RBF & 0.595 & 0.763 & $\bf +0.1678$ & 0.004 & \textbf{9/9} \\
  & Bures-RBF & 0.600 & 0.765 & $\bf +0.1646$ & 0.004 & \textbf{9/9} \\
  & QRE-RBF & 0.599 & 0.764 & $\bf +0.1644$ & 0.004 & \textbf{9/9} \\
-\br
+\hline
 \end{tabular}
-\end{indented}
 \end{table}
 
 
@@ -221,18 +208,16 @@ best quantum kernel in that setting, the classical twin, their difference, and
 the smallest $p$ obtained by \emph{any} of the five quantum kernels against the
 twin. No quantum kernel is distinguishable from its classical twin in any
 setting.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lccccc@{}}
-\br
+\begin{tabular}{@{}lccccc@{}}
+\hline
 Setting & $n$ & Quantum & Twin & $\Delta$ (range over 5) & $\min p$ \\
-\mr
+\hline
 PhysioNet, 3\,q & 30 & 0.630 & 0.621 & $[-0.0151, +0.0081]$ & 0.183 \\
 PhysioNet, 5\,q, filter bank & 30 & 0.648 & 0.637 & $[+0.0000, +0.0111]$ & 0.234 \\
 PhysioNet, transfer (LOSO) & 30 & 0.647 & 0.635 & $[+0.0000, +0.0119]$ & 0.072 \\
 BCI IV-2a, 3\,q & 9 & 0.767 & 0.766 & $[-0.0033, +0.0016]$ & 0.426 \\
-\br
+\hline
 \end{tabular}
-\end{indented}
 \end{table}
 
 
@@ -246,23 +231,21 @@ own Fr\'echet mean, which uses no labels and is therefore legitimate
 unsupervised adaptation for the held-out subject. $\Delta$ is the gain from the
 reference frame, paired by held-out subject. Every method improves; in the
 reference frame no method is distinguishable from any other.}
-\begin{indented}
-\item[]\begin{tabular}{@{}lccccc@{}}
-\br
+\begin{tabular}{@{}lccccc@{}}
+\hline
 Pipeline & Sensor & Reference & $\Delta$ & $p$ & Better \\
-\mr
-quantum/HS-overlap & 0.552 & 0.647 & $+0.0948$ & $<$0.001 & 24/30 \\
+\hline
+quantum/HS-overlap & 0.552 & 0.647 & $+0.0948$ & \ensuremath{<}0.001 & 24/30 \\
 classical/TS+LR & 0.604 & 0.644 & $+0.0400$ & 0.010 & 18/30 \\
 quantum/QRE-RBF & 0.576 & 0.641 & $+0.0659$ & 0.002 & 21/30 \\
-quantum/Bures-RBF & 0.561 & 0.640 & $+0.0785$ & $<$0.001 & 22/30 \\
-quantum/Fidelity & 0.559 & 0.636 & $+0.0763$ & $<$0.001 & 21/30 \\
+quantum/Bures-RBF & 0.561 & 0.640 & $+0.0785$ & \ensuremath{<}0.001 & 22/30 \\
+quantum/Fidelity & 0.559 & 0.636 & $+0.0763$ & \ensuremath{<}0.001 & 21/30 \\
 control/riemann-kernel-SVM & 0.587 & 0.635 & $+0.0474$ & 0.004 & 19/30 \\
 quantum/HS-RBF & 0.564 & 0.635 & $+0.0711$ & 0.002 & 20/30 \\
 control/logeuclid-kernel-SVM & 0.576 & 0.633 & $+0.0570$ & 0.001 & 20/30 \\
-classical/MDM & 0.553 & 0.633 & $+0.0800$ & $<$0.001 & 19/30 \\
-\br
+classical/MDM & 0.553 & 0.633 & $+0.0800$ & \ensuremath{<}0.001 & 19/30 \\
+\hline
 \end{tabular}
-\end{indented}
 \end{table}
 
 
@@ -276,16 +259,14 @@ The reference frame needs \emph{more} shots to approach its own ceiling,
 because that ceiling is higher, but it dominates the sensor frame in absolute
 terms from $10^4$ shots upwards, above which it exceeds what the sensor
 frame achieves with unlimited shots.}
-\begin{indented}
-\item[]\begin{tabular}{@{}llcccccc@{}}
-\br
+\begin{tabular}{@{}llcccccc@{}}
+\hline
 Kernel & Frame & $10^{2}$ & $10^{3}$ & $10^{4}$ & $10^{5}$ & $10^{6}$ & $\infty$ \\
-\mr
+\hline
 HS-RBF & Sensor & 0.492 & 0.504 & 0.511 & 0.538 & 0.533 & \textbf{0.554} \\
 HS-RBF & Reference & 0.482 & 0.529 & 0.564 & 0.586 & 0.590 & \textbf{0.609} \\
 HS-overlap & Sensor & 0.510 & 0.507 & 0.532 & 0.538 & 0.527 & \textbf{0.532} \\
 HS-overlap & Reference & 0.491 & 0.518 & 0.565 & 0.589 & 0.607 & \textbf{0.618} \\
-\br
+\hline
 \end{tabular}
-\end{indented}
 \end{table}

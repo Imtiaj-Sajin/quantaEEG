@@ -18,6 +18,13 @@ datasets but underpowered on each.
 
 from __future__ import annotations
 
+
+def fmt_p_eq(p):
+    """Relation-carrying p-value; see make_tables.fmt_p_eq."""
+    rel = "<" if p < 0.001 else "="
+    val = "0.001" if p < 0.001 else f"{p:.3f}"
+    return r"\ensuremath{{}" + rel + r"{}}" + val
+
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2
@@ -52,13 +59,13 @@ def table_bci(summary_b, summary_p, out, esc, group_label) -> None:
         "comparison. Protocol, channels, tuning budget and pipelines are\n"
         "identical; only the data differs. Quantum kernels occupy the four\n"
         "lowest positions on both datasets.}\n"
-        r"\begin{indented}" "\n"
+        r"" "\n"
         # The Group column is dropped: every pipeline name already carries its
         # group as a prefix, and keeping it overflowed the text block.
-        r"\item[]\begin{tabular}{@{}lccc@{}}" "\n"
-        r"\br" "\n"
+        r"\begin{tabular}{@{}lccc@{}}" "\n"
+        r"\hline" "\n"
         r"Pipeline & Acc (IV-2a) & AUC (IV-2a) & Acc (Phys.) \\" "\n"
-        r"\mr"
+        r"\hline"
     )
     top = summary_b["acc_mean"].max()
     for _, r in summary_b.sort_values("acc_mean", ascending=False).iterrows():
@@ -70,8 +77,7 @@ def table_bci(summary_b, summary_p, out, esc, group_label) -> None:
             f"{esc(name)} & {acc} & "
             f"{r['auc_mean']:.3f} & {ref:.3f} " + r"\\"
         )
-    out.append(r"\br" "\n" r"\end{tabular}" "\n" r"\end{indented}" "\n"
-               r"\end{table}" "\n")
+    out.append(r"\hline" "\n" r"\end{tabular}" "\n"        r"\end{table}" "\n")
 
 
 def table_cross(per_p, per_b, comparisons, paired, fmt_p, out) -> None:
@@ -89,11 +95,10 @@ def table_cross(per_p, per_b, comparisons, paired, fmt_p, out) -> None:
         "significant.\n"
         "Both classical-versus-quantum contrasts hold in every one of the nine "
         "IV-2a subjects.}\n"
-        r"\begin{indented}" "\n"
-        r"\item[]\begin{tabular}{@{}llccc@{}}" "\n"
-        r"\br" "\n"
+        r"\begin{tabular}{@{}llccc@{}}" "\n"
+        r"\hline" "\n"
         r"Comparison & Dataset & $\Delta$ acc & $p$ & Better \\" "\n"
-        r"\mr"
+        r"\hline"
     )
     for a, b, label in comparisons:
         ps = []
@@ -116,8 +121,7 @@ def table_cross(per_p, per_b, comparisons, paired, fmt_p, out) -> None:
             cell = (r"\textbf{" + fmt_p(pc) + "}") if pc < 0.05 else fmt_p(pc)
             out.append(r" & \textit{Fisher combined} & & " + cell + r" & \\")
         out.append(r"\noalign{\smallskip}")
-    out.append(r"\br" "\n" r"\end{tabular}" "\n" r"\end{indented}" "\n"
-               r"\end{table}" "\n")
+    out.append(r"\hline" "\n" r"\end{tabular}" "\n"        r"\end{table}" "\n")
 
 
 def cross_macros(summary_p, summary_b, per_p, per_b, df_b,
@@ -158,15 +162,15 @@ def cross_macros(summary_p, summary_b, per_p, per_b, df_b,
         "GapWorstBci": f"{gw_b:.3f}",
         "SpearmanRho": f"{rho:.3f}",
         "BciPrimaryDelta": f"{prim_b['delta']:+.3f}",
-        "BciPrimaryP": fmt_p(prim_b["p"]),
+        "BciPrimaryP": fmt_p_eq(prim_b["p"]),
         "BciPrimaryDz": f"{prim_b['dz']:.2f}",
         "BciPrimaryBetter": f"{prim_b['n_better']}/{n_b}",
         "BciDensDelta": f"{dens_b['delta']:+.3f}",
         "BciDensDz": f"{dens_b['dz']:.2f}",
         "BciDensBetter": f"{dens_b['n_better']}/{n_b}",
-        "FisherPrimaryP": fmt_p(fisher([prim_p["p"], prim_b["p"]])[1]),
-        "FisherDensP": fmt_p(fisher([dens_p["p"], dens_b["p"]])[1]),
-        "FisherAblationP": fmt_p(fisher([abl_p["p"], abl_b["p"]])[1]),
+        "FisherPrimaryP": fmt_p_eq(fisher([prim_p["p"], prim_b["p"]])[1]),
+        "FisherDensP": fmt_p_eq(fisher([dens_p["p"], dens_b["p"]])[1]),
+        "FisherAblationP": fmt_p_eq(fisher([abl_p["p"], abl_b["p"]])[1]),
         "BciWilcoxonFloor": f"{wilcoxon_floor(n_b):.4f}",
         "BciHolmFloor": f"{min(1.0, wilcoxon_floor(n_b) * 14):.4f}",
     }
