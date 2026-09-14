@@ -260,12 +260,20 @@ def fig_frame(res: Path, out: Path) -> bool:
     if phys is None:
         return False
     bci = _read(res, "raw_folds_refstate_bci2a_motor8_q4.csv")
+    cho = _read(res, "raw_folds_refstate_cho2017_motor8_q4.csv")
     blocks = [("PhysioNet", _per(phys))]
+    if cho is not None:
+        blocks.append(("Cho2017", _per(cho)))
     if bci is not None:
         blocks.append(("BCI IV-2a", _per(bci)))
+    # PhysioNet orange and IV-2a blue as before; Cho2017, when present, green.
+    block_colors = {name: c for name, c in
+                    (("PhysioNet", SENSOR_C), ("Cho2017", GREEN), ("BCI IV-2a", REF_C))}
+    block_colors = [block_colors[name] for name, _ in blocks]
 
     F._style()
-    fig, axes = plt.subplots(1, len(blocks) + 1, figsize=(9.4, 3.5),
+    fig, axes = plt.subplots(1, len(blocks) + 1,
+                             figsize=(2.7 * len(blocks) + 3.6, 3.5),
                              gridspec_kw={"width_ratios": [1] * len(blocks) + [1.2]})
     axes = np.atleast_1d(axes)
 
@@ -301,7 +309,7 @@ def fig_frame(res: Path, out: Path) -> bool:
 
     # Effect size per kernel per dataset.
     ax = axes[-1]
-    width = 0.36
+    width = 0.78 / len(blocks)
     for bi, (name, per) in enumerate(blocks):
         vals, labs = [], []
         for a, b, lab in FRAME_PAIRS:
@@ -309,21 +317,21 @@ def fig_frame(res: Path, out: Path) -> bool:
                 vals.append(per[b].mean() - per[a].mean())
                 labs.append(lab)
         ys = np.arange(len(vals))
-        ax.barh(ys + (bi - 0.5) * width, vals, height=width,
-                color=[SENSOR_C, REF_C][bi], label=name)
+        ax.barh(ys + (bi - (len(blocks) - 1) / 2) * width, vals, height=width,
+                color=block_colors[bi], label=name)
     ax.set_yticks(np.arange(len(labs)))
     ax.set_yticklabels(labs, fontsize=8)
     ax.invert_yaxis()
     ax.axvline(0, color=INK_2, lw=0.9)
     ax.set_xlabel(r"$\Delta$ accuracy, reference $-$ sensor")
     ax.legend(fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, 1.14),
-              ncol=2)
+              ncol=len(blocks))
     F._despine(ax)
 
     F._caption(fig, (
         "Thin lines are individual subjects, shown for the Fidelity kernel "
         "only; overlaying all five would give 150\ncrossing lines. Every "
-        "kernel improves on both datasets, and on IV-2a every kernel improves "
+        "kernel improves on every dataset, and on IV-2a every kernel improves "
         "in every\nsubject. The correction is worth two to three times more on "
         "IV-2a, where the reference state is estimated\nfrom six times as many "
         "trials."))
