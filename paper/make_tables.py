@@ -306,6 +306,8 @@ def main(argv=None) -> int:
         built.append("transfer")
     if rt.table_crosssession(ref, paired, fmt_p, esc, out):
         built.append("cross-session")
+    if rt.table_seeds(ref, paired, fmt_p, esc, out):
+        built.append("seeds")
     if rt.table_sweep(ref, out):
         built.append("register sweep")
     if rt.table_shots(ref, out):

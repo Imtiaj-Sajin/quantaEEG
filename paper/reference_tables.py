@@ -78,9 +78,19 @@ def load(res: Path) -> dict:
         "sweep": maybe("reference_gram_sweep.csv"),
         "shots": maybe("shots_folds_motor8.csv"),
         "cs": maybe("crosssession_folds_bci2a_motor8.csv"),
+        # Robustness runs: the same extended suite at 16 channels (4 qubits),
+        # on Cho2017 (52 subjects), and under two further outer-CV seeds.
+        "m16": maybe("raw_folds_refstate_motor16_q4.csv"),
+        "cho": maybe("raw_folds_refstate_cho2017_motor8_q4.csv"),
+        "cho_summary": maybe("summary_refstate_cho2017_motor8_q4.csv"),
+        "seeds": {s: maybe(f"raw_folds_refstate_motor8_q4_seed{s}.csv")
+                  for s in (1, 2)},
     }
-    for k in ("phys", "bci", "fb"):
+    for k in ("phys", "bci", "fb", "m16", "cho"):
         d[k + "_per"] = _per(d[k]) if d[k] is not None else None
+    d["seeds_per"] = {s: _per(v) for s, v in d["seeds"].items() if v is not None}
+    if d["phys_per"] is not None:
+        d["seeds_per"] = {0: d["phys_per"], **d["seeds_per"]}
     if d["cs"] is not None:
         # Both directions (A->B, B->A) are averaged per subject first, so each
         # subject is one paired observation, exactly as in the transfer suite.
@@ -134,16 +144,20 @@ differing only in whether the states are expressed in the sensor frame
 (\ref{eq:density}) or relative to the training-set Fr\'echet mean
 (\ref{eq:refstate}). $\Delta$ is the mean per-subject accuracy gain from the
 reference frame, tested by paired Wilcoxon signed-rank across subjects. Every
-kernel improves on both datasets; on IV-2a every kernel improves in every
+kernel improves on every dataset; on IV-2a every kernel improves in every
 subject.}
 \begin{tabular}{@{}llccccc@{}}
 \hline
 Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & Better \\
 \hline""")
 
-    blocks = [("PhysioNet", d["phys_per"])]
+    blocks = [("PhysioNet, 3\\,q", d["phys_per"])]
+    if d["m16_per"] is not None:
+        blocks.append(("PhysioNet, 4\\,q", d["m16_per"]))
+    if d["cho_per"] is not None:
+        blocks.append(("Cho2017, 3\\,q", d["cho_per"]))
     if have_bci:
-        blocks.append(("IV-2a", d["bci_per"]))
+        blocks.append(("IV-2a, 3\\,q", d["bci_per"]))
 
     for bi, (dname, per) in enumerate(blocks):
         if bi:
@@ -179,6 +193,8 @@ def table_twin(d: dict, paired, fmt_p, esc, out: list[str]) -> bool:
     settings = []
     if d["phys_per"] is not None:
         settings.append(("PhysioNet, 3\\,q", d["phys_per"], REF_KERNELS, TWINS))
+    if d["m16_per"] is not None:
+        settings.append(("PhysioNet, 4\\,q", d["m16_per"], REF_KERNELS, TWINS))
     if d["fb_per"] is not None:
         settings.append(("PhysioNet, 5\\,q, filter bank", d["fb_per"],
                          FB_REF_KERNELS, FB_TWINS))
@@ -192,6 +208,8 @@ def table_twin(d: dict, paired, fmt_p, esc, out: list[str]) -> bool:
     if d["cs_ref"] is not None:
         ck = [k for k in TRANSFER_KERNELS if k in d["cs_ref"].columns]
         settings.append(("BCI IV-2a, cross-session", d["cs_ref"], ck, TWINS))
+    if d["cho_per"] is not None:
+        settings.append(("Cho2017, 3\\,q", d["cho_per"], REF_KERNELS, TWINS))
     if not settings:
         return False
 
@@ -301,11 +319,22 @@ def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
         "EquivFailClassical": f"{int((d[~d.equivalent]['mean'] < 0).sum())}",
         "EquivNZeroExcluded": f"{len(zero_excl)}",
     }
+    # The number of settings, as a word, so that "five settings" in the prose
+    # cannot go stale when a setting is added.
+    words = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
+             7: "seven", 8: "eight", 9: "nine", 10: "ten"}
+    ns = d.setting.nunique()
+    defs["EquivNSettings"] = words.get(ns, str(ns))
+    defs["EquivNDatasets"] = words[len({
+        "PhysioNet" if "PhysioNet" in s or "Transfer" in s
+        else "Cho2017" if "Cho2017" in s else "IV-2a" for s in d.setting})]
     # Per-setting figures. Exact names: "IV-2a" would otherwise also match the
     # cross-session setting, and the within-subject sentence would be wrong.
     for prefix, name in (("Bci", "BCI IV-2a, 3 qubits"),
                          ("Cs", "IV-2a cross-session"),
-                         ("Tr", "Transfer (LOSO)")):
+                         ("Tr", "Transfer (LOSO)"),
+                         ("FourQ", "PhysioNet, 4 qubits"),
+                         ("Cho", "Cho2017, 3 qubits")):
         sub = d[d.setting == name]
         if not len(sub):
             continue
@@ -407,6 +436,75 @@ Pipeline & Sensor & Reference & $\Delta$ & $p$ & Better \\
         out.append(
             f"{esc(pipe)} & {y.mean():.3f} & {x.mean():.3f} & "
             f"${diff.mean():+.4f}$ & {fmt_p(p)} & {better} \\\\"
+        )
+    out.append(r"""\hline
+\end{tabular}
+\end{table}
+""")
+    return True
+
+
+# --------------------------------------------------------------------------
+# Table: the decisive comparison under three outer-CV seeds
+# --------------------------------------------------------------------------
+
+def _tost_bound(dvec, alpha=0.05):
+    """Smallest equivalence margin at which paired TOST would pass.
+
+    Duplicates `qeeg.equivalence.equivalence_bound` so that make_tables does
+    not need the package on its path.
+    """
+    from scipy.stats import t as tdist
+    dvec = np.asarray(dvec, float)
+    n = len(dvec)
+    se = dvec.std(ddof=1) / np.sqrt(n)
+    half = float(tdist.ppf(1 - alpha, n - 1) * se)
+    return max(abs(dvec.mean() - half), abs(dvec.mean() + half))
+
+
+def table_seeds(d: dict, paired, fmt_p, esc, out: list[str],
+                margin: float = 0.02) -> bool:
+    seeds = d.get("seeds_per", {})
+    if len(seeds) < 2:
+        return False
+
+    out.append(r"""
+%% ------------------------------------------------------ Table: seeds
+\begin{table}[htbp]
+\caption{\label{tab:seeds}The PhysioNet three-qubit comparison under three
+different outer cross-validation partitions (seeds). Each row repeats the
+full extended suite with new fold assignments; the inner search, the reference
+state and every other element are unchanged. Columns give the frame effect
+(range over the five kernels), the best reference-frame quantum kernel and
+the classical twin, the quantum-minus-twin difference (range over the five
+kernels), the smallest $p$ against the twin, and how many of the five
+comparisons pass two one-sided tests at the pre-specified $\pm""" + f"{margin:g}" + r"""$
+margin, with the largest bound. The conclusion does not depend on the
+partition.}
+\begin{tabular}{@{}lcccccc@{}}
+\hline
+Seed & Frame $\Delta$ & Quantum & Twin & Quantum $-$ twin & $\min p$ &
+TOST \\
+\hline""")
+    for seed in sorted(seeds):
+        per = seeds[seed]
+        twin = _best_twin(per, TWINS)
+        ks = [k for k in REF_KERNELS if k in per.columns]
+        if twin is None or not ks:
+            continue
+        fr = [paired(per, b, a)["delta"] for a, b, _ in FRAME_PAIRS
+              if a in per.columns and b in per.columns]
+        st = {k: paired(per, k, twin) for k in ks}
+        best = max(ks, key=lambda k: per[k].mean())
+        deltas = [v["delta"] for v in st.values()]
+        bounds = [_tost_bound((per[k] - per[twin]).dropna()) for k in ks]
+        npass = sum(b < margin for b in bounds)
+        out.append(
+            f"{seed} & $[{min(fr):+.3f}, {max(fr):+.3f}]$ & "
+            f"{per[best].mean():.3f} & {per[twin].mean():.3f} & "
+            f"$[{min(deltas):+.4f}, {max(deltas):+.4f}]$ & "
+            f"{fmt_p(min(v['p'] for v in st.values()))} & "
+            f"{npass}/{len(ks)} ($\\le{max(bounds):.3f}$) \\\\"
         )
     out.append(r"""\hline
 \end{tabular}
@@ -570,6 +668,75 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
 
     if d["bci_per"] is not None:
         frame_stats(d["bci_per"], FRAME_PAIRS, "Bci")
+
+    def twin_stats(per, kernels, twins, prefix):
+        twin = _best_twin(per, twins)
+        ks = [k for k in kernels if k in per.columns]
+        if twin is None or not ks:
+            return
+        st = {k: paired(per, k, twin) for k in ks}
+        best = max(ks, key=lambda k: per[k].mean())
+        defs[prefix + "TwinName"] = esc(twin)
+        defs[prefix + "TwinAcc"] = f"{per[twin].mean():.3f}"
+        defs[prefix + "BestKernel"] = esc(best)
+        defs[prefix + "BestAcc"] = f"{per[best].mean():.3f}"
+        defs[prefix + "TwinDeltaMin"] = f"{min(v['delta'] for v in st.values()):+.4f}"
+        defs[prefix + "TwinDeltaMax"] = f"{max(v['delta'] for v in st.values()):+.4f}"
+        defs[prefix + "TwinMinP"] = fmt_p_eq(min(v["p"] for v in st.values()))
+        defs[prefix + "NSubjects"] = f"{len(per)}"
+        cl = [c for c in per.columns if c.startswith("classical/")]
+        if cl:
+            bc = per[cl].mean().idxmax()
+            s = paired(per, best, bc)
+            defs[prefix + "BestClassical"] = esc(bc)
+            defs[prefix + "BestClassicalAcc"] = f"{per[bc].mean():.3f}"
+            defs[prefix + "HeadRefDelta"] = f"{s['delta']:+.4f}"
+            defs[prefix + "HeadRefP"] = fmt_p_eq(s["p"])
+            defs[prefix + "HeadRefBetter"] = f"{s['n_better']}/{s['n']}"
+
+    # 16 channels = 4 qubits, same suite, same pipeline names.
+    if d["m16_per"] is not None:
+        frame_stats(d["m16_per"], FRAME_PAIRS, "FourQ")
+        twin_stats(d["m16_per"], REF_KERNELS, TWINS, "FourQ")
+
+    # Cho2017: the better-powered replication of the frame/twin comparison.
+    if d["cho_per"] is not None:
+        frame_stats(d["cho_per"], FRAME_PAIRS, "Cho")
+        twin_stats(d["cho_per"], REF_KERNELS, TWINS, "Cho")
+
+    # Seeds: does the decisive comparison depend on the fold partition?
+    seeds = d.get("seeds_per", {})
+    if len(seeds) >= 2:
+        fr_all, dl_all, p_all, bounds, heads = [], [], [], [], []
+        for seed, per in sorted(seeds.items()):
+            twin = _best_twin(per, TWINS)
+            ks = [k for k in REF_KERNELS if k in per.columns]
+            if twin is None or not ks:
+                continue
+            fr_all += [paired(per, b, a)["delta"] for a, b, _ in FRAME_PAIRS
+                       if a in per.columns and b in per.columns]
+            st = {k: paired(per, k, twin) for k in ks}
+            dl_all += [v["delta"] for v in st.values()]
+            p_all += [v["p"] for v in st.values()]
+            bounds += [_tost_bound((per[k] - per[twin]).dropna()) for k in ks]
+            cl = [c for c in per.columns if c.startswith("classical/")]
+            if cl:
+                bc = per[cl].mean().idxmax()
+                bq = max(ks, key=lambda k: per[k].mean())
+                heads.append(paired(per, bq, bc)["delta"])
+        defs["SeedN"] = f"{len(seeds)}"
+        defs["SeedFrameMin"] = f"{min(fr_all):+.3f}"
+        defs["SeedFrameMax"] = f"{max(fr_all):+.3f}"
+        defs["SeedTwinDeltaMin"] = f"{min(dl_all):+.4f}"
+        defs["SeedTwinDeltaMax"] = f"{max(dl_all):+.4f}"
+        defs["SeedTwinMinP"] = fmt_p_eq(min(p_all))
+        defs["SeedEquivPass"] = f"{sum(b < 0.02 for b in bounds)}"
+        defs["SeedEquivN"] = f"{len(bounds)}"
+        defs["SeedWorstBound"] = f"{max(bounds):.3f}"
+        if heads:
+            defs["SeedHeadRefMin"] = f"{min(heads):+.4f}"
+            defs["SeedHeadRefMax"] = f"{max(heads):+.4f}"
+            defs["SeedHeadReversals"] = f"{sum(h > 0 for h in heads)}"
 
     # Wall-clock cost in the reference frame, where the accuracy comparison is
     # actually made. The core-suite cost macros describe the sensor frame.

@@ -138,6 +138,12 @@ def collect(results: Path, margin: float = MARGIN) -> pd.DataFrame:
     if phys is not None:
         settings.append(("PhysioNet, 3 qubits", _per(phys),
                          [(k, lab) for k, lab in FRAME_PAIRS], TWINS))
+    m16 = read("raw_folds_refstate_motor16_q4.csv")
+    if m16 is not None:
+        # Same extended suite on 16 channels: a 4-qubit register, with the
+        # pipelines named exactly as at 8 channels.
+        settings.append(("PhysioNet, 4 qubits", _per(m16),
+                         [(k, lab) for k, lab in FRAME_PAIRS], TWINS))
     fb = read("raw_folds_filterbank_motor8.csv")
     if fb is not None:
         settings.append(("PhysioNet, 5 qubits", _per(fb),
@@ -166,6 +172,10 @@ def collect(results: Path, margin: float = MARGIN) -> pd.DataFrame:
         settings.append(("IV-2a cross-session", per_cs,
                          [(k.replace("-ref-SVM", "").replace("-SVM", ""), lab)
                           for k, lab in FRAME_PAIRS], TWINS))
+    cho = read("raw_folds_refstate_cho2017_motor8_q4.csv")
+    if cho is not None:
+        settings.append(("Cho2017, 3 qubits", _per(cho),
+                         [(k, lab) for k, lab in FRAME_PAIRS], TWINS))
 
     rows = []
     for name, per, kernels, twins in settings:

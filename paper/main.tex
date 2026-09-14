@@ -88,7 +88,7 @@ raised Gram variance several-fold and improved every kernel, by up to
 \PhysFrameMax{} on PhysioNet and \BciFrameMax{} on IV-2a, the latter in every
 subject, reversing the headline comparison from $\HeadSensorDelta$ for the best
 classical pipeline to $\HeadRefDelta$ against it. The twin control shows this
-is not quantum. Across five settings (two datasets, two register sizes,
+is not quantum. Across \EquivNSettings{} settings (two datasets, two register sizes,
 within-subject, cross-subject and cross-session evaluation), two one-sided
 tests place the two families within $\pm\EquivWorstBound$ accuracy in all
 \EquivN{} comparisons, and within a pre-specified $\pm\EquivMargin$ in
@@ -189,7 +189,7 @@ Fourth, we show that the reversal is nonetheless \emph{not} evidence of quantum
 advantage, using a control we believe should be standard in this literature: a
 classical SPD-manifold kernel placed in the same classifier, on the same data,
 in the same frame, differing from the quantum kernels only in the metric. No
-quantum kernel is distinguishable from that twin in any of five settings,
+quantum kernel is distinguishable from that twin in any of \EquivNSettings{} settings,
 including cross-session transfer, the regime in which the shift our invariance
 argument does not cover is proportionally largest. The
 practical implication is uncomfortable but concrete: a quantum kernel compared
@@ -810,7 +810,7 @@ differs from a classical Riemannian kernel in exactly one respect: the metric.
 Both consume the same covariances, both are used as precomputed kernels in the
 same support vector machine, both receive the same tuning budget, and after
 (\ref{eq:refstate}) both are affine-invariant. Table~\ref{tab:twin} reports that
-comparison in five settings: two datasets, two register sizes, and
+comparison in \EquivNSettings{} settings: two datasets, two register sizes, and
 within-subject, cross-subject and cross-session evaluation.
 
 In none of them is any quantum kernel distinguishable from its classical twin
@@ -873,7 +873,7 @@ machine, on the same covariances, with the same tuning budget, in the same
 reference frame; only the metric differs. Points are mean paired differences
 with 95\% confidence intervals for the difference; table~\ref{tab:equiv}
 gives the 90\% intervals that correspond to the equivalence test, which are
-narrower. Every interval here crosses zero in all five settings. Note the axis
+narrower. Every interval here crosses zero in all \EquivNSettings{} settings. Note the axis
 range: the entire plot spans eight accuracy points, against a frame effect
 (tables~\ref{tab:frame} and \ref{tab:crosssession}) of up to $\CsFrameQMax$.}
 \end{figure}
@@ -1082,7 +1082,7 @@ point, because the only thing standing between it and publication was a control
 that is not currently standard.
 
 That control, an SPD kernel in the same classifier, same data, same frame,
-differing only in the metric, removes the claim entirely. Across five settings
+differing only in the metric, removes the claim entirely. Across \EquivNSettings{} settings
 no quantum kernel separates from its classical twin, and the twin is itself
 among the strongest pipelines we evaluated. The gain therefore belongs to the
 reference frame and to the kernel formulation, both of which are available
@@ -1233,7 +1233,7 @@ reverses the sign of the classical-versus-quantum comparison.
 It would be straightforward to stop there and report a quantum advantage. The
 control that prevents this, a classical SPD kernel identical in every respect
 but the metric, shows that no quantum kernel is distinguishable from its
-classical twin in any of five settings, including against filter-bank CSP, in
+classical twin in any of \EquivNSettings{} settings, including against filter-bank CSP, in
 cross-subject transfer, where all nine geometries fall within
 \TransferSpread, and in cross-session transfer, the setting we had named in
 advance as the most likely to show a real quantum effect. The improvement is

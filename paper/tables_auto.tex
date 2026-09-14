@@ -175,19 +175,19 @@ differing only in whether the states are expressed in the sensor frame
 (\ref{eq:density}) or relative to the training-set Fr\'echet mean
 (\ref{eq:refstate}). $\Delta$ is the mean per-subject accuracy gain from the
 reference frame, tested by paired Wilcoxon signed-rank across subjects. Every
-kernel improves on both datasets; on IV-2a every kernel improves in every
+kernel improves on every dataset; on IV-2a every kernel improves in every
 subject.}
 \begin{tabular}{@{}llccccc@{}}
 \hline
 Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & Better \\
 \hline
-PhysioNet ($n=30$) & Fidelity & 0.523 & 0.630 & $\bf +0.1064$ & \ensuremath{<}0.001 & 23/30 \\
+PhysioNet, 3\,q ($n=30$) & Fidelity & 0.523 & 0.630 & $\bf +0.1064$ & \ensuremath{<}0.001 & 23/30 \\
  & HS overlap & 0.532 & 0.621 & $\bf +0.0889$ & 0.002 & 21/30 \\
  & HS-RBF & 0.549 & 0.606 & $\bf +0.0570$ & 0.049 & 19/30 \\
  & Bures-RBF & 0.552 & 0.611 & $\bf +0.0585$ & 0.009 & 20/30 \\
  & QRE-RBF & 0.559 & 0.609 & $\bf +0.0504$ & 0.027 & 20/30 \\
 \hline
-IV-2a ($n=9$) & Fidelity & 0.580 & 0.767 & $\bf +0.1873$ & 0.004 & \textbf{9/9} \\
+IV-2a, 3\,q ($n=9$) & Fidelity & 0.580 & 0.767 & $\bf +0.1873$ & 0.004 & \textbf{9/9} \\
  & HS overlap & 0.586 & 0.762 & $\bf +0.1760$ & 0.004 & \textbf{9/9} \\
  & HS-RBF & 0.595 & 0.763 & $\bf +0.1678$ & 0.004 & \textbf{9/9} \\
  & Bures-RBF & 0.600 & 0.765 & $\bf +0.1646$ & 0.004 & \textbf{9/9} \\

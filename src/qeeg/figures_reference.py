@@ -348,6 +348,11 @@ def fig_twin(res: Path, out: Path) -> bool:
         settings.append(("PhysioNet, 3 qubits", _per(phys),
                          [b for _, b, _ in FRAME_PAIRS],
                          "control/riemann-kernel-SVM"))
+    m16 = _read(res, "raw_folds_refstate_motor16_q4.csv")
+    if m16 is not None:
+        settings.append(("PhysioNet, 4 qubits", _per(m16),
+                         [b for _, b, _ in FRAME_PAIRS],
+                         "control/riemann-kernel-SVM"))
     fb = _read(res, "raw_folds_filterbank_motor8.csv")
     if fb is not None:
         settings.append(("PhysioNet, 5 qubits", _per(fb),
@@ -379,11 +384,17 @@ def fig_twin(res: Path, out: Path) -> bool:
                           "quantum/HS-RBF", "quantum/Bures-RBF",
                           "quantum/QRE-RBF"],
                          "control/riemann-kernel-SVM"))
+    cho = _read(res, "raw_folds_refstate_cho2017_motor8_q4.csv")
+    if cho is not None:
+        settings.append(("Cho2017, 3 qubits", _per(cho),
+                         [b for _, b, _ in FRAME_PAIRS],
+                         "control/riemann-kernel-SVM"))
     if not settings:
         return False
 
     F._style()
-    fig, ax = plt.subplots(figsize=(7.8, 5.4))
+    # Six rows of vertical space per setting (five kernels plus a gap).
+    fig, ax = plt.subplots(figsize=(7.8, 2.2 + 0.64 * len(settings)))
     labels, ypos, y = [], [], 0.0
     groups = []                       # (name, y_top, y_bottom) for banding
     for name, per, kernels, twin in settings:
