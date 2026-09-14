@@ -67,6 +67,8 @@ src/qeeg/
   reference.py      the invariance proposition + its numerical check, and the
                     sensor-vs-reference concentration diagnostic
   transfer.py       leave-one-subject-out cross-subject transfer
+  crosssession.py   within-subject cross-session transfer on IV-2a, both
+                    directions, per-session reference states
   filterbank.py     FBCSP-class baselines and 5-qubit wide-register kernels
   shots.py          finite-shot SWAP-test estimation
   benchmark.py      nested-CV runner + paired statistics (--suite core |
@@ -78,7 +80,8 @@ src/qeeg/
   figures.py          figures 1-4 (validated palette)
   figures_eeg.py      figure 0: scalp EEG -> covariance -> density matrix
   figures_circuits.py figure 5: the circuit diagrams, rendered from Qiskit
-  figures_reference.py figures 6-9: invariance, frame effect, twin, transfer
+  figures_reference.py figures 6-10: invariance, frame effect, twin, transfer,
+                    cross-session + register sweep
 results/            CSV/JSON outputs + figures/
 paper/              journal manuscript (see below)
 RESEARCH.md         the actual research document
@@ -198,11 +201,16 @@ of the methods from a property of the data:
 
 - **PhysioNet EEGMMIDB** (`--dataset physionet`), 30 subjects, 45 trials each.
   Downloads via MNE, slow first time, caches to `~/mne_data`.
-- **BCI Competition IV-2a** (`--dataset bci2a`), 9 subjects, 288 trials each,
-  via MOABB. ~83 MB per subject, ~6 min per subject to evaluate.
+- **BCI Competition IV-2a** (`--dataset bci2a`), 9 subjects, 288 trials each
+  over two sessions, via MOABB. ~83 MB per subject, ~6 min per subject to
+  evaluate. The two sessions are what `crosssession.py` uses.
+- **Cho2017** (`--dataset cho2017`), 52 subjects, 64 channels, 200 trials,
+  one session, via MOABB (~190 MB per subject, ~75 s to fetch). Added for
+  statistical power on the frame/twin comparison, not as a dataset for its
+  own sake.
 
-The same 8 sensorimotor channels exist in both montages, so the register size
-is identical at 3 qubits and the two are directly comparable.
+The same 8 sensorimotor channels exist in all three montages, so the register
+size is identical at 3 qubits and the datasets are directly comparable.
 
 ## Findings so far
 
@@ -224,22 +232,36 @@ is identical at 3 qubits and the two are directly comparable.
    the quantum kernels than to the classical ones, which is why the frame
    correction is worth 2-3× more on IV-2a.
 4. **Two distinct concentration mechanisms.** Circuit kernels concentrate from
-   qubit count; density-matrix kernels concentrate from the *data*. **Qualified
-   in §4.9:** that was measured in the sensor frame, and most of it is an
-   artefact of the frame (variance rises 4.7-9.5× on recentring). Do not quote
-   the "run it wider" corollary until the channel sweep is redone in the
-   reference frame; adding *bands* made the sensor frame worse, not better.
-5. **The frame is the whole effect (§4.6-§4.10).** Recentring reverses the
+   qubit count; density-matrix kernels concentrate from the *data*. Most of
+   the latter is an artefact of the sensor frame (variance rises 4.7-9.5× on
+   recentring at 3 qubits). **Settled in §4.12:** the sweep to 6 qubits in
+   both frames shows reference-frame variance never falls below its 3-qubit
+   value (1.6-2.4× at 6q), so the "run it wider" corollary survives. Say
+   "never falls below", not "rises monotonically": three kernels dip ~7 %
+   from 5q to 6q.
+5. **The frame is the whole effect (§4.6-§4.11).** Recentring reverses the
    headline comparison on both datasets, but the metric-matched classical twin
    matches every quantum kernel: TOST puts the two families within ±0.032
-   accuracy across all 20 comparisons. The gain is the frame and the
-   SPD-kernel-in-an-SVM formulation, neither of which is quantum.
+   accuracy across all 25 comparisons in five settings. The gain is the frame
+   and the SPD-kernel-in-an-SVM formulation, neither of which is quantum.
+6. **Cross-session transfer (§4.11) is parity too**, in the setting the paper
+   had named as the most promising for a real quantum effect. Sensor-frame
+   quantum kernels sit near chance (0.54-0.58) while classical baselines hold
+   0.70-0.73; per-session recentring is worth +0.17 to +0.22 (9/9 subjects)
+   and then quantum minus twin is within ±0.009, p ≥ 0.5.
 
 ## Where to take it next
 
 Everything the argument needs is done: PhysioNet at 3 and 5 qubits, IV-2a,
-cross-subject transfer, filter-bank/FBCSP baselines, shot noise, and TOST
-equivalence. **The critical path is now editorial, not computational.**
+cross-subject and cross-session transfer, the register sweep to 6 qubits in
+both frames, filter-bank/FBCSP baselines, shot noise, and TOST equivalence.
+
+Robustness runs launched 2026-09-14 (see RESEARCH.md §9 for how to harvest):
+seeds 1 and 2 of the PhysioNet extended suite (does the twin comparison hold
+under different fold splits?), the extended suite at 16 channels / 4 qubits
+(`raw_folds_ref16*.csv`, merge with `qeeg.merge`), and Cho2017 (52 subjects,
+`--dataset cho2017`) for a better-powered frame/twin comparison. None of these
+is needed for the argument; they close the "one seed, two datasets" objection.
 
 Outstanding, in order:
 
@@ -248,13 +270,8 @@ Outstanding, in order:
    who did what.
 2. **`\funding{}`** currently states no specific grant. Correct it if that is
    wrong; IOP parse that section.
-3. **Read the PDF end to end.** Nobody has yet read it as a reader would.
-4. Optional: cross-*session* transfer. IV-2a has two sessions and `Epochs`
-   already carries a `session` field, so it is runnable. §6 names it as the
-   most promising remaining place for a real quantum effect, which makes it
-   the obvious "did you try it?" question at review. Currently framed as
-   future work with a stated reason.
+3. **Read the PDF end to end** after each rebuild. `check_tex.py` cannot see
+   rendering problems.
 
-Do **not** add more datasets for their own sake. Two datasets with Spearman
-0.882 already separate "property of the method" from "property of the data";
-a third changes no reviewer's mind. Mechanism and controls do.
+Do **not** add more datasets beyond Cho2017. Mechanism and controls change a
+reviewer's mind; a fourth dataset does not.

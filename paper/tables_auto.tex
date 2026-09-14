@@ -216,6 +216,7 @@ PhysioNet, 3\,q & 30 & 0.630 & 0.621 & $[-0.0151, +0.0081]$ & 0.183 \\
 PhysioNet, 5\,q, filter bank & 30 & 0.648 & 0.637 & $[+0.0000, +0.0111]$ & 0.234 \\
 PhysioNet, transfer (LOSO) & 30 & 0.647 & 0.635 & $[+0.0000, +0.0119]$ & 0.072 \\
 BCI IV-2a, 3\,q & 9 & 0.767 & 0.766 & $[-0.0033, +0.0016]$ & 0.426 \\
+BCI IV-2a, cross-session & 9 & 0.760 & 0.755 & $[-0.0085, +0.0054]$ & 0.500 \\
 \hline
 \end{tabular}
 \end{table}
@@ -229,7 +230,8 @@ non-significant difference would only be an absence of evidence; TOST instead
 takes a \emph{difference} as its null, so rejecting it supports equivalence.
 The margin $m=0.02$ accuracy was fixed in advance and is
 smaller than the weakest effect this paper claims as real (the reference-frame
-correction is worth $+0.050$ to $+0.187$). CI is the 90\,\% interval, which
+correction is worth \FrameEffectMin{} to \FrameEffectMax{} across the settings
+of this study). CI is the 90\,\% interval, which
 corresponds to TOST at $\alpha=0.05$; ``bound'' is the smallest margin at which
 equivalence would hold, so a reader preferring a stricter margin can read the
 answer off directly.}
@@ -258,6 +260,11 @@ BCI IV-2a, 3 qubits & Fidelity & 9 & $+0.0016$ & $[-0.0049, +0.0080]$ & 0.0004 &
  & HS-RBF & 9 & $-0.0028$ & $[-0.0084, +0.0028]$ & 0.0002 & \checkmark & 0.0084 \\
  & Bures-RBF & 9 & $-0.0008$ & $[-0.0073, +0.0058]$ & 0.0003 & \checkmark & 0.0073 \\
  & QRE-RBF & 9 & $-0.0019$ & $[-0.0081, +0.0043]$ & 0.0003 & \checkmark & 0.0081 \\
+IV-2a cross-session & Fidelity & 9 & $+0.0042$ & $[-0.0057, +0.0142]$ & 0.0094 & \checkmark & 0.0142 \\
+ & HS overlap & 9 & $-0.0004$ & $[-0.0124, +0.0117]$ & 0.0082 & \checkmark & 0.0124 \\
+ & HS-RBF & 9 & $-0.0085$ & $[-0.0281, +0.0111]$ & 0.1531 & --- & 0.0281 \\
+ & Bures-RBF & 9 & $+0.0054$ & $[-0.0138, +0.0246]$ & 0.0975 & --- & 0.0246 \\
+ & QRE-RBF & 9 & $+0.0054$ & $[-0.0144, +0.0252]$ & 0.1034 & --- & 0.0252 \\
 \hline
 \end{tabular}
 \end{table}
@@ -286,6 +293,73 @@ control/riemann-kernel-SVM & 0.587 & 0.635 & $+0.0474$ & 0.004 & 19/30 \\
 quantum/HS-RBF & 0.564 & 0.635 & $+0.0711$ & 0.002 & 20/30 \\
 control/logeuclid-kernel-SVM & 0.576 & 0.633 & $+0.0570$ & 0.001 & 20/30 \\
 classical/MDM & 0.553 & 0.633 & $+0.0800$ & \ensuremath{<}0.001 & 19/30 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+%% ----------------------------------------------- Table: cross-session
+\begin{table}[htbp]
+\caption{\label{tab:crosssession}Cross-session transfer within subject on
+IV-2a. For each subject and in both directions, each model is trained on one
+recording session and tested on the other; the two directions are averaged
+per subject before any statistic is computed, so $n$ is the number of
+subjects. Hyperparameters are chosen by stratified inner cross-validation
+inside the training session alone. In the reference frame each session is
+whitened by its own label-free Fr\'echet mean. $\Delta$ is the gain from the
+reference frame, paired by subject and tested by Wilcoxon signed-rank.}
+\begin{tabular}{@{}lccccc@{}}
+\hline
+Pipeline & Sensor & Reference & $\Delta$ & $p$ & Better \\
+\hline
+quantum/QRE-RBF & 0.576 & 0.760 & $+0.1844$ & 0.004 & \textbf{9/9} \\
+quantum/Bures-RBF & 0.573 & 0.760 & $+0.1867$ & 0.004 & \textbf{9/9} \\
+quantum/Fidelity & 0.542 & 0.759 & $+0.2172$ & 0.004 & \textbf{9/9} \\
+control/riemann-kernel-SVM & 0.734 & 0.755 & $+0.0204$ & 0.012 & 8/9 \\
+control/logeuclid-kernel-SVM & 0.724 & 0.755 & $+0.0309$ & 0.020 & 8/9 \\
+quantum/HS-overlap & 0.560 & 0.754 & $+0.1944$ & 0.008 & 8/9 \\
+quantum/HS-RBF & 0.578 & 0.746 & $+0.1686$ & 0.004 & \textbf{9/9} \\
+classical/TS+LR & 0.717 & 0.738 & $+0.0216$ & 0.039 & 8/9 \\
+classical/MDM & 0.701 & 0.732 & $+0.0312$ & 0.023 & 7/9 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+%% ------------------------------------------------------ Table: sweep
+\begin{table}[htbp]
+\caption{\label{tab:sweep}Off-diagonal Gram variance versus register size in
+both frames, $n=14$ subjects, PhysioNet.
+Larger is better: a kernel whose Gram variance collapses cannot separate
+trials. ``Gain'' is reference over sensor at the same register; ``vs.\ 3\,q''
+is the reference-frame variance relative to its own three-qubit value. In the
+reference frame no kernel's variance falls below its three-qubit value at any
+larger register, so the concentration that the sensor frame exhibits is not a
+qubit-count effect once the frame is corrected.}
+\begin{tabular}{@{}llcccc@{}}
+\hline
+Register & Kernel & Sensor ($\times10^{-3}$) & Reference ($\times10^{-3}$) &
+Gain & vs.\ 3\,q \\
+\hline
+3\,q (8 ch) & Bures & 0.35 & 1.78 & 5.1$\times$ & 1.00 \\
+ & Fidelity & 0.33 & 1.55 & 4.7$\times$ & 1.00 \\
+ & HS overlap & 0.49 & 4.71 & 9.5$\times$ & 1.00 \\
+ & QRE & 1.58 & 8.27 & 5.2$\times$ & 1.00 \\
+\hline
+4\,q (16 ch) & Bures & 0.58 & 3.20 & 5.6$\times$ & 1.80 \\
+ & Fidelity & 0.54 & 2.46 & 4.6$\times$ & 1.59 \\
+ & HS overlap & 0.73 & 6.56 & 9.0$\times$ & 1.39 \\
+ & QRE & 2.84 & 15.72 & 5.5$\times$ & 1.90 \\
+\hline
+5\,q (32 ch) & Bures & 0.69 & 3.72 & 5.4$\times$ & 2.09 \\
+ & Fidelity & 0.64 & 2.73 & 4.3$\times$ & 1.76 \\
+ & HS overlap & 0.94 & 7.77 & 8.3$\times$ & 1.65 \\
+ & QRE & 3.43 & 20.23 & 5.9$\times$ & 2.45 \\
+\hline
+6\,q (64 ch) & Bures & 1.54 & 3.44 & 2.2$\times$ & 1.93 \\
+ & Fidelity & 1.36 & 2.55 & 1.9$\times$ & 1.65 \\
+ & HS overlap & 3.83 & 9.01 & 2.4$\times$ & 1.91 \\
+ & QRE & 7.78 & 20.11 & 2.6$\times$ & 2.43 \\
 \hline
 \end{tabular}
 \end{table}

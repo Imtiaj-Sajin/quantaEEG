@@ -183,13 +183,15 @@ def run_subject(ep, recenter: bool, seed: int = 0) -> list[dict]:
             rows.append({"subject": ep.subject, "direction": direction,
                          "frame": frame, "pipeline": name,
                          "group": name.split("/")[0], "accuracy": acc,
-                         "auc": auc, "best": json.dumps(best)})
+                         "auc": auc, "best": json.dumps(best),
+                         "n_train": len(tr), "n_test": len(te)})
         for name, (M, is_dist) in kernels.items():
             acc, auc, best = _eval_quantum(M, is_dist, tr, te, y, seed)
             rows.append({"subject": ep.subject, "direction": direction,
                          "frame": frame, "pipeline": f"quantum/{name}",
                          "group": "quantum", "accuracy": acc, "auc": auc,
-                         "best": json.dumps(best)})
+                         "best": json.dumps(best),
+                         "n_train": len(tr), "n_test": len(te)})
     return rows
 
 

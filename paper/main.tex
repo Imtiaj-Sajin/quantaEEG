@@ -66,7 +66,7 @@ Md.samiulislam.aiub@gmail.com (S I Saif); chayon@aiub.edu (M H R Chayon)}
 \begin{abstract}
 \textit{Objective.}
 Quantum machine learning is often proposed for EEG decoding, but such claims
-rarely include the controls needed to show the quantum part is doing the work.
+rarely include the controls that show the quantum part is doing the work.
 We ask whether quantum kernels beat well-tuned classical baselines, and if not,
 why.
 
@@ -75,7 +75,7 @@ A trace-normalised EEG covariance matrix is a quantum density matrix, so
 quantum information geometry applies directly. We benchmark Hilbert--Schmidt,
 fidelity, Bures and quantum-relative-entropy kernels against tuned Riemannian,
 CSP and filter-bank baselines on two motor-imagery datasets under one nested
-cross-validation budget. An asymmetry then stands out:
+cross-validation budget. One asymmetry stands out:
 the quantum quantities are invariant only under orthogonal congruence, while
 EEG's nuisances span the full congruence group the classical baselines already
 handle. Borrowing recentring from Riemannian transfer learning, we refer each
@@ -84,22 +84,22 @@ invariance, and add a twin differing only in metric.
 
 \textit{Main results.}
 In the sensor frame the classical baselines won on both datasets. Recentring
-raised off-diagonal Gram variance several-fold and improved every kernel, by up
-to \PhysFrameMax{} on PhysioNet and \BciFrameMax{} on IV-2a, the latter in every
-subject, reversing the headline comparison from $\HeadSensorDelta$ in favour of
-the best classical pipeline to $\HeadRefDelta$ against it. The twin control
-shows this is not quantum. Across four settings spanning two datasets,
-two register sizes and both within- and cross-subject evaluation, two one-sided
-tests place the two families within $\pm\EquivWorstBound$ accuracy of each
-other in all \EquivN{} comparisons, and within a pre-specified
-$\pm\EquivMargin$ in \EquivPass{} of them. Parity held against filter-bank CSP
-and in cross-subject transfer too.
+raised Gram variance several-fold and improved every kernel, by up to
+\PhysFrameMax{} on PhysioNet and \BciFrameMax{} on IV-2a, the latter in every
+subject, reversing the headline comparison from $\HeadSensorDelta$ for the best
+classical pipeline to $\HeadRefDelta$ against it. The twin control shows this
+is not quantum. Across five settings (two datasets, two register sizes,
+within-subject, cross-subject and cross-session evaluation), two one-sided
+tests place the two families within $\pm\EquivWorstBound$ accuracy in all
+\EquivN{} comparisons, and within a pre-specified $\pm\EquivMargin$ in
+\EquivPass{} of them. Parity held against filter-bank CSP and in cross-session
+transfer, where the shift our argument does not cover is largest.
 
 \textit{Significance.}
 We find no quantum advantage, and trace it to an invariance mismatch rather
 than kernel concentration: supply the missing invariance and the quantum
 kernels match their classical counterparts. Recentring is a precondition for a
-fair comparison, and omitting it is a concrete route to a false positive.
+fair comparison; omitting it is a concrete route to a false positive.
 \end{abstract}
 
 \keywords{quantum machine learning, brain--computer interface,
@@ -170,7 +170,8 @@ Second, we report a controlled benchmark of \NPipelinesExt{} pipelines on
 \NSubjects{} subjects with nested cross-validation, matched tuning budgets,
 both of the missing controls, and paired subject-wise statistics with
 multiple-comparison correction, replicated on IV-2a and extended to
-filter-bank baselines and cross-subject transfer.
+filter-bank baselines, cross-subject and cross-session transfer, and a
+register sweep to six qubits in both frames.
 
 Third, and centrally, we show that the comparison such benchmarks perform, 
 ours included, in its first form, is confounded by the coordinate frame. The
@@ -188,7 +189,9 @@ Fourth, we show that the reversal is nonetheless \emph{not} evidence of quantum
 advantage, using a control we believe should be standard in this literature: a
 classical SPD-manifold kernel placed in the same classifier, on the same data,
 in the same frame, differing from the quantum kernels only in the metric. No
-quantum kernel is distinguishable from that twin in any of four settings. The
+quantum kernel is distinguishable from that twin in any of five settings,
+including cross-session transfer, the regime in which the shift our invariance
+argument does not cover is proportionally largest. The
 practical implication is uncomfortable but concrete: a quantum kernel compared
 against a classical baseline in a different frame will show an advantage of
 roughly the size we report, produced entirely by the frame.
@@ -217,6 +220,17 @@ no decoherence and no readout bias, and section~\ref{sec:shots} adds only sampli
 noise. Hardware would make the quantum side worse, never better, so the
 comparison throughout is maximally generous to it and a negative result here
 is not weakened by the idealisation.
+
+The contribution we intend for neural engineering is practical rather than
+quantum. Covariance decoders are the field's working standard, and the two
+devices this paper turns on the quantum kernels, recentring to a label-free
+reference state and a comparator that differs in metric alone, apply to any
+new covariance kernel a practitioner might be offered, quantum or otherwise.
+The invariance proposition says \emph{why} recentring is a precondition for
+comparing geometries at all, where the Riemannian transfer-learning literature
+\cite{zanini2018,rodrigues2019} has so far justified it empirically; and the
+negative result is stated with enough control that it can be built on rather
+than merely cited.
 
 %% =====================================================================
 \section{Methods}
@@ -498,7 +512,7 @@ between them is attributable to the metric alone; because it is
 congruence-invariant by construction, it is the right comparator for the
 reference-frame kernels specifically.
 
-Two further suites reuse this design. A \emph{filter-bank} suite splits the
+Three further suites reuse this design. A \emph{filter-bank} suite splits the
 8--30 Hz band into four sub-bands (8--12, 12--16, 16--22 and 22--30 Hz) and
 stacks them, so that one covariance spans $4\times 8=32$ dimensions --- a
 single density matrix on five qubits --- and adds filter-bank CSP
@@ -507,7 +521,14 @@ filter-bank versions of every kernel and twin. A \emph{cross-subject} suite
 pools the trials of all but one subject, trains on the pool, and tests on the
 held-out subject; its hyperparameters are chosen by subject-grouped inner
 cross-validation on the training subjects, so no held-out subject influences
-any choice. Both suites are described where their results appear.
+any choice. A \emph{cross-session} suite uses the two recording sessions of
+IV-2a: for each subject, and in both directions, it trains on one session and
+tests on the other, choosing hyperparameters by stratified inner
+cross-validation within the training session alone. In its reference frame
+each session is whitened by its own Fr\'echet mean, which uses no labels and
+is, for the test session, exactly the unsupervised adaptation a deployed
+decoder can perform on the unlabelled data it receives before decoding
+anything. All three suites are described where their results appear.
 
 \subsection{Evaluation protocol and statistics}
 
@@ -735,6 +756,26 @@ of the kind an electrode-gain change produces shifts individual kernel entries
 by an order of magnitude more than that entire discriminative spread. The
 kernel was measuring the frame, not the trial.
 
+The register sweep of section~\ref{sec:concentration} was made in the sensor
+frame, and its second finding, that the density-matrix kernels are saturated
+by the data rather than by the register, has to be re-examined now that most
+of that saturation is known to be an artefact of the frame. Repeating the
+sweep in both frames (table~\ref{tab:sweep}, figure~\ref{fig:crosssession}(b))
+gives a cleaner answer. In the reference frame no kernel's Gram variance falls
+below its three-qubit value at any larger register, and at six qubits it
+stands at \SweepRefRatioMin--\SweepRefRatioMax{} times that value; the
+exponential collapse with qubit count of \cite{thanasilp2024} is absent from
+this family in either frame. The gain from recentring narrows from
+\SweepGainLoMin--\SweepGainLoMax$\times$ at three qubits to
+\SweepGainHiMin--\SweepGainHiMax$\times$ at six, but that is because the
+sensor-frame variance itself rises
+\SweepSensorRatioMin--\SweepSensorRatioMax$\times$ over the same range, not
+because the reference frame deteriorates. The corollary of
+section~\ref{sec:concentration}, that the density-matrix route tolerates wider
+registers, therefore survives the correction, with one qualification: the
+reference-frame variance is not strictly monotone, three of the four kernels
+dipping by up to \SweepRefDipMax\,\% between five and six qubits.
+
 \emph{Second, accuracy improves substantially and consistently}
 (table~\ref{tab:frame}). On PhysioNet every kernel improves, by \PhysFrameMin{} to
 \PhysFrameMax{} ($n=\PhysFrameN$, all $p \le \PhysFrameMaxP$). On IV-2a the
@@ -769,8 +810,8 @@ differs from a classical Riemannian kernel in exactly one respect: the metric.
 Both consume the same covariances, both are used as precomputed kernels in the
 same support vector machine, both receive the same tuning budget, and after
 (\ref{eq:refstate}) both are affine-invariant. Table~\ref{tab:twin} reports that
-comparison in four independent settings: two datasets, two register sizes, and
-within- versus cross-subject evaluation.
+comparison in five settings: two datasets, two register sizes, and
+within-subject, cross-subject and cross-session evaluation.
 
 In none of them is any quantum kernel distinguishable from its classical twin
 (figure~\ref{fig:twin}).
@@ -832,11 +873,13 @@ machine, on the same covariances, with the same tuning budget, in the same
 reference frame; only the metric differs. Points are mean paired differences
 with 95\% confidence intervals for the difference; table~\ref{tab:equiv}
 gives the 90\% intervals that correspond to the equivalence test, which are
-narrower. Every interval here crosses zero in all four settings. Note the axis range: the entire plot spans eight accuracy points,
-against a frame effect (figure~\ref{fig:frame}) of up to nineteen.}
+narrower. Every interval here crosses zero in all five settings. Note the axis
+range: the entire plot spans eight accuracy points, against a frame effect
+(tables~\ref{tab:frame} and \ref{tab:crosssession}) of up to $\CsFrameQMax$.}
 \end{figure}
 
 \subsection{Filter-bank baselines and a larger register}
+\label{sec:filterbank}
 
 Since the reference-frame kernels reach the top of the table, the relevant
 question becomes whether they do so against the strongest classical family
@@ -877,6 +920,66 @@ distinguishable from any other. All nine geometries fall within
 correction. This is a genuine null rather than an underpowered one: at
 $n=\TransferN$ the two-sided Wilcoxon signed-rank test could have returned $p$
 as small as $\TransferFloor$.
+
+\subsection{Cross-session transfer}
+\label{sec:crosssession}
+
+Cross-subject shift is dominated by congruence, so the parity just reported is
+what the algebra predicts. The complementary case is transfer across sessions
+within a subject: same head, same cap, similar impedances, so the congruence
+component is milder and what remains, drift in conditioning, effective rank
+and spectral shape, is exactly the residual that the invariance argument of
+section~\ref{sec:reference} says nothing about. It is where a quantum
+divergence, which weights the eigenvalue spectrum differently from the
+affine-invariant metric, would separate from its classical twin if it were
+going to anywhere, and we had named it in advance as the most promising place
+to look. IV-2a provides it: two recording sessions of \CsTrialsPerSession{}
+trials per subject. For each subject and in both directions we train on one
+session and test on the other (table~\ref{tab:crosssession},
+figure~\ref{fig:crosssession}(a)); hyperparameters are tuned inside the
+training session only, and in the reference frame each session is whitened by
+its own label-free mean, which for the test session is the unsupervised
+adaptation a deployed decoder can legitimately perform.
+
+Two things happen. First, the frame matters more here than anywhere else in
+the study. In the sensor frame the quantum kernels reach only \CsSensorQMin{}
+to \CsSensorQMax, close to chance, while the classical baselines, which do not
+see the session change as a change of frame, reach \CsSensorClMin{} to
+\CsSensorClMax. Recentring is worth \CsFrameQMin{} to \CsFrameQMax{} to the
+quantum kernels (all $p\le\CsFrameQMaxP$) and \CsFrameClMin{} to
+\CsFrameClMax{} to the classical ones. Session-to-session change evidently has
+a large congruence component after all, whatever its residual, and a kernel
+without the invariance is defenceless against it.
+
+Second, once the frame is corrected the geometries tie again. The best
+pipeline is \CsBestKernel{} at \CsBestAcc; the classical twin reaches
+\CsTwinAcc{} and the best conventional baseline, \CsBestClassical,
+\CsBestClassicalAcc. Against the twin the five quantum kernels differ by
+\CsTwinDeltaMin{} to \CsTwinDeltaMax, and the smallest $p$ among the five
+comparisons, $p\CsTwinMinP$, is the largest such value in any setting of the
+study; the five quantum kernels and the two classical twins lie within
+\CsSpread{} of one another. The equivalence bounds
+(table~\ref{tab:equiv}) are wider than in the within-subject IV-2a comparison,
+as they must be with one accuracy per subject rather than fifteen folds, but
+the largest is \EquivCsWorst, inside the study-wide $\pm\EquivWorstBound$. The
+setting we identified in advance as the quantum divergences' best chance is
+therefore one more in which they match a classical kernel that differs only in
+metric. Either the non-congruence part of session shift is too small to matter
+at this register, or it is not something the Bures, fidelity or
+relative-entropy weightings exploit better than the affine-invariant one.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig10_crosssession_sweep.pdf}
+\caption{\label{fig:crosssession}(a) Cross-session transfer within subject on
+IV-2a, both directions averaged. In the sensor frame the quantum kernels sit
+near chance while the classical baselines do not; whitening each session by
+its own label-free mean closes the gap and leaves every SPD-kernel geometry
+tied. (b) Off-diagonal Gram variance versus register size in both frames on
+PhysioNet ($n=\SweepN$). Solid, reference frame; dashed, sensor frame. In the
+reference frame no kernel falls below its three-qubit value at any larger
+register.}
+\end{figure}
 
 \subsection{Finite-shot estimation}
 \label{sec:shots}
@@ -979,7 +1082,7 @@ point, because the only thing standing between it and publication was a control
 that is not currently standard.
 
 That control, an SPD kernel in the same classifier, same data, same frame,
-differing only in the metric, removes the claim entirely. Across four settings
+differing only in the metric, removes the claim entirely. Across five settings
 no quantum kernel separates from its classical twin, and the twin is itself
 among the strongest pipelines we evaluated. The gain therefore belongs to the
 reference frame and to the kernel formulation, both of which are available
@@ -1000,13 +1103,52 @@ about preprocessing.
 
 \subsection{Relation to prior work}
 
-Our findings are compatible with reports of quantum benefit on EEG
+Three strands of prior work bear on these results, and our relation to each
+is different.
+
+The first is the theory of quantum kernels. Schuld \cite{schuld2021kernel}
+showed that supervised quantum models are kernel methods, so their merit
+reduces to whether the induced kernel suits the data; Huang \textit{et al}
+\cite{huang2021} showed that any advantage is a property of the data as much
+as of the kernel; and K\"ubler \textit{et al} \cite{kubler2021} made the
+mechanism precise: a quantum kernel helps only where its inductive bias
+matches the target. Our results are an instance of that principle in which
+the inductive bias is an invariance group. The density-matrix kernels carry
+orthogonal invariance, EEG's nuisances generate the congruence group, and the
+mismatch alone accounts for their sensor-frame deficit. Bandwidth tuning
+\cite{shaydulin2022}, which we apply throughout, and the exponential
+concentration of Thanasilp \textit{et al} \cite{thanasilp2024} address a
+different failure, one that grows with qubit count; table~\ref{tab:sweep}
+shows it is not the failure at work here, since in the reference frame every
+density-matrix kernel has more Gram variance at six qubits than at three.
+
+The second is the methodology of QML benchmarking. Bowles \textit{et al}
+\cite{bowles2024} found classical models matching or beating quantum ones
+across a broad suite and argued for ablations and matched baselines; we adopt
+both their entanglement ablation and the dimension-matched control. Our
+addition is the \emph{metric}-matched control, which the geometric setting
+requires and the feature-map setting does not: a quantum kernel that operates
+on an SPD manifold has a classical counterpart on the same manifold, and
+comparing it with anything else conflates the metric with the representation.
+
+The third is Riemannian BCI decoding \cite{congedo2017,yger2017}. The
+reference-state correction is, algebraically, the re-centring of Zanini
+\textit{et al} \cite{zanini2018} and the alignment step of Riemannian
+Procrustes analysis \cite{rodrigues2019}, developed there as a
+transfer-learning heuristic. What we add is the reason it is not optional: for
+a family of kernels with the wrong invariance group it is the difference
+between a broken comparison and a fair one, and we prove that it restores
+affine invariance exactly rather than approximately. In that light our
+findings are compatible with reports of quantum benefit on EEG
 \cite{qeegnet2024,eswa2024} only under the interpretation that those benefits
-arise from the classical components of the hybrid pipelines. Our
-dimension-matched control speaks directly to this: a plain linear SVM on the
-same PCA-reduced tangent-space features matched or exceeded every circuit
-kernel. Where an advantage is reported without such a control, the
-tangent-space or spatial-filtering front end remains an untested explanation.
+arise from the classical stages of the hybrid pipelines. Our dimension-matched
+control speaks to this directly, since a plain linear SVM on the same
+PCA-reduced tangent-space features matched or exceeded every circuit kernel,
+and our frame result names a second route to the same artefact: a quantum
+stage that operates on aligned covariances, compared with a classical baseline
+that does not. The pyRiemann-qiskit toolkit \cite{pyriemannqiskit2023}, which
+places a quantum classifier after tangent-space projection, is the natural
+place for the metric-matched control to be adopted.
 
 \subsection{Limitations}
 
@@ -1025,8 +1167,10 @@ the IV-2a bounds should be read as indicative.
 (iii) Our invariance argument concerns congruence. Inter-subject and
 inter-session shift is dominated by, but not exhausted by, that group;
 differences in conditioning, effective rank and spectral shape survive
-recentring, and it remains possible that a quantum divergence weights those
-residual differences more usefully in some regime we did not probe.
+recentring. Cross-session transfer, where that residual is proportionally
+largest, showed no quantum kernel separating from its twin
+(section~\ref{sec:crosssession}), but it did so on one dataset of \CsN{}
+subjects, which bounds the possibility rather than excluding it.
 (iv) The reference state is a Fr\'echet mean estimated from training data, so
 the correction is only as good as that estimate; its markedly larger benefit on
 IV-2a (\BciFrameMin{} to \BciFrameMax) than on PhysioNet (\PhysFrameMin{} to
@@ -1044,29 +1188,31 @@ outside our scope.
 
 Our claim is that the quantum geometries match their classical twins once the
 invariance groups agree, so what would overturn it is a setting in which a
-quantum divergence separates from a metric-matched classical comparator. Three
-seem worth trying, and we state in advance why the first two are the promising
-ones.
+quantum divergence separates from a metric-matched classical comparator. We
+identified three candidates before running the extended experiments, and two
+of them have now been tried.
 
-Non-congruence shift is the natural candidate, because it is exactly what our
-argument does not cover. Cross-session rather than cross-subject transfer is
-attractive here: the congruence component is milder, so residual differences in
+Non-congruence shift was the first, because it is exactly what our argument
+does not cover, and cross-session transfer is where it is proportionally
+largest: the congruence component is milder, so residual differences in
 conditioning and spectral shape, on which the quantum relative entropy and the
-Bures distance weight differently from the affine-invariant metric, carry
-proportionally more of the shift.
+Bures distance weight differently from the affine-invariant metric, carry more
+of the shift. Section~\ref{sec:crosssession} reports the outcome: parity, with
+no quantum-versus-twin comparison reaching even $p<0.5$. Larger registers
+were the third candidate, and the sweep of table~\ref{tab:sweep} shows that
+the reference-frame kernels do not concentrate with qubit count. That removes
+a concern rather than the parity, since the metric-matched comparison at five
+qubits (section~\ref{sec:filterbank}) had already tied.
 
-Regimes where the reference state is poorly estimated are the second. Our
-correction depends on a Fr\'echet mean, and the classical baselines depend on
-the same estimate; a divergence that degrades more gracefully under a noisy
-reference would be a real and practically relevant advantage, and few-trial
-calibration is where it would show.
-
-Finally, and least promisingly on present evidence, larger registers. We
-observed the sensor-frame kernels deteriorate from three to five qubits while
-the reference-frame kernels did not, so a systematic sweep to six qubits with
-both frames would settle whether the concentration of \cite{thanasilp2024}
-governs the density-matrix family at all once the frame is corrected. We do not
-expect it to change the metric-matched comparison.
+What remains untried is the regime in which the reference state is poorly
+estimated. Our correction depends on a Fr\'echet mean, and the classical
+baselines depend on the same estimate; a divergence that degrades more
+gracefully under a noisy reference would be a real and practically relevant
+advantage, and few-trial calibration is where it would show. The frame
+effect's strong dependence on trial count, \PhysFrameMax{} with \NTrials{}
+trials per subject against \BciFrameMax{} with \BciNTrials, says that the
+reference-state estimate is the binding constraint in that regime, which makes
+it the right place to look next.
 
 %% =====================================================================
 \section{Conclusion}
@@ -1087,10 +1233,11 @@ reverses the sign of the classical-versus-quantum comparison.
 It would be straightforward to stop there and report a quantum advantage. The
 control that prevents this, a classical SPD kernel identical in every respect
 but the metric, shows that no quantum kernel is distinguishable from its
-classical twin in any of four settings, including against filter-bank CSP and
-in cross-subject transfer, where all nine geometries fall within
-\TransferSpread. The improvement is real and useful, and it is entirely
-classical in origin.
+classical twin in any of five settings, including against filter-bank CSP, in
+cross-subject transfer, where all nine geometries fall within
+\TransferSpread, and in cross-session transfer, the setting we had named in
+advance as the most likely to show a real quantum effect. The improvement is
+real and useful, and it is entirely classical in origin.
 
 We therefore find no evidence of quantum advantage for motor-imagery decoding,
 and we locate the ceiling: matched invariance permits parity and nothing more.

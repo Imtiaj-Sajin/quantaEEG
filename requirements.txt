@@ -8,3 +8,6 @@ mne>=1.8
 pyriemann>=0.7
 pennylane>=0.38
 matplotlib>=3.8
+moabb>=1.1          # BCI IV-2a and Cho2017 loaders
+qiskit>=1.0         # circuit figure (fig5) rendering and cross-check only
+pylatexenc          # qiskit's matplotlib circuit drawer needs it

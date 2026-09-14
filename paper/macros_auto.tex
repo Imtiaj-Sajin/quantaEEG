@@ -110,25 +110,73 @@
 \newcommand{\TransferBest}{quantum/HS-overlap}
 \newcommand{\TransferBestAcc}{0.647}
 \newcommand{\TransferFloor}{1.9\times10^{-9}}
+\newcommand{\CsN}{9}
+\newcommand{\CsFloor}{3.9\times10^{-3}}
+\newcommand{\CsTrialsPerSession}{144}
+\newcommand{\CsFrameQMin}{+0.169}
+\newcommand{\CsFrameQMax}{+0.217}
+\newcommand{\CsFrameQMaxP}{0.008}
+\newcommand{\CsFrameQAllBetter}{no}
+\newcommand{\CsSensorQMin}{0.542}
+\newcommand{\CsSensorQMax}{0.578}
+\newcommand{\CsRefQMin}{0.746}
+\newcommand{\CsRefQMax}{0.760}
+\newcommand{\CsBestKernel}{quantum/Bures-RBF}
+\newcommand{\CsBestAcc}{0.760}
+\newcommand{\CsFrameClMin}{+0.022}
+\newcommand{\CsFrameClMax}{+0.031}
+\newcommand{\CsSensorClMin}{0.701}
+\newcommand{\CsSensorClMax}{0.717}
+\newcommand{\CsBestClassical}{classical/TS+LR}
+\newcommand{\CsBestClassicalAcc}{0.738}
+\newcommand{\CsTwinName}{control/riemann-kernel-SVM}
+\newcommand{\CsTwinAcc}{0.755}
+\newcommand{\CsTwinDeltaMin}{-0.0085}
+\newcommand{\CsTwinDeltaMax}{+0.0054}
+\newcommand{\CsTwinMinP}{\ensuremath{{}={}}0.500}
+\newcommand{\CsTwinAbsMax}{0.0085}
+\newcommand{\CsSpread}{0.0139}
+\newcommand{\SweepQMin}{3}
+\newcommand{\SweepQMax}{6}
+\newcommand{\SweepN}{14}
+\newcommand{\SweepRefRatioMin}{1.6}
+\newcommand{\SweepRefRatioMax}{2.4}
+\newcommand{\SweepSensorRatioMin}{4.1}
+\newcommand{\SweepSensorRatioMax}{7.7}
+\newcommand{\SweepGainLoMin}{4.7}
+\newcommand{\SweepGainLoMax}{9.5}
+\newcommand{\SweepGainHiMin}{1.9}
+\newcommand{\SweepGainHiMax}{2.6}
+\newcommand{\SweepRefAboveBase}{every}
+\newcommand{\SweepRefMonotone}{not every}
+\newcommand{\SweepRefDipMax}{8}
 \newcommand{\GramGainMin}{4.7}
 \newcommand{\GramGainMax}{9.5}
 \newcommand{\GramNSubjects}{14}
 \newcommand{\GramSensorMean}{0.981}
 \newcommand{\GramSensorStd}{0.022}
 \newcommand{\ShotCrossover}{10^{4}}
+\newcommand{\FrameEffectMin}{+0.050}
+\newcommand{\FrameEffectMax}{+0.217}
 
 
 %% ------------------------------ equivalence macros
 
 \newcommand{\EquivMargin}{0.02}
-\newcommand{\EquivN}{20}
-\newcommand{\EquivPass}{13}
+\newcommand{\EquivN}{25}
+\newcommand{\EquivPass}{15}
 \newcommand{\EquivWorstBound}{0.032}
-\newcommand{\EquivFailQuantum}{4}
-\newcommand{\EquivFailClassical}{3}
+\newcommand{\EquivFailQuantum}{6}
+\newcommand{\EquivFailClassical}{4}
 \newcommand{\EquivNZeroExcluded}{1}
 \newcommand{\EquivBciPass}{5}
 \newcommand{\EquivBciN}{5}
 \newcommand{\EquivBciWorst}{0.0109}
+\newcommand{\EquivCsPass}{2}
+\newcommand{\EquivCsN}{5}
+\newcommand{\EquivCsWorst}{0.0281}
+\newcommand{\EquivTrPass}{3}
+\newcommand{\EquivTrN}{5}
+\newcommand{\EquivTrWorst}{0.0235}
 \newcommand{\EquivZeroExclName}{HS overlap (Transfer (LOSO))}
 \newcommand{\EquivZeroExclDelta}{+0.0119}

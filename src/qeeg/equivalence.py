@@ -23,9 +23,10 @@ The margin is a scientific judgement and must be fixed in advance, not chosen
 to make the result come out. We use **m = 0.02 accuracy**, on two grounds:
 
 1. It is smaller than the smallest effect this paper treats as real. The
-   reference-frame correction is worth +0.050 to +0.187 depending on dataset
-   and register size, so a residual difference below 0.02 is at most 40 % of
-   the *weakest* effect we claim, and under 11 % of the strongest.
+   reference-frame correction is worth +0.050 (PhysioNet, 3 qubits) to
+   +0.217 (IV-2a, cross-session) depending on setting, so a residual
+   difference below 0.02 is at most 40 % of the *weakest* effect we claim,
+   and under 10 % of the strongest.
 2. It is below what is operationally meaningful in a motor-imagery BCI, where
    a two-point accuracy change does not alter whether a system is usable.
 

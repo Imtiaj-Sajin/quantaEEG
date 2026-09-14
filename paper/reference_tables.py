@@ -50,6 +50,11 @@ FB_REF_KERNELS = [b for _, b, _ in FB_FRAME_PAIRS]
 TWINS = ["control/riemann-kernel-SVM", "control/logeuclid-kernel-SVM"]
 FB_TWINS = ["control/FB-riemann-kernel-SVM", "control/FB-logeuclid-kernel-SVM"]
 
+# The transfer and cross-session suites carry the frame as a column rather
+# than a "-ref" suffix, so their quantum pipelines are named without it.
+TRANSFER_KERNELS = ["quantum/Fidelity", "quantum/HS-overlap", "quantum/HS-RBF",
+                    "quantum/Bures-RBF", "quantum/QRE-RBF"]
+
 
 def _per(df: pd.DataFrame) -> pd.DataFrame:
     return df.groupby(["pipeline", "subject"])["accuracy"].mean().unstack("pipeline")
@@ -70,10 +75,24 @@ def load(res: Path) -> dict:
         "fb_summary": maybe("summary_filterbank_motor8.csv"),
         "transfer": maybe("transfer_folds_motor8.csv"),
         "gram": maybe("reference_gram_motor8.csv"),
+        "sweep": maybe("reference_gram_sweep.csv"),
         "shots": maybe("shots_folds_motor8.csv"),
+        "cs": maybe("crosssession_folds_bci2a_motor8.csv"),
     }
     for k in ("phys", "bci", "fb"):
         d[k + "_per"] = _per(d[k]) if d[k] is not None else None
+    if d["cs"] is not None:
+        # Both directions (A->B, B->A) are averaged per subject first, so each
+        # subject is one paired observation, exactly as in the transfer suite.
+        c = d["cs"]
+        d["cs_ref"] = (c[c.frame == "reference"]
+                       .groupby(["pipeline", "subject"])["accuracy"]
+                       .mean().unstack("pipeline"))
+        d["cs_sen"] = (c[c.frame == "sensor"]
+                       .groupby(["pipeline", "subject"])["accuracy"]
+                       .mean().unstack("pipeline"))
+    else:
+        d["cs_ref"] = d["cs_sen"] = None
     if d["transfer"] is not None:
         t = d["transfer"]
         d["transfer_ref"] = (t[t.frame == "reference"]
@@ -165,13 +184,14 @@ def table_twin(d: dict, paired, fmt_p, esc, out: list[str]) -> bool:
                          FB_REF_KERNELS, FB_TWINS))
     if d["transfer_ref"] is not None:
         # Transfer pipelines carry no -ref suffix; the frame is a column there.
-        tk = [k for k in ("quantum/Fidelity", "quantum/HS-overlap",
-                          "quantum/HS-RBF", "quantum/Bures-RBF",
-                          "quantum/QRE-RBF") if k in d["transfer_ref"].columns]
+        tk = [k for k in TRANSFER_KERNELS if k in d["transfer_ref"].columns]
         settings.append(("PhysioNet, transfer (LOSO)",
                          d["transfer_ref"], tk, TWINS))
     if d["bci_per"] is not None:
         settings.append(("BCI IV-2a, 3\\,q", d["bci_per"], REF_KERNELS, TWINS))
+    if d["cs_ref"] is not None:
+        ck = [k for k in TRANSFER_KERNELS if k in d["cs_ref"].columns]
+        settings.append(("BCI IV-2a, cross-session", d["cs_ref"], ck, TWINS))
     if not settings:
         return False
 
@@ -239,7 +259,8 @@ non-significant difference would only be an absence of evidence; TOST instead
 takes a \emph{difference} as its null, so rejecting it supports equivalence.
 The margin $m=""" + f"{margin:g}" + r"""$ accuracy was fixed in advance and is
 smaller than the weakest effect this paper claims as real (the reference-frame
-correction is worth $+0.050$ to $+0.187$). CI is the 90\,\% interval, which
+correction is worth \FrameEffectMin{} to \FrameEffectMax{} across the settings
+of this study). CI is the 90\,\% interval, which
 corresponds to TOST at $\alpha=0.05$; ``bound'' is the smallest margin at which
 equivalence would hold, so a reader preferring a stricter margin can read the
 answer off directly.}
@@ -279,11 +300,18 @@ def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
         "EquivFailQuantum": f"{int((d[~d.equivalent]['mean'] > 0).sum())}",
         "EquivFailClassical": f"{int((d[~d.equivalent]['mean'] < 0).sum())}",
         "EquivNZeroExcluded": f"{len(zero_excl)}",
-        "EquivBciPass": f"{int(d[d.setting.str.contains('IV-2a')].equivalent.sum())}",
-        "EquivBciN": f"{int((d.setting.str.contains('IV-2a')).sum())}",
-        "EquivBciWorst":
-            f"{d[d.setting.str.contains('IV-2a')]['bound'].max():.4f}",
     }
+    # Per-setting figures. Exact names: "IV-2a" would otherwise also match the
+    # cross-session setting, and the within-subject sentence would be wrong.
+    for prefix, name in (("Bci", "BCI IV-2a, 3 qubits"),
+                         ("Cs", "IV-2a cross-session"),
+                         ("Tr", "Transfer (LOSO)")):
+        sub = d[d.setting == name]
+        if not len(sub):
+            continue
+        defs[f"Equiv{prefix}Pass"] = f"{int(sub.equivalent.sum())}"
+        defs[f"Equiv{prefix}N"] = f"{len(sub)}"
+        defs[f"Equiv{prefix}Worst"] = f"{sub['bound'].max():.4f}"
     if len(zero_excl):
         r = zero_excl.iloc[0]
         defs["EquivZeroExclName"] = f"{r['kernel']} ({r['setting']})"
@@ -332,6 +360,104 @@ Pipeline & Sensor & Reference & $\Delta$ & $p$ & Better \\
             f"{esc(pipe)} & {y.mean():.3f} & {x.mean():.3f} & "
             f"${diff.mean():+.4f}$ & {fmt_p(p)} & "
             f"{int((diff > 0).sum())}/{len(diff)} \\\\"
+        )
+    out.append(r"""\hline
+\end{tabular}
+\end{table}
+""")
+    return True
+
+
+# --------------------------------------------------------------------------
+# Table: cross-session transfer
+# --------------------------------------------------------------------------
+
+def table_crosssession(d: dict, paired, fmt_p, esc, out: list[str]) -> bool:
+    ref, sen = d["cs_ref"], d["cs_sen"]
+    if ref is None:
+        return False
+    from scipy.stats import wilcoxon
+    order = ref.mean().sort_values(ascending=False).index
+
+    out.append(r"""
+%% ----------------------------------------------- Table: cross-session
+\begin{table}[htbp]
+\caption{\label{tab:crosssession}Cross-session transfer within subject on
+IV-2a. For each subject and in both directions, each model is trained on one
+recording session and tested on the other; the two directions are averaged
+per subject before any statistic is computed, so $n$ is the number of
+subjects. Hyperparameters are chosen by stratified inner cross-validation
+inside the training session alone. In the reference frame each session is
+whitened by its own label-free Fr\'echet mean. $\Delta$ is the gain from the
+reference frame, paired by subject and tested by Wilcoxon signed-rank.}
+\begin{tabular}{@{}lccccc@{}}
+\hline
+Pipeline & Sensor & Reference & $\Delta$ & $p$ & Better \\
+\hline""")
+    for pipe in order:
+        if pipe not in sen.columns:
+            continue
+        x, y = ref[pipe], sen[pipe]
+        m = x.notna() & y.notna()
+        diff = (x[m] - y[m]).to_numpy()
+        p = float(wilcoxon(diff).pvalue)
+        better = f"{int((diff > 0).sum())}/{len(diff)}"
+        if (diff > 0).all():
+            better = f"\\textbf{{{better}}}"
+        out.append(
+            f"{esc(pipe)} & {y.mean():.3f} & {x.mean():.3f} & "
+            f"${diff.mean():+.4f}$ & {fmt_p(p)} & {better} \\\\"
+        )
+    out.append(r"""\hline
+\end{tabular}
+\end{table}
+""")
+    return True
+
+
+# --------------------------------------------------------------------------
+# Table: the register sweep in both frames
+# --------------------------------------------------------------------------
+
+SWEEP_LABEL = {"HS-overlap": "HS overlap", "Fidelity": "Fidelity",
+               "Bures-d2": "Bures", "QRE": "QRE"}
+
+
+def table_sweep(d: dict, out: list[str]) -> bool:
+    sw = d["sweep"]
+    if sw is None:
+        return False
+    sw = sw.sort_values(["qubits", "kernel"])
+    base = sw[sw.qubits == sw.qubits.min()].set_index("kernel")
+
+    out.append(r"""
+%% ------------------------------------------------------ Table: sweep
+\begin{table}[htbp]
+\caption{\label{tab:sweep}Off-diagonal Gram variance versus register size in
+both frames, $n=""" + f"{int(sw.n.iloc[0])}" + r"""$ subjects, PhysioNet.
+Larger is better: a kernel whose Gram variance collapses cannot separate
+trials. ``Gain'' is reference over sensor at the same register; ``vs.\ 3\,q''
+is the reference-frame variance relative to its own three-qubit value. In the
+reference frame no kernel's variance falls below its three-qubit value at any
+larger register, so the concentration that the sensor frame exhibits is not a
+qubit-count effect once the frame is corrected.}
+\begin{tabular}{@{}llcccc@{}}
+\hline
+Register & Kernel & Sensor ($\times10^{-3}$) & Reference ($\times10^{-3}$) &
+Gain & vs.\ 3\,q \\
+\hline""")
+    prev = None
+    for _, r in sw.iterrows():
+        q = int(r.qubits)
+        lead = f"{q}\\,q ({int(2 ** q)} ch)" if q != prev else ""
+        if q != prev and prev is not None:
+            out.append(r"\hline")
+        prev = q
+        ratio = r.ref_var / base.loc[r.kernel, "ref_var"]
+        out.append(
+            f"{lead} & {SWEEP_LABEL.get(r.kernel, r.kernel)} & "
+            f"{1e3 * r.sensor_var:.2f} & {1e3 * r.ref_var:.2f} & "
+            f"{r.gain:.1f}$\\times$ & {ratio:.2f} \\\\"
         )
     out.append(r"""\hline
 \end{tabular}
@@ -480,6 +606,82 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
         # Wilcoxon's two-sided floor: the test cannot return a smaller p.
         defs["TransferFloor"] = f"{2.0 ** (1 - len(ref)):.1e}".replace("e-0", r"\times10^{-") + "}"
 
+    if d["cs_ref"] is not None:
+        ref, sen = d["cs_ref"], d["cs_sen"]
+        from scipy.stats import wilcoxon
+        qk = [k for k in TRANSFER_KERNELS if k in ref.columns]
+        cl = [c for c in ref.columns if c.startswith("classical/")]
+        defs["CsN"] = f"{len(ref)}"
+        defs["CsFloor"] = f"{2.0 ** (1 - len(ref)):.1e}".replace("e-0", r"\times10^{-") + "}"
+        if "n_train" in d["cs"].columns:
+            # Sessions are equal-sized on IV-2a, so one number describes both.
+            defs["CsTrialsPerSession"] = f"{int(d['cs'].n_train.mode().iloc[0])}"
+        if qk:
+            fr = {k: (ref[k] - sen[k]).dropna() for k in qk}
+            defs["CsFrameQMin"] = f"{min(v.mean() for v in fr.values()):+.3f}"
+            defs["CsFrameQMax"] = f"{max(v.mean() for v in fr.values()):+.3f}"
+            defs["CsFrameQMaxP"] = fmt_p(max(float(wilcoxon(v).pvalue) for v in fr.values()))
+            defs["CsFrameQAllBetter"] = (
+                "yes" if all((v > 0).all() for v in fr.values()) else "no")
+            defs["CsSensorQMin"] = f"{min(sen[k].mean() for k in qk):.3f}"
+            defs["CsSensorQMax"] = f"{max(sen[k].mean() for k in qk):.3f}"
+            defs["CsRefQMin"] = f"{min(ref[k].mean() for k in qk):.3f}"
+            defs["CsRefQMax"] = f"{max(ref[k].mean() for k in qk):.3f}"
+            bq = max(qk, key=lambda k: ref[k].mean())
+            defs["CsBestKernel"] = esc(bq)
+            defs["CsBestAcc"] = f"{ref[bq].mean():.3f}"
+        if cl:
+            fc = {c: (ref[c] - sen[c]).dropna() for c in cl}
+            defs["CsFrameClMin"] = f"{min(v.mean() for v in fc.values()):+.3f}"
+            defs["CsFrameClMax"] = f"{max(v.mean() for v in fc.values()):+.3f}"
+            defs["CsSensorClMin"] = f"{min(sen[c].mean() for c in cl):.3f}"
+            defs["CsSensorClMax"] = f"{max(sen[c].mean() for c in cl):.3f}"
+            bc = max(cl, key=lambda c: ref[c].mean())
+            defs["CsBestClassical"] = esc(bc)
+            defs["CsBestClassicalAcc"] = f"{ref[bc].mean():.3f}"
+        twin = _best_twin(ref, TWINS)
+        if twin and qk:
+            st = {k: paired(ref, k, twin) for k in qk}
+            defs["CsTwinName"] = esc(twin)
+            defs["CsTwinAcc"] = f"{ref[twin].mean():.3f}"
+            defs["CsTwinDeltaMin"] = f"{min(v['delta'] for v in st.values()):+.4f}"
+            defs["CsTwinDeltaMax"] = f"{max(v['delta'] for v in st.values()):+.4f}"
+            defs["CsTwinMinP"] = fmt_p_eq(min(v["p"] for v in st.values()))
+            defs["CsTwinAbsMax"] = f"{max(abs(v['delta']) for v in st.values()):.4f}"
+        geo = qk + [t for t in TWINS if t in ref.columns]
+        if geo:
+            defs["CsSpread"] = f"{ref[geo].mean().max() - ref[geo].mean().min():.4f}"
+
+    if d["sweep"] is not None:
+        sw = d["sweep"]
+        lo, hi = int(sw.qubits.min()), int(sw.qubits.max())
+        a, b = sw[sw.qubits == lo].set_index("kernel"), sw[sw.qubits == hi].set_index("kernel")
+        ratio = b.ref_var / a.ref_var
+        sratio = b.sensor_var / a.sensor_var
+        defs["SweepQMin"], defs["SweepQMax"] = f"{lo}", f"{hi}"
+        defs["SweepN"] = f"{int(sw.n.iloc[0])}"
+        defs["SweepRefRatioMin"] = f"{ratio.min():.1f}"
+        defs["SweepRefRatioMax"] = f"{ratio.max():.1f}"
+        defs["SweepSensorRatioMin"] = f"{sratio.min():.1f}"
+        defs["SweepSensorRatioMax"] = f"{sratio.max():.1f}"
+        defs["SweepGainLoMin"] = f"{a.gain.min():.1f}"
+        defs["SweepGainLoMax"] = f"{a.gain.max():.1f}"
+        defs["SweepGainHiMin"] = f"{b.gain.min():.1f}"
+        defs["SweepGainHiMax"] = f"{b.gain.max():.1f}"
+        # Does the reference-frame variance stay above its smallest-register
+        # value at every larger register, for every kernel? (It is not strictly
+        # monotone: three of four kernels dip slightly from 5 to 6 qubits.)
+        above = all((sw[(sw.kernel == k) & (sw.qubits > lo)].ref_var
+                     >= a.loc[k, "ref_var"]).all() for k in sw.kernel.unique())
+        defs["SweepRefAboveBase"] = "every" if above else "not every"
+        mono = all(sw[sw.kernel == k].sort_values("qubits").ref_var.is_monotonic_increasing
+                   for k in sw.kernel.unique())
+        defs["SweepRefMonotone"] = "every" if mono else "not every"
+        # The largest 5q->6q dip in the reference frame, as a fraction.
+        five = sw[sw.qubits == hi - 1].set_index("kernel")
+        dip = (1 - b.ref_var / five.ref_var).clip(lower=0)
+        defs["SweepRefDipMax"] = f"{100 * dip.max():.0f}"
+
     if d["gram"] is not None:
         g = d["gram"]
         gain = (g[g.frame == "reference"].groupby("kernel")["var"].mean()
@@ -505,6 +707,24 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
                 rows.append(crossed[0])
         if rows:
             defs["ShotCrossover"] = f"10^{{{int(round(np.log10(max(rows))))}}}"
+
+    # The frame effect over every setting in which it was measured, for the
+    # sentences that bound the equivalence margin against "the weakest effect
+    # this paper claims as real".
+    all_deltas = []
+    for per, pairs in ((d["phys_per"], FRAME_PAIRS), (d["bci_per"], FRAME_PAIRS),
+                       (d["fb_per"], FB_FRAME_PAIRS)):
+        if per is not None:
+            all_deltas += [paired(per, b, a)["delta"] for a, b, _ in pairs
+                           if a in per.columns and b in per.columns]
+    for ref, sen in ((d["transfer_ref"], d["transfer_sen"]),
+                     (d["cs_ref"], d["cs_sen"])):
+        if ref is not None:
+            all_deltas += [float((ref[k] - sen[k]).dropna().mean())
+                           for k in TRANSFER_KERNELS if k in ref.columns]
+    if all_deltas:
+        defs["FrameEffectMin"] = f"{min(all_deltas):+.3f}"
+        defs["FrameEffectMax"] = f"{max(all_deltas):+.3f}"
 
     if defs:
         out.append("\n%% ------------------------------ reference-frame macros\n")

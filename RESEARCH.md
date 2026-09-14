@@ -871,9 +871,10 @@ section measured Gram *variance* against channel count and found it rises;
 this measures *accuracy* against band count. Higher kernel variance evidently
 does not convert into accuracy, and the two dimension-increases are not the
 same operation, adding bands produces strong block structure with
-near-degenerate cross-blocks, adding channels does not. The §9 item to re-run
-the channel sweep in the reference frame is what settles this properly; until
-then, do not quote §4.1b(b)'s "run it wider" corollary without this caveat.
+near-degenerate cross-blocks, adding channels does not. **Settled in §4.12:**
+the channel sweep was re-run in the reference frame, and the "run it wider"
+corollary survives with one qualification (the reference-frame variance is
+not strictly monotone above five qubits).
 
 ---
 
@@ -936,11 +937,125 @@ them. `control/riemann-kernel-SVM` reaches 0.7657 in 15.7 s/subject against
 | PhysioNet, 5 qubits / FBCSP (§4.9) | 30 | ≈ +0.14 | none, p ≥ 0.23 |
 | PhysioNet transfer, LOSO (§4.7) | 30 | +0.040 to +0.095 | none, spread 0.014 |
 | **IV-2a, 3 qubits (this section)** | **9** | **+0.164 to +0.187** | **none, p ≥ 0.43** |
+| IV-2a, cross-session (§4.11) | 9 | +0.169 to +0.217 | none, p ≥ 0.50 |
 
-Four independent settings, two datasets, two register sizes, within- and
-cross-subject. The frame effect is large and always significant; the quantum
-geometry is never distinguishable from its classical twin. That conjunction is
-the result.
+Five independent settings, two datasets, two register sizes, within-subject,
+cross-subject and cross-session. The frame effect is large and always
+significant; the quantum geometry is never distinguishable from its classical
+twin. That conjunction is the result.
+
+---
+
+### 4.11 Cross-session transfer: the "did you try it?" question, answered
+
+**Why.** §4.7 showed that cross-*subject* shift is dominated by congruence, so
+parity there is what the algebra predicts. Cross-*session* shift within a
+subject is the complement: same head, same cap, similar impedances, so the
+congruence component should be milder and the residual (drift in
+conditioning, effective rank, spectral shape) proportionally larger. That
+residual is exactly what the invariance proposition says nothing about, and
+it is where a quantum divergence, which weights the eigenvalue spectrum
+differently from the affine-invariant metric, could still separate from its
+twin. §6 and the paper's §4.4 had named this as the most promising remaining
+place for a real effect. A reviewer would ask; so it was run.
+
+**Protocol** (`src/qeeg/crosssession.py`, 47 s for all nine subjects because
+the kernels are precomputed once over both sessions and sliced). IV-2a's two
+sessions ('0train', '1test', 144 trials each). For every subject and *both*
+directions, train on one session, test on the other. Hyperparameters by
+stratified 4-fold inner CV inside the training session only. Two frames:
+sensor, and reference with **each session whitened by its own Fréchet
+mean**, label-free, so for the test session it is the unsupervised adaptation
+a deployed decoder can legitimately do. Classical models and quantum kernels
+reuse `transfer.py`'s definitions and grids. Directions are averaged per
+subject before any statistic, so n = 9.
+
+**Results** (`results/crosssession_{folds,summary,tests}_bci2a_motor8.csv`).
+
+| pipeline | sensor | reference | frame Δ | p | better |
+|---|---|---|---|---|---|
+| Bures-RBF | 0.573 | **0.760** | +0.187 | 0.004 | 9/9 |
+| QRE-RBF | 0.576 | 0.760 | +0.184 | 0.004 | 9/9 |
+| Fidelity | 0.542 | 0.759 | +0.217 | 0.004 | 9/9 |
+| logeuclid-kernel-SVM | 0.724 | 0.755 | +0.031 | 0.020 | 8/9 |
+| riemann-kernel-SVM | 0.734 | 0.755 | +0.020 | 0.012 | 8/9 |
+| HS-overlap | 0.560 | 0.754 | +0.194 | 0.008 | 8/9 |
+| HS-RBF | 0.578 | 0.746 | +0.169 | 0.004 | 9/9 |
+| TS+LR | 0.717 | 0.738 | +0.022 | 0.039 | 8/9 |
+| MDM | 0.701 | 0.732 | +0.031 | 0.023 | 7/9 |
+
+Quantum minus the Riemannian-kernel twin, reference frame: −0.0085 (HS-RBF)
+to +0.0054 (Bures, QRE), **p ≥ 0.50 for all five**: the smallest p of the
+five is the largest such value in any setting (others: 0.18, 0.23, 0.07,
+0.43). Do *not* call the Δ range "the narrowest"; within-subject IV-2a's
+[−0.0033, +0.0016] is narrower. The five quantum kernels and two twins span
+0.0139. TOST at
+±0.02: 2/5 equivalent, largest bound 0.0281 (one accuracy per subject
+instead of fifteen folds, so the intervals are wider than within-subject
+IV-2a's 0.0109; still inside the study-wide 0.032).
+
+**Two readings.**
+
+1. *The frame matters more here than anywhere else in the study.* Sensor-frame
+   quantum kernels sit at 0.54–0.58, near chance; sensor-frame classical
+   baselines at 0.70–0.73. So session-to-session change evidently *does* have
+   a large congruence component (cap re-placement, impedance drift are
+   congruences), and a kernel without the invariance is defenceless against
+   it. The premise that cross-session shift is "milder" in congruence was
+   wrong in absolute terms; what is true is only that after recentring, the
+   residual is all that is left.
+2. *Once the frame is corrected, the geometries tie again.* The setting we
+   picked in advance as the quantum divergences' best chance is one more in
+   which they match a classical kernel differing only in metric. Either the
+   non-congruence residual is too small to matter at 3 qubits, or the
+   Bures/fidelity/QRE weightings do not exploit it better than the
+   affine-invariant one.
+
+The paper's §4.4 "what would change the conclusion" now says: candidate one
+tried, parity; candidate three (registers) settled by §4.12; what remains is
+the poorly-estimated-reference regime (few-trial calibration).
+
+---
+
+### 4.12 The register sweep, redone in both frames (resolves the §4.9 caveat)
+
+`reference.py --gram --channels {motor8,motor16,motor32,all64}`, n = 14
+subjects, PhysioNet; `results/reference_gram_sweep.csv`.
+
+| qubits | ch | kernel | sensor var | reference var | gain | ref vs 3q |
+|---|---|---|---|---|---|---|
+| 3 | 8 | HS-overlap | 0.49e-3 | 4.71e-3 | 9.5× | 1.00 |
+| 4 | 16 | HS-overlap | 0.73e-3 | 6.56e-3 | 9.0× | 1.39 |
+| 5 | 32 | HS-overlap | 0.94e-3 | 7.77e-3 | 8.3× | 1.65 |
+| 6 | 64 | HS-overlap | 3.83e-3 | 9.01e-3 | 2.4× | 1.91 |
+| 3 | 8 | Fidelity | 0.33e-3 | 1.55e-3 | 4.7× | 1.00 |
+| 6 | 64 | Fidelity | 1.36e-3 | 2.55e-3 | 1.9× | 1.65 |
+| 3 | 8 | QRE | 1.58e-3 | 8.27e-3 | 5.2× | 1.00 |
+| 6 | 64 | QRE | 7.78e-3 | 20.1e-3 | 2.6× | 2.43 |
+
+(Bures behaves like Fidelity; full table in the CSV and in the paper's
+`tab:sweep`.)
+
+What it says:
+
+- **In the reference frame, no kernel's Gram variance falls below its
+  three-qubit value at any larger register**, and at six qubits it is
+  1.6–2.4× the three-qubit value. The Thanasilp-type exponential collapse
+  with qubit count is absent from the density-matrix family in *either*
+  frame. §4.1b(b)'s "the density-matrix route tolerates wider registers"
+  survives the frame correction.
+- **The gain from recentring narrows** from 4.7–9.5× at 3q to 1.9–2.6× at 6q,
+  but because the *sensor-frame* variance rises 4.1–7.7× over the range, not
+  because the reference frame deteriorates. With 64 channels the covariances
+  are simply more diverse to begin with.
+- One qualification: reference-frame variance is **not strictly monotone**.
+  Fidelity, Bures and QRE dip by up to 8 % (7.5 %, Bures) from 5q to 6q.
+  HS-overlap is monotone. Do not write "rises monotonically"; write "never falls below
+  the 3-qubit value".
+
+This does not change the metric-matched comparison: at 5 qubits (§4.9) the
+twin already tied. It removes a *concern* (that concentration would return at
+scale), not the parity.
 
 ---
 

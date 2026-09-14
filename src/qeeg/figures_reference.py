@@ -18,6 +18,9 @@ fig7_frame      what the correction is worth, per subject, on both datasets
 fig8_twin       the decisive control: quantum kernels against a classical
                 kernel differing only in the metric, in four settings
 fig9_transfer   cross-subject transfer, and the finite-shot budget
+fig10_crosssession_sweep
+                cross-session transfer on IV-2a, and the register sweep to
+                six qubits in both frames
 """
 
 from __future__ import annotations
@@ -90,9 +93,19 @@ def fig_circuits(out: Path) -> bool:
     before drawing anything. Kept as a thin wrapper so the existing entry point
     cannot regenerate the old, unverified version.
     """
-    from .figures_circuits import fig_circuits as _qiskit_circuits
-
-    return _qiskit_circuits(out)
+    try:
+        from .figures_circuits import fig_circuits as _qiskit_circuits
+        return _qiskit_circuits(out)
+    except ImportError as exc:  # qiskit absent on this machine
+        print(f"  skip fig5_circuits: {exc} (pip install qiskit pylatexenc); "
+              "an existing rendering, if any, is left in place")
+        return False
+    except Exception as exc:  # noqa: BLE001 - e.g. qiskit's optional drawer deps
+        # Qiskit raises its own MissingOptionalLibraryError, not ImportError,
+        # when pylatexenc is missing. One figure's renderer must not take the
+        # other five down with it.
+        print(f"  skip fig5_circuits: {type(exc).__name__}: {exc}")
+        return False
 
 
 def _schematic(ax):
@@ -356,11 +369,21 @@ def fig_twin(res: Path, out: Path) -> bool:
         settings.append(("BCI IV-2a, 3 qubits", _per(bci),
                          [b for _, b, _ in FRAME_PAIRS],
                          "control/riemann-kernel-SVM"))
+    cs = _read(res, "crosssession_folds_bci2a_motor8.csv")
+    if cs is not None:
+        per_c = (cs[cs.frame == "reference"]
+                 .groupby(["pipeline", "subject"])["accuracy"]
+                 .mean().unstack("pipeline"))
+        settings.append(("IV-2a, cross-session", per_c,
+                         ["quantum/Fidelity", "quantum/HS-overlap",
+                          "quantum/HS-RBF", "quantum/Bures-RBF",
+                          "quantum/QRE-RBF"],
+                         "control/riemann-kernel-SVM"))
     if not settings:
         return False
 
     F._style()
-    fig, ax = plt.subplots(figsize=(7.8, 4.6))
+    fig, ax = plt.subplots(figsize=(7.8, 5.4))
     labels, ypos, y = [], [], 0.0
     groups = []                       # (name, y_top, y_bottom) for banding
     for name, per, kernels, twin in settings:
@@ -382,14 +405,15 @@ def fig_twin(res: Path, out: Path) -> bool:
         groups.append((name, y_top, y + 1.0, len(per)))
         y -= 1.0
 
-    xmax = 0.043
+    xmax = 0.047
     # Group name sits in the dead space to the right, so it never collides
-    # with the kernel labels on the left.
+    # with the kernel labels on the left. 0.0285 clears the widest n = 9
+    # interval (about 0.026) with a small gap.
     for gi, (name, y_top, y_bot, n) in enumerate(groups):
         if gi % 2 == 0:
             ax.axhspan(y_bot - 0.45, y_top + 0.45, color=GRID, alpha=0.35,
                        zorder=0)
-        ax.text(0.0245, (y_top + y_bot) / 2, f"{name}\n$n={n}$", fontsize=8.4,
+        ax.text(0.0285, (y_top + y_bot) / 2, f"{name}\n$n={n}$", fontsize=8.4,
                 fontweight="bold", color=INK, va="center", ha="left",
                 linespacing=1.5)
 
@@ -398,7 +422,7 @@ def fig_twin(res: Path, out: Path) -> bool:
     ax.set_yticklabels(labels, fontsize=8)
     ax.set_xlabel(r"$\Delta$ accuracy, quantum kernel $-$ classical twin"
                   "\n(95% CI; same data, same SVM, same frame, only the metric differs)")
-    ax.set_xlim(-0.038, xmax)
+    ax.set_xlim(-0.036, xmax)
     ax.set_xticks([-0.03, -0.02, -0.01, 0.0, 0.01, 0.02])
     ax.set_ylim(y + 0.6, 1.0)
     F._despine(ax)
@@ -406,9 +430,86 @@ def fig_twin(res: Path, out: Path) -> bool:
     F._caption(fig, (
         "Every interval crosses zero: no quantum kernel is distinguishable "
         "from a classical SPD kernel that differs from it\nonly in the metric, "
-        "in any of the four settings. Note the axis range: the whole plot spans "
-        "eight accuracy\npoints, against a frame effect of up to 19."))
+        f"in any of the {len(groups)} settings. Note the axis range: the whole "
+        "plot spans eight accuracy\npoints, against a frame effect of up to 22."))
     F._save(fig, out, "fig8_twin")
+    return True
+
+
+# ==========================================================================
+# Figure 10: cross-session transfer, and the register sweep in both frames
+# ==========================================================================
+
+def fig_crosssession_sweep(res: Path, out: Path) -> bool:
+    cs = _read(res, "crosssession_folds_bci2a_motor8.csv")
+    sw = _read(res, "reference_gram_sweep.csv")
+    if cs is None and sw is None:
+        return False
+    F._style()
+    fig, axes = plt.subplots(1, 2, figsize=(9.4, 3.7),
+                             gridspec_kw={"width_ratios": [1.35, 1.0]})
+
+    if cs is not None:
+        ax = axes[0]
+        per = (cs.groupby(["frame", "pipeline", "subject"])["accuracy"]
+               .mean().unstack("pipeline"))
+        ref, sen = per.loc["reference"].mean(), per.loc["sensor"].mean()
+        order = ref.sort_values().index
+        ys = np.arange(len(order))
+        for y, p in zip(ys, order):
+            ax.plot([sen[p], ref[p]], [y, y], color=GRID, lw=2.4, zorder=1,
+                    solid_capstyle="round")
+        ax.scatter(sen[order], ys, s=26, color=SENSOR_C, zorder=3, label="Sensor")
+        ax.scatter(ref[order], ys, s=26, color=REF_C, zorder=3, label="Reference")
+        for y, p in zip(ys, order):
+            q = p.startswith("quantum")
+            ax.text(0.462, y, "Q" if q else "C", fontsize=7,
+                    color=ORANGE if q else BLUE, va="center", fontweight="bold")
+        ax.set_yticks(ys)
+        ax.set_yticklabels([p.split("/")[-1].replace("-SVM", "")
+                            for p in order], fontsize=7.6)
+        ax.axvline(0.5, color=INK_MUTED, lw=0.8, ls=":")
+        ax.set_xlabel("cross-session accuracy, both directions averaged")
+        ax.set_xlim(0.45, 0.80)
+        ax.legend(fontsize=7.5, loc="lower right")
+        F._despine(ax)
+        ax.text(-0.42, 1.05, "a", transform=ax.transAxes, fontsize=11,
+                fontweight="bold", color=INK)
+
+    if sw is not None:
+        ax = axes[1]
+        style = {"HS-overlap": ("o", "HS overlap"), "Fidelity": ("s", "Fidelity"),
+                 "Bures-d2": ("^", "Bures"), "QRE": ("D", "QRE")}
+        for kern, (mk, lab) in style.items():
+            sub = sw[sw.kernel == kern].sort_values("qubits")
+            if not len(sub):
+                continue
+            ax.plot(sub.qubits, sub.ref_var, "-", color=REF_C, marker=mk,
+                    ms=3.8, lw=1.4)
+            ax.plot(sub.qubits, sub.sensor_var, "--", color=SENSOR_C, marker=mk,
+                    ms=3.8, lw=1.2, mfc="white")
+            ax.plot([], [], "-", color=INK_MUTED, marker=mk, ms=3.8, label=lab)
+        ax.plot([], [], "-", color=REF_C, label="Reference")
+        ax.plot([], [], "--", color=SENSOR_C, label="Sensor")
+        ax.set_yscale("log")
+        ax.set_xticks(sorted(sw.qubits.unique()))
+        ax.set_xticklabels([f"{int(q)}q\n{int(2 ** q)} ch"
+                            for q in sorted(sw.qubits.unique())], fontsize=7.6)
+        ax.set_xlabel("register")
+        ax.set_ylabel("off-diagonal Gram variance")
+        ax.legend(fontsize=6.8, loc="lower right", ncol=2)
+        F._despine(ax)
+        ax.text(-0.26, 1.05, "b", transform=ax.transAxes, fontsize=11,
+                fontweight="bold", color=INK)
+
+    F._caption(fig, (
+        "(a) Cross-session transfer on IV-2a: in the sensor frame the quantum "
+        "kernels sit near chance while the classical\nbaselines do not; "
+        "recentring each session by its own label-free mean closes the gap "
+        "and leaves every geometry tied.\n(b) Gram variance versus register "
+        "in both frames: in the reference frame no kernel falls below its "
+        "three-qubit value at any larger register."))
+    F._save(fig, out, "fig10_crosssession_sweep")
     return True
 
 
@@ -515,6 +616,7 @@ def main(argv=None) -> int:
         "fig7_frame": fig_frame(res, out),
         "fig8_twin": fig_twin(res, out),
         "fig9_transfer_shots": fig_transfer_shots(res, out),
+        "fig10_crosssession_sweep": fig_crosssession_sweep(res, out),
     }
     for k, v in built.items():
         print(f"  {'ok  ' if v else 'skip'} {k}")

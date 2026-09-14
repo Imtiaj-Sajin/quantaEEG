@@ -304,6 +304,10 @@ def main(argv=None) -> int:
         built.append("equivalence (TOST)")
     if rt.table_transfer(ref, paired, fmt_p, esc, out):
         built.append("transfer")
+    if rt.table_crosssession(ref, paired, fmt_p, esc, out):
+        built.append("cross-session")
+    if rt.table_sweep(ref, out):
+        built.append("register sweep")
     if rt.table_shots(ref, out):
         built.append("shots")
     rt.macros(ref, paired, fmt_p, esc, mac)
