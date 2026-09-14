@@ -188,6 +188,10 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
 - **PhysioNet downloads are slow** (~50 s/file, 3 files/subject). First run of
   30 subjects spends ~40 min downloading. `prefetch.py` warms the cache with a
   thread pool; data caches to `~/mne_data` and is reused thereafter.
+- **Set `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1` for any
+  parallel batch.** Each benchmark process otherwise spawns a full BLAS thread
+  pool; five processes on twelve cores ran slower than one until this was set.
+  `scripts/run_when_cached.sh` does it for the Cho2017 batches.
 - **Check for duplicate runs.** `tasklist`/`ps` under Git Bash have returned
   empty output unreliably here; verify with PowerShell
   `Get-CimInstance Win32_Process` before concluding a process died. Two
