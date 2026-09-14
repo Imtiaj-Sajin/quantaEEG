@@ -105,6 +105,16 @@ hand-transcribed manuscript silently rots.
 **The draft compiles cleanly: 20 pages, 0 undefined references, 0 overfull
 boxes, 0 BibTeX warnings** (MiKTeX/`latexmk`, 2026-09-05, `iopjournal`).
 
+### Overleaf
+
+`python paper/make_overleaf_zip.py --check` packs `main.tex`, the generated
+macro and table files, `refs.bib`, the IOP class, its ORCID icon, the
+bibliography style and every figure PDF the document includes into
+`paper/build/quantaEEG-overleaf.zip`, then unpacks it into a temporary
+directory and compiles it there. Upload the zip as a new Overleaf project;
+nothing else is needed. Rebuild it after every `make_tables.py` run, since the
+zip carries copies of the generated files.
+
 ### The `-outdir` BibTeX trap
 
 Building with `-outdir=build` runs BibTeX *inside* `build/`, where it cannot
