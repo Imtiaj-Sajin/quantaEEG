@@ -87,6 +87,28 @@
 \newcommand{\BciFrameMaxP}{0.004}
 \newcommand{\BciFrameAllBetter}{yes}
 \newcommand{\BciFrameN}{9}
+\newcommand{\FourQFrameMin}{+0.075}
+\newcommand{\FourQFrameMax}{+0.106}
+\newcommand{\FourQFrameBestKernel}{HS overlap}
+\newcommand{\FourQFrameMaxP}{0.004}
+\newcommand{\FourQFrameAllBetter}{no}
+\newcommand{\FourQFrameN}{30}
+\newcommand{\FourQTwinName}{control/riemann-kernel-SVM}
+\newcommand{\FourQTwinAcc}{0.625}
+\newcommand{\FourQBestKernel}{quantum/Bures-RBF-ref-SVM}
+\newcommand{\FourQBestAcc}{0.626}
+\newcommand{\FourQTwinDeltaMin}{-0.0114}
+\newcommand{\FourQTwinDeltaMax}{+0.0005}
+\newcommand{\FourQTwinMinP}{\ensuremath{{}={}}0.253}
+\newcommand{\FourQNSubjects}{30}
+\newcommand{\FourQBestClassical}{classical/TS+LR}
+\newcommand{\FourQBestClassicalAcc}{0.606}
+\newcommand{\FourQHeadRefDelta}{+0.0200}
+\newcommand{\FourQHeadRefP}{\ensuremath{{}={}}0.016}
+\newcommand{\FourQHeadRefBetter}{21/30}
+\newcommand{\FourQTwinHeadDelta}{+0.0195}
+\newcommand{\FourQTwinHeadP}{\ensuremath{{}={}}0.017}
+\newcommand{\FourQTwinHeadBetter}{17/30}
 \newcommand{\PhysCostTwinSec}{3.2}
 \newcommand{\PhysCostSlowName}{quantum/Bures-RBF-ref-SVM}
 \newcommand{\PhysCostSlowSec}{12.1}
@@ -163,14 +185,15 @@
 %% ------------------------------ equivalence macros
 
 \newcommand{\EquivMargin}{0.02}
-\newcommand{\EquivN}{25}
-\newcommand{\EquivPass}{15}
+\newcommand{\EquivN}{30}
+\newcommand{\EquivPass}{19}
 \newcommand{\EquivWorstBound}{0.032}
 \newcommand{\EquivFailQuantum}{6}
-\newcommand{\EquivFailClassical}{4}
+\newcommand{\EquivFailClassical}{5}
 \newcommand{\EquivNZeroExcluded}{1}
-\newcommand{\EquivNSettings}{five}
+\newcommand{\EquivNSettings}{six}
 \newcommand{\EquivNDatasets}{two}
+\newcommand{\EquivNRegisters}{three}
 \newcommand{\EquivBciPass}{5}
 \newcommand{\EquivBciN}{5}
 \newcommand{\EquivBciWorst}{0.0109}
@@ -180,5 +203,8 @@
 \newcommand{\EquivTrPass}{3}
 \newcommand{\EquivTrN}{5}
 \newcommand{\EquivTrWorst}{0.0235}
+\newcommand{\EquivFourQPass}{4}
+\newcommand{\EquivFourQN}{5}
+\newcommand{\EquivFourQWorst}{0.0263}
 \newcommand{\EquivZeroExclName}{HS overlap (Transfer (LOSO))}
 \newcommand{\EquivZeroExclDelta}{+0.0119}

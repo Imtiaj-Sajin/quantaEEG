@@ -328,6 +328,12 @@ def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
     defs["EquivNDatasets"] = words[len({
         "PhysioNet" if "PhysioNet" in s or "Transfer" in s
         else "Cho2017" if "Cho2017" in s else "IV-2a" for s in d.setting})]
+    # Register sizes: "N qubits" in the setting name; the transfer and
+    # cross-session suites run on the eight-channel, three-qubit register.
+    import re
+    regs = {int(m.group(1)) if (m := re.search(r"(\d) qubits", s)) else 3
+            for s in d.setting}
+    defs["EquivNRegisters"] = words[len(regs)]
     # Per-setting figures. Exact names: "IV-2a" would otherwise also match the
     # cross-session setting, and the within-subject sentence would be wrong.
     for prefix, name in (("Bci", "BCI IV-2a, 3 qubits"),
@@ -693,6 +699,13 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
             defs[prefix + "HeadRefDelta"] = f"{s['delta']:+.4f}"
             defs[prefix + "HeadRefP"] = fmt_p_eq(s["p"])
             defs[prefix + "HeadRefBetter"] = f"{s['n_better']}/{s['n']}"
+            # The same comparison for the classical twin: if the twin leads the
+            # best classical baseline by as much as the quantum kernel does,
+            # the lead is the frame and the kernel formulation, not the metric.
+            t = paired(per, twin, bc)
+            defs[prefix + "TwinHeadDelta"] = f"{t['delta']:+.4f}"
+            defs[prefix + "TwinHeadP"] = fmt_p_eq(t["p"])
+            defs[prefix + "TwinHeadBetter"] = f"{t['n_better']}/{t['n']}"
 
     # 16 channels = 4 qubits, same suite, same pipeline names.
     if d["m16_per"] is not None:

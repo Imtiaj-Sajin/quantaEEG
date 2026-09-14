@@ -88,8 +88,9 @@ raised Gram variance several-fold and improved every kernel, by up to
 \PhysFrameMax{} on PhysioNet and \BciFrameMax{} on IV-2a, the latter in every
 subject, reversing the headline comparison from $\HeadSensorDelta$ for the best
 classical pipeline to $\HeadRefDelta$ against it. The twin control shows this
-is not quantum. Across \EquivNSettings{} settings (two datasets, two register sizes,
-within-subject, cross-subject and cross-session evaluation), two one-sided
+is not quantum. Across \EquivNSettings{} settings (\EquivNDatasets{} datasets,
+\EquivNRegisters{} register sizes, within-subject, cross-subject and
+cross-session evaluation), two one-sided
 tests place the two families within $\pm\EquivWorstBound$ accuracy in all
 \EquivN{} comparisons, and within a pre-specified $\pm\EquivMargin$ in
 \EquivPass{} of them. Parity held against filter-bank CSP and in cross-session
@@ -810,8 +811,9 @@ differs from a classical Riemannian kernel in exactly one respect: the metric.
 Both consume the same covariances, both are used as precomputed kernels in the
 same support vector machine, both receive the same tuning budget, and after
 (\ref{eq:refstate}) both are affine-invariant. Table~\ref{tab:twin} reports that
-comparison in \EquivNSettings{} settings: two datasets, two register sizes, and
-within-subject, cross-subject and cross-session evaluation.
+comparison in \EquivNSettings{} settings: \EquivNDatasets{} datasets,
+\EquivNRegisters{} register sizes, and within-subject, cross-subject and
+cross-session evaluation.
 
 In none of them is any quantum kernel distinguishable from its classical twin
 (figure~\ref{fig:twin}).
@@ -878,7 +880,7 @@ range: the entire plot spans eight accuracy points, against a frame effect
 (tables~\ref{tab:frame} and \ref{tab:crosssession}) of up to $\CsFrameQMax$.}
 \end{figure}
 
-\subsection{Filter-bank baselines and a larger register}
+\subsection{Filter-bank baselines and larger registers}
 \label{sec:filterbank}
 
 Since the reference-frame kernels reach the top of the table, the relevant
@@ -898,6 +900,22 @@ as well (table~\ref{tab:twin}). The frame effect is larger here than at three
 qubits, \FbFrameMin{} to \FbFrameMax; in the sensor frame the five-qubit
 kernels fall to chance and are the only comparisons in that family to survive
 Holm correction, in the unfavourable direction.
+
+The other route to a larger register is more channels. Running the same
+suite on sixteen sensorimotor channels, a four-qubit register, gives the same
+picture (tables~\ref{tab:frame} and \ref{tab:twin}): the frame is worth
+\FourQFrameMin{} to \FourQFrameMax{} ($n=\FourQFrameN$, all
+$p\le\FourQFrameMaxP$), the best reference-frame kernel, \FourQBestKernel,
+reaches \FourQBestAcc{} against \FourQTwinAcc{} for the twin, and the five
+differences span \FourQTwinDeltaMin{} to \FourQTwinDeltaMax{} (smallest
+$p\FourQTwinMinP$). This register is also where the uncontrolled comparison
+is most seductive. Against \FourQBestClassical{} the best reference-frame
+quantum kernel leads by \FourQHeadRefDelta{} ($p\FourQHeadRefP$, better in
+\FourQHeadRefBetter{} subjects), which unlike the three-qubit case
+(section~\ref{sec:refresults}) is conventionally significant; the classical
+twin leads the same baseline by \FourQTwinHeadDelta{} ($p\FourQTwinHeadP$).
+Without the twin, four qubits would have supplied a significant quantum
+advantage on thirty subjects.
 
 \subsection{Cross-subject transfer}
 \label{sec:transfer}

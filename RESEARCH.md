@@ -938,8 +938,9 @@ them. `control/riemann-kernel-SVM` reaches 0.7657 in 15.7 s/subject against
 | PhysioNet transfer, LOSO (§4.7) | 30 | +0.040 to +0.095 | none, spread 0.014 |
 | **IV-2a, 3 qubits (this section)** | **9** | **+0.164 to +0.187** | **none, p ≥ 0.43** |
 | IV-2a, cross-session (§4.11) | 9 | +0.169 to +0.217 | none, p ≥ 0.50 |
+| PhysioNet, 4 qubits / 16 ch (§4.13) | 30 | +0.075 to +0.106 | none, p ≥ 0.25 |
 
-Five independent settings, two datasets, two register sizes, within-subject,
+Six independent settings, two datasets, three register sizes, within-subject,
 cross-subject and cross-session. The frame effect is large and always
 significant; the quantum geometry is never distinguishable from its classical
 twin. That conjunction is the result.
@@ -1056,6 +1057,39 @@ What it says:
 This does not change the metric-matched comparison: at 5 qubits (§4.9) the
 twin already tied. It removes a *concern* (that concentration would return at
 scale), not the parity.
+
+---
+
+### 4.13 Sixteen channels (4 qubits): the false positive becomes *significant*
+
+Same extended suite, `--channels motor16` (16 sensorimotor channels, one
+density matrix on 4 qubits), n = 30, nested CV, five batches merged into
+`raw_folds_refstate_motor16_q4.csv` (~250 s/subject/process).
+
+| pipeline | acc | vs TS+LR | p |
+|---|---|---|---|
+| Bures-RBF-ref-SVM | **0.626** | +0.020 | 0.016 |
+| riemann-kernel-SVM (twin) | 0.625 | +0.020 | 0.017 |
+| QRE-RBF-ref-SVM | 0.624 | +0.018 | 0.018 |
+| logeuclid-kernel-SVM | 0.623 | +0.017 | 0.155 |
+| HS-overlap-ref-SVM | 0.622 | +0.016 | 0.116 |
+| HS-RBF-ref-SVM | 0.619 | +0.013 | 0.219 |
+| Fidelity-ref-SVM | 0.614 | +0.008 | 0.435 |
+| TS+LR | 0.606 | — | — |
+| CSP+LDA | 0.600 | −0.006 | 0.597 |
+| sensor-frame quantum kernels | 0.516–0.542 | −0.063 to −0.090 | ≤ 0.013 |
+
+- Frame effect +0.075 to +0.106, all p ≤ 0.004 (larger than at 8 channels,
+  +0.050 to +0.106).
+- Quantum − twin: −0.0114 to +0.0005, min p = 0.253. TOST at ±0.02: 4/5,
+  worst bound 0.0263.
+- **The point of this run.** At 3 qubits the uncontrolled headline was
+  +0.018, p = 0.059 (§4.6): suggestive, not significant. At 4 qubits it is
+  **+0.020, p = 0.016, 21/30 subjects**: a result that would be reported as a
+  quantum advantage on thirty subjects with nested CV. The twin leads TS+LR
+  by the identical +0.020 (p = 0.017). So the "advantage" is exactly the
+  frame plus the SPD-kernel formulation, again, but this time it clears the
+  conventional bar without the control. This is now in the paper's §3.6.
 
 ---
 
