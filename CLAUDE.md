@@ -105,7 +105,7 @@ abstract (*Objective / Approach / Main results / Significance*).
 
 **The one rule: no number is ever typed into `main.tex` by hand.** Every figure
 quoted in the prose is a LaTeX macro (`\PrimaryDelta`, `\BestClassicalAcc`, …)
-and all eleven tables are generated from the result CSVs by
+and all fourteen tables are generated from the result CSVs by
 `python paper/make_tables.py`. After any new benchmark run, re-run it and the
 manuscript is consistent by construction. This is deliberate: the study is
 ongoing, numbers will change, and a hand-transcribed manuscript rots silently.
@@ -120,8 +120,8 @@ cd paper && latexmk -pdf main.tex
 cross-references, unbalanced environments and missing figures, the things that
 would otherwise only surface on first compile.
 
-**Compiles.** MiKTeX/`latexmk`: 20 pages, 0 warnings, 0 overfull boxes, 11
-tables, 10 figures, 35 references. Run `bash paper/get_iop_class.sh` once
+**Compiles.** MiKTeX/`latexmk`: 26 pages, 0 warnings, 0 overfull boxes, 14
+tables, 11 figures, 37 references. Run `bash paper/get_iop_class.sh` once
 first: it downloads IOP's own `ioplatextemplate.zip` and extracts
 `iopjournal.cls` + `orcid.pdf` (neither is on CTAN).
 
@@ -257,6 +257,14 @@ size is identical at 3 qubits and the datasets are directly comparable.
    quantum kernels sit near chance (0.54-0.58) while classical baselines hold
    0.70-0.73; per-session recentring is worth +0.17 to +0.22 (9/9 subjects)
    and then quantum minus twin is within ±0.009, p ≥ 0.5.
+7. **Cho2017, n = 52 (§4.15), holds the one comparison that favours a
+   quantum kernel:** Fidelity-ref beats the twin by +0.010 (p = 0.0015,
+   39/52), inside the ±0.02 margin (TOST 5/5), and does *not* beat TS+LR
+   (+0.004, p = 0.17), which itself beats the twin there. Frame effect is
+   smallest on this dataset (+0.012 to +0.063) because its sensor-frame
+   kernels start higher. The paper names this in the abstract and calls it
+   a one-point metric effect, not quantum advantage. Do not bury it and do
+   not inflate it.
 
 ## Where to take it next
 

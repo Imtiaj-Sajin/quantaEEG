@@ -67,6 +67,7 @@ def load(res: Path) -> dict:
         return pd.read_csv(p) if p.exists() else None
 
     d = {
+        "_res": res,
         "phys": maybe("raw_folds_refstate_motor8_q4.csv"),
         "phys_summary": maybe("summary_refstate_motor8_q4.csv"),
         "bci": maybe("raw_folds_refstate_bci2a_motor8_q4.csv"),
@@ -223,9 +224,11 @@ only the metric differs. The comparator is the stronger of the two classical
 kernels in each setting, which is the conservative choice. Columns give the
 best quantum kernel in that setting, the classical twin, their difference, and
 the smallest $p$ obtained by \emph{any} of the five quantum kernels against the
-twin. At the primary partition no quantum kernel is distinguishable from its
-classical twin in any setting; table~\ref{tab:seeds} repeats the PhysioNet
-row under two further partitions.}
+twin. At the primary partition no quantum kernel separates from its classical
+twin by more than the study-wide equivalence bound; the one significant
+separation, the fidelity kernel on Cho2017, is discussed in the text, and
+table~\ref{tab:seeds} repeats the PhysioNet row under two further
+partitions.}
 \begin{tabular}{@{}lccccc@{}}
 \hline
 Setting & $n$ & Quantum & Twin & $\Delta$ (range over 5) & $\min p$ \\
@@ -276,10 +279,12 @@ def table_equivalence(res: Path, out: list[str], margin: float = 0.02) -> bool:
 twin, by two one-sided tests on the paired per-subject differences. A
 non-significant difference would only be an absence of evidence; TOST instead
 takes a \emph{difference} as its null, so rejecting it supports equivalence.
-The margin $m=""" + f"{margin:g}" + r"""$ accuracy was fixed in advance and is
-smaller than the weakest effect this paper claims as real (the reference-frame
-correction is worth \FrameEffectMin{} to \FrameEffectMax{} across the settings
-of this study). CI is the 90\,\% interval, which
+The margin $m=""" + f"{margin:g}" + r"""$ accuracy was fixed in advance, when
+the two datasets then available put the reference-frame correction at
+\PhysFrameMin{} or more for every kernel; across all settings it now spans
+\FrameEffectMin{} to \FrameEffectMax, and the two Cho2017 kernels that gain
+less than the margin are noted in the text rather than used to move it. CI is
+the 90\,\% interval, which
 corresponds to TOST at $\alpha=0.05$; ``bound'' is the smallest margin at which
 equivalence would hold, so a reader preferring a stricter margin can read the
 answer off directly.}
@@ -352,6 +357,14 @@ def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
         r = zero_excl.iloc[0]
         defs["EquivZeroExclName"] = f"{r['kernel']} ({r['setting']})"
         defs["EquivZeroExclDelta"] = f"{r['mean']:+.4f}"
+        # All of them, as a sentence fragment, so the prose can name each one
+        # however many there turn out to be.
+        items = [f"{x['kernel']} on {x['setting'].replace(', 3 qubits', '')} "
+                 f"at ${x['mean']:+.4f}$" for _, x in zero_excl.iterrows()]
+        defs["EquivZeroExclList"] = (items[0] if len(items) == 1
+                                     else ", ".join(items[:-1]) + " and " + items[-1])
+        defs["EquivZeroExclAllQuantum"] = (
+            "yes" if (zero_excl["mean"] > 0).all() else "no")
     out.append("\n%% ------------------------------ equivalence macros\n")
     for k, v in defs.items():
         out.append(f"\\newcommand{{\\{k}}}{{{v}}}")
@@ -693,6 +706,18 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
         defs[prefix + "TwinDeltaMax"] = f"{max(v['delta'] for v in st.values()):+.4f}"
         defs[prefix + "TwinMinP"] = fmt_p_eq(min(v["p"] for v in st.values()))
         defs[prefix + "NSubjects"] = f"{len(per)}"
+        # The kernel that leads the twin by most, with its own test, so the
+        # prose can name it without hand-typing anything.
+        top = max(ks, key=lambda k: st[k]["delta"])
+        defs[prefix + "TwinTopKernel"] = esc(top)
+        defs[prefix + "TwinTopDelta"] = f"{st[top]['delta']:+.4f}"
+        defs[prefix + "TwinTopP"] = fmt_p_eq(st[top]["p"])
+        defs[prefix + "TwinTopBetter"] = f"{st[top]['n_better']}/{st[top]['n']}"
+        others = [k for k in ks if k != top]
+        if others:
+            defs[prefix + "TwinRestDeltaMin"] = f"{min(st[k]['delta'] for k in others):+.4f}"
+            defs[prefix + "TwinRestDeltaMax"] = f"{max(st[k]['delta'] for k in others):+.4f}"
+            defs[prefix + "TwinRestMinP"] = fmt_p_eq(min(st[k]["p"] for k in others))
         cl = [c for c in per.columns if c.startswith("classical/")]
         if cl:
             bc = per[cl].mean().idxmax()
@@ -719,6 +744,31 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
     if d["cho_per"] is not None:
         frame_stats(d["cho_per"], FRAME_PAIRS, "Cho")
         twin_stats(d["cho_per"], REF_KERNELS, TWINS, "Cho")
+        # Trials per subject come from the batch metadata the merge was built
+        # from; the merged meta records only the file list.
+        import glob
+        import json
+        counts = {}
+        for f in glob.glob(str(Path(d["_res"]) / "meta_cho_batch*.json")):
+            counts.update(json.load(open(f, encoding="utf-8"))
+                          .get("n_trials_per_subject", {}))
+        if counts:
+            vals = sorted(set(int(v) for v in counts.values()))
+            defs["ChoNTrialsMin"] = f"{vals[0]}"
+            defs["ChoNTrialsMax"] = f"{vals[-1]}"
+            defs["ChoNTrialsMaxCount"] = f"{sum(int(v) == vals[-1] for v in counts.values())}"
+        # Sensor-frame position of the best quantum kernel against the best
+        # classical baseline on this dataset: the "classical wins in the sensor
+        # frame" statement has to hold here too before the abstract says it.
+        per = d["cho_per"]
+        sq = [a for a, _, _ in FRAME_PAIRS if a in per.columns]
+        cl = [c for c in per.columns if c.startswith("classical/")]
+        if sq and cl:
+            bq, bc = per[sq].mean().idxmax(), per[cl].mean().idxmax()
+            s = paired(per, bc, bq)
+            defs["ChoHeadSensorDelta"] = f"{s['delta']:+.4f}"
+            defs["ChoHeadSensorP"] = fmt_p_eq(s["p"])
+            defs["ChoSensorBestQuantum"] = esc(bq)
 
     # Seeds: does the decisive comparison depend on the fold partition?
     seeds = d.get("seeds_per", {})
@@ -913,7 +963,8 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
     # this paper claims as real".
     all_deltas = []
     for per, pairs in ((d["phys_per"], FRAME_PAIRS), (d["bci_per"], FRAME_PAIRS),
-                       (d["fb_per"], FB_FRAME_PAIRS)):
+                       (d["fb_per"], FB_FRAME_PAIRS), (d["m16_per"], FRAME_PAIRS),
+                       (d["cho_per"], FRAME_PAIRS)):
         if per is not None:
             all_deltas += [paired(per, b, a)["delta"] for a, b, _ in pairs
                            if a in per.columns and b in per.columns]

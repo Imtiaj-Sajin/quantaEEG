@@ -193,6 +193,12 @@ PhysioNet, 4\,q ($n=30$) & Fidelity & 0.516 & 0.614 & $\bf +0.0983$ & 0.001 & 21
  & Bures-RBF & 0.543 & 0.626 & $\bf +0.0827$ & \ensuremath{<}0.001 & 23/30 \\
  & QRE-RBF & 0.541 & 0.624 & $\bf +0.0827$ & \ensuremath{<}0.001 & 26/30 \\
 \hline
+Cho2017, 3\,q ($n=52$) & Fidelity & 0.615 & 0.648 & $\bf +0.0332$ & \ensuremath{<}0.001 & 40/52 \\
+ & HS overlap & 0.579 & 0.642 & $\bf +0.0633$ & \ensuremath{<}0.001 & 47/52 \\
+ & HS-RBF & 0.600 & 0.637 & $\bf +0.0367$ & \ensuremath{<}0.001 & 42/52 \\
+ & Bures-RBF & 0.627 & 0.639 & $\bf +0.0117$ & 0.009 & 33/52 \\
+ & QRE-RBF & 0.629 & 0.641 & $\bf +0.0125$ & 0.002 & 36/52 \\
+\hline
 IV-2a, 3\,q ($n=9$) & Fidelity & 0.580 & 0.767 & $\bf +0.1873$ & 0.004 & \textbf{9/9} \\
  & HS overlap & 0.586 & 0.762 & $\bf +0.1760$ & 0.004 & \textbf{9/9} \\
  & HS-RBF & 0.595 & 0.763 & $\bf +0.1678$ & 0.004 & \textbf{9/9} \\
@@ -225,6 +231,7 @@ PhysioNet, 5\,q, filter bank & 30 & 0.648 & 0.637 & $[+0.0000, +0.0111]$ & 0.234
 PhysioNet, transfer (LOSO) & 30 & 0.647 & 0.635 & $[+0.0000, +0.0119]$ & 0.072 \\
 BCI IV-2a, 3\,q & 9 & 0.767 & 0.766 & $[-0.0033, +0.0016]$ & 0.426 \\
 BCI IV-2a, cross-session & 9 & 0.760 & 0.755 & $[-0.0085, +0.0054]$ & 0.500 \\
+Cho2017, 3\,q & 52 & 0.648 & 0.638 & $[-0.0008, +0.0100]$ & 0.001 \\
 \hline
 \end{tabular}
 \end{table}
@@ -236,10 +243,12 @@ BCI IV-2a, cross-session & 9 & 0.760 & 0.755 & $[-0.0085, +0.0054]$ & 0.500 \\
 twin, by two one-sided tests on the paired per-subject differences. A
 non-significant difference would only be an absence of evidence; TOST instead
 takes a \emph{difference} as its null, so rejecting it supports equivalence.
-The margin $m=0.02$ accuracy was fixed in advance and is
-smaller than the weakest effect this paper claims as real (the reference-frame
-correction is worth \FrameEffectMin{} to \FrameEffectMax{} across the settings
-of this study). CI is the 90\,\% interval, which
+The margin $m=0.02$ accuracy was fixed in advance, when
+the two datasets then available put the reference-frame correction at
+\PhysFrameMin{} or more for every kernel; across all settings it now spans
+\FrameEffectMin{} to \FrameEffectMax, and the two Cho2017 kernels that gain
+less than the margin are noted in the text rather than used to move it. CI is
+the 90\,\% interval, which
 corresponds to TOST at $\alpha=0.05$; ``bound'' is the smallest margin at which
 equivalence would hold, so a reader preferring a stricter margin can read the
 answer off directly.}
@@ -278,6 +287,11 @@ IV-2a cross-session & Fidelity & 9 & $+0.0042$ & $[-0.0057, +0.0142]$ & 0.0094 &
  & HS-RBF & 9 & $-0.0085$ & $[-0.0281, +0.0111]$ & 0.1531 & --- & 0.0281 \\
  & Bures-RBF & 9 & $+0.0054$ & $[-0.0138, +0.0246]$ & 0.0975 & --- & 0.0246 \\
  & QRE-RBF & 9 & $+0.0054$ & $[-0.0144, +0.0252]$ & 0.1034 & --- & 0.0252 \\
+Cho2017, 3 qubits & Fidelity & 52 & $+0.0100$ & $[+0.0047, +0.0153]$ & 0.0013 & \checkmark & 0.0153 \\
+ & HS overlap & 52 & $+0.0041$ & $[-0.0010, +0.0093]$ & 0.0000 & \checkmark & 0.0093 \\
+ & HS-RBF & 52 & $-0.0008$ & $[-0.0082, +0.0066]$ & 0.0000 & \checkmark & 0.0082 \\
+ & Bures-RBF & 52 & $+0.0010$ & $[-0.0063, +0.0083]$ & 0.0000 & \checkmark & 0.0083 \\
+ & QRE-RBF & 52 & $+0.0034$ & $[-0.0036, +0.0104]$ & 0.0001 & \checkmark & 0.0104 \\
 \hline
 \end{tabular}
 \end{table}

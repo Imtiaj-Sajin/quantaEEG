@@ -1,0 +1,47 @@
+{
+  "dataset": "cho2017",
+  "subjects_requested": [
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+  ],
+  "subjects_used": [
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+  ],
+  "n_trials_per_subject": {
+    "46": 240,
+    "47": 200,
+    "48": 200,
+    "49": 200,
+    "50": 200,
+    "51": 200,
+    "52": 200
+  },
+  "channels": [
+    "FC3",
+    "FCz",
+    "FC4",
+    "C3",
+    "Cz",
+    "C4",
+    "CP3",
+    "CP4"
+  ],
+  "suite": "extended",
+  "n_qubits": 4,
+  "outer_cv": "5-fold x 3 repeats",
+  "inner_cv": "4-fold GridSearchCV",
+  "seed": 0,
+  "reference": "classical/TS+LR",
+  "total_seconds": 3966.5
+}

@@ -75,7 +75,7 @@ the file.
 |---|---|
 | `main.tex` | The manuscript. |
 | `macros_auto.tex` | **Auto-generated: never edit.** Every number quoted in the prose, as `\newcommand` macros. Read in the preamble. |
-| `tables_auto.tex` | **Auto-generated: never edit.** The ten table floats. Read in the body. |
+| `tables_auto.tex` | **Auto-generated: never edit.** All fourteen table floats. Read in the body. |
 | `cross_tables.py` | Second-dataset (IV-2a) tables and macros. |
 | `reference_tables.py` | Reference-frame tables and macros: frame effect, twin control, transfer, shots. |
 | `make_tables.py` | Regenerates both of the above from `results/*.csv`. |
@@ -102,8 +102,9 @@ hand-transcribed manuscript silently rots.
 
 ## Building
 
-**The draft compiles cleanly: 20 pages, 0 undefined references, 0 overfull
-boxes, 0 BibTeX warnings** (MiKTeX/`latexmk`, 2026-09-05, `iopjournal`).
+**The draft compiles cleanly: 26 pages, 14 tables, 11 figures, 37
+references, 0 LaTeX warnings, 0 overfull boxes, 0 BibTeX warnings**
+(MiKTeX/`latexmk`, 2026-09-15, `iopjournal`). Abstract 297/300 words.
 
 ### Overleaf
 
@@ -148,7 +149,7 @@ unpack it anywhere.
 ```bash
 bash paper/get_iop_class.sh                  # once: fetch IOP class files
 PYTHONPATH=src python -m qeeg.figures --paper            # figures 1-4
-PYTHONPATH=src python -m qeeg.figures_reference --paper  # figures 5-9
+PYTHONPATH=src python -m qeeg.figures_reference --paper  # figures 5-10
 python paper/make_tables.py                  # tables + inline macros
 cd paper && tectonic -X compile main.tex --outdir build
 ```

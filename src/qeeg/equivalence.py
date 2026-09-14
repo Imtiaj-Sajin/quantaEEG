@@ -22,11 +22,14 @@ Choosing the margin
 The margin is a scientific judgement and must be fixed in advance, not chosen
 to make the result come out. We use **m = 0.02 accuracy**, on two grounds:
 
-1. It is smaller than the smallest effect this paper treats as real. The
-   reference-frame correction is worth +0.050 (PhysioNet, 3 qubits) to
-   +0.217 (IV-2a, cross-session) depending on setting, so a residual
-   difference below 0.02 is at most 40 % of the *weakest* effect we claim,
-   and under 10 % of the strongest.
+1. It was smaller than the smallest effect the paper treated as real when
+   it was fixed: on the two datasets then available the reference-frame
+   correction was worth +0.050 (PhysioNet, 3 qubits) to +0.187 (IV-2a), so
+   a residual difference below 0.02 was at most 40 % of the weakest effect
+   claimed. Cho2017, added later, has two kernels whose frame gain (+0.012,
+   +0.013) is below the margin; the paper notes this and keeps the margin,
+   because moving it after seeing the data is exactly what pre-specification
+   exists to prevent.
 2. It is below what is operationally meaningful in a motor-imagery BCI, where
    a two-point accuracy change does not alter whether a system is usable.
 

@@ -1131,6 +1131,52 @@ Do not describe the seed-0 result as "the" PhysioNet result any more; cite
 
 ---
 
+### 4.15 Cho2017 (n = 52): the one comparison that favours a quantum kernel
+
+Extended suite on MOTOR_8, 52 subjects, 200 trials each (240 for three),
+six batches of ~9 min/subject (`raw_folds_refstate_cho2017_motor8_q4.csv`).
+
+| pipeline | acc | notes |
+|---|---|---|
+| **Fidelity-ref-SVM** | **0.648** | best pipeline overall |
+| TS+LR | 0.644 | best classical; beats the twin (+0.006, p = 0.010) |
+| HS-overlap-ref-SVM | 0.642 | |
+| QRE-RBF-ref-SVM | 0.641 | |
+| Bures-RBF-ref-SVM | 0.639 | |
+| CSP+LDA | 0.639 | |
+| riemann-kernel-SVM (twin) | 0.638 | |
+| HS-RBF-ref-SVM | 0.637 | |
+| sensor-frame quantum | 0.579–0.629 | best classical leads by +0.015, p < 0.001 |
+
+- **Frame effect** +0.012 (Bures) to +0.063 (HS overlap), all p ≤ 0.009,
+  better in 33–47/52. Smallest of the three datasets despite 200 trials:
+  the sensor-frame kernels start much closer to the classical baselines
+  here (RBF-type sensor kernels at 0.60–0.63), so there was less to repair.
+  Corrects the earlier "the frame effect scales with trial count" reading:
+  it scales with how far the sensor frame is from the reference frame.
+- **Twin comparison.** Fidelity-ref − twin = **+0.0100, p = 0.0015, 39/52**,
+  90 % CI [+0.0047, +0.0153]. The other four: −0.0008 to +0.0041, p ≥ 0.13.
+  TOST at ±0.02: **5/5 equivalent**, worst bound 0.0153. So Fidelity is
+  *statistically distinguishable* from the twin (interval excludes zero)
+  *and* equivalent to it at the pre-specified margin. Both are true.
+- **Bounds on that finding.** (1) Inside the margin. (2) Fidelity-ref vs
+  TS+LR: +0.0039, p = 0.17, n.s.; the twin itself loses to TS+LR here
+  (p = 0.010), so "beats the twin" ≠ "beats classical". (3) §4.14 shows
+  ±0.01–0.03 twin differences flipping sign across partitions on a smaller
+  dataset. The paper records it as "a one-point advantage of the Bures
+  geometry over the affine-invariant one on one dataset", not quantum
+  advantage. It is named in the abstract.
+- The equivalence margin (0.02) was fixed when the weakest per-kernel frame
+  effect was +0.050; Cho2017's Bures and QRE gains (+0.012, +0.013) are below
+  it. Noted in the `tab:equiv` caption; the margin is **not** moved.
+
+Cross-dataset picture after all seven settings: quantum − twin ranges from
+−0.028 (PhysioNet seed 2, QRE) to +0.010 (Cho2017, Fidelity). Both
+excursions are significant; neither reaches the best classical pipeline.
+That is the paper's final statement of the twin result.
+
+---
+
 ## 5. Datasets worth using
 
 | Dataset | Access | Size | Why |
