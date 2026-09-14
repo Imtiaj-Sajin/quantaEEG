@@ -155,6 +155,16 @@ def collect(results: Path, margin: float = MARGIN) -> pd.DataFrame:
     if bci is not None:
         settings.append(("BCI IV-2a, 3 qubits", _per(bci),
                          [(k, lab) for k, lab in FRAME_PAIRS], TWINS))
+    cs = read("crosssession_folds_bci2a_motor8.csv")
+    if cs is not None:
+        # Both directions averaged per subject first, so each subject is one
+        # paired observation, as in the cross-subject setting.
+        per_cs = (cs[cs.frame == "reference"]
+                  .groupby(["pipeline", "subject"])["accuracy"]
+                  .mean().unstack("pipeline"))
+        settings.append(("IV-2a cross-session", per_cs,
+                         [(k.replace("-ref-SVM", "").replace("-SVM", ""), lab)
+                          for k, lab in FRAME_PAIRS], TWINS))
 
     rows = []
     for name, per, kernels, twins in settings:

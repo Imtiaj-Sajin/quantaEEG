@@ -267,7 +267,7 @@ def main(argv=None) -> int:
     ap.add_argument("--channels", type=str, default="motor8",
                     choices=["motor8", "motor16", "motor32", "all64"])
     ap.add_argument("--dataset", type=str, default="physionet",
-                    choices=["physionet", "bci2a", "bci2b"],
+                    choices=["physionet", "bci2a", "bci2b", "cho2017"],
                     help="physionet = EEGMMIDB (many subjects, 45 trials "
                          "each); bci2a/bci2b = BCI Competition IV via MOABB "
                          "(9 subjects, many trials each)")

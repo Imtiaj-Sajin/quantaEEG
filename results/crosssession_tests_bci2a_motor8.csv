@@ -1,0 +1,15 @@
+comparison,pipeline,n,delta,p,better
+reference - sensor,classical/MDM,9,0.031249999999999986,0.0234375,7
+reference - sensor,classical/TS+LR,9,0.021604938271604937,0.0390625,8
+reference - sensor,control/logeuclid-kernel-SVM,9,0.030864197530864185,0.01953125,8
+reference - sensor,control/riemann-kernel-SVM,9,0.020447530864197545,0.01171875,8
+reference - sensor,quantum/Bures-RBF,9,0.18672839506172836,0.00390625,9
+reference - sensor,quantum/Fidelity,9,0.21720679012345678,0.00390625,9
+reference - sensor,quantum/HS-RBF,9,0.16859567901234568,0.00390625,9
+reference - sensor,quantum/HS-overlap,9,0.1944444444444444,0.0078125,8
+reference - sensor,quantum/QRE-RBF,9,0.18441358024691357,0.00390625,9
+"quantum - twin (riemann-kernel-SVM), reference",quantum/Bures-RBF,9,0.005401234567901227,0.546875,5
+"quantum - twin (riemann-kernel-SVM), reference",quantum/Fidelity,9,0.0042438271604938365,0.546875,6
+"quantum - twin (riemann-kernel-SVM), reference",quantum/HS-RBF,9,-0.00848765432098766,0.5,3
+"quantum - twin (riemann-kernel-SVM), reference",quantum/HS-overlap,9,-0.0003858024691358381,0.8359375,3
+"quantum - twin (riemann-kernel-SVM), reference",quantum/QRE-RBF,9,0.005401234567901227,0.546875,5

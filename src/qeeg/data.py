@@ -182,6 +182,11 @@ MOABB_DATASETS = {
     "bci2a": "BNCI2014_001",
     # BCI Competition IV-2b: 9 subjects, 3 bipolar channels, 5 sessions.
     "bci2b": "BNCI2014_004",
+    # Cho et al. 2017 (GigaDB): 52 subjects, 64 channels, ~200 left/right MI
+    # trials each, one session. Included for statistical power on the
+    # reference-frame claim -- n = 52 tightens the equivalence bounds -- not
+    # as a third dataset for its own sake. ~200 MB per subject via MOABB.
+    "cho2017": "Cho2017",
 }
 
 # The 8 sensorimotor channels used for PhysioNet all exist in the 2a montage,
