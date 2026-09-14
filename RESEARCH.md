@@ -1237,7 +1237,7 @@ tests vs the chosen reference, and a metadata JSON recording the exact protocol.
 
 ## 9. Open threads
 
-### Where we are (2026-09-03)
+### Where we are (2026-09-15)
 
 The study now has a **mechanism, a fix, and the control that stops the fix
 being oversold**, which is a materially stronger position than the negative
@@ -1277,36 +1277,41 @@ to spare: all nine geometries tie (§4.7).
       larger than on PhysioNet, because 288 trials estimate the reference state
       far better than 45 do. Classical-twin control replicates a third time.
       Core-15 rows reproduce to max |Δ| = 0.0001.
-- [x] Manuscript compiles (17 pp, 0 warnings); all refs DOI-verified.
+- [x] Cross-session transfer on IV-2a, both directions, per-session reference
+      states (§4.11). Sensor-frame quantum near chance; recentred, parity with
+      the twin (p ≥ 0.5). The "did you try it?" question is answered.
+- [x] Register sweep 3→6 qubits in both frames (§4.12). Reference-frame
+      variance never falls below its 3-qubit value; §4.9's caveat closed.
+- [x] 16 channels / 4 qubits, n = 30 (§4.13). Uncontrolled advantage becomes
+      significant (p = 0.016); twin leads TS+LR by the identical amount.
+- [x] Seeds 1 and 2 (§4.14). Frame effect and reversal reproduce; the
+      bandwidth-tuned kernels fall behind the twin, never ahead. Paper says
+      "matches at best".
+- [x] Manuscript on `iopjournal`, 25 pp, 0 warnings, 37 refs all verified,
+      abstract 295/300; every number a macro, six settings in the twin family.
 
 **In flight**
 
-Nothing. Every experiment the argument needs is finished. The critical path
-is now writing, not computing.
+- Cho2017 (52 subjects, 64 ch, 200 trials, one session), extended suite on
+  MOTOR_8, six batches via `scripts/run_when_cached.sh` (~9 min/subject/
+  process). Merge with
+  `qeeg.merge --pattern "raw_folds_cho_batch*.csv" --tag refstate_cho2017_motor8_q4`,
+  then `qeeg.equivalence`, `make_tables`, `figures_reference --paper`: the
+  frame table, twin table, TOST table, figure 7 (third block) and figure 8
+  (seventh setting) pick it up with no code change. Paper text still needed:
+  a "Third dataset" Methods paragraph, a results paragraph in §3.5, and every
+  "both datasets" phrase becomes "every dataset".
 
 **Next, in priority order**
 
-1. **Rewrite the manuscript around the new story.** This is now the critical
-    path, not more experiments. The paper is currently the §4.4 negative
-    benchmark; it needs to become "the frame was the confound, here is the
-    proof, here is what survives it". Retitle. Concretely:
-    `sec:reference` (Methods) is written; Results needs a reference-frame
-    section, a transfer section and a shot-noise section, and the abstract and
-    conclusion need rewriting.
-2. **Extend `paper/make_tables.py`** to emit macros/tables from
-    `reference_gram_motor8.csv`, `raw_folds_refstate_motor8_q4.csv`,
-    `transfer_*_motor8.csv` and `shots_*_motor8.csv`. The project's one rule
-    is that no number is typed by hand; the new sections must obey it before
-    they are written, not after.
-3. **Figures** for the reference frame (Gram histograms sensor vs reference),
-    transfer (paired per-subject), and the shot curve.
-4. Re-run the channel-scaling sweep (§4.1b) **in the reference frame**. The
-    claim that density-matrix concentration is dimension-independent was
-    measured in the sensor frame and may not survive; §4.6 suggests it will
-    not.
-5. Scale to 64 channels (6 qubits) for the direct Thanasilp et al. test.
-6. Cross-session transfer on IV-2b (5 sessions), where the shift is milder and
-    the geometry comparison is cleaner than cross-subject.
+1. Absorb Cho2017 (above) and rebuild; read the PDF end to end once more.
+2. **Author confirmation.** Order and the CRediT `\roles{}` draft are marked
+   NOT FINAL. `\funding{}` says no grant. Confirm Chayon's affiliation.
+3. Regenerate the Overleaf zip (`paper/build/quantaEEG-overleaf.zip`).
+4. Choose single- or double-anonymous review (`[anonymous]` class option).
+5. Optional, and the one place a real quantum effect could still hide (§4.4
+   of the paper): few-trial calibration, where the reference state is poorly
+   estimated. Not needed for submission.
 
 **Do not bother with**
 
