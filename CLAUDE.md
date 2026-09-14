@@ -243,11 +243,15 @@ size is identical at 3 qubits and the datasets are directly comparable.
    value (1.6-2.4× at 6q), so the "run it wider" corollary survives. Say
    "never falls below", not "rises monotonically": three kernels dip ~7 %
    from 5q to 6q.
-5. **The frame is the whole effect (§4.6-§4.11).** Recentring reverses the
+5. **The frame is the whole effect (§4.6-§4.14).** Recentring reverses the
    headline comparison on both datasets, but the metric-matched classical twin
-   matches every quantum kernel: TOST puts the two families within ±0.032
-   accuracy across all 25 comparisons in five settings. The gain is the frame
-   and the SPD-kernel-in-an-SVM formulation, neither of which is quantum.
+   matches every quantum kernel at the primary partition: TOST puts the two
+   families within ±0.032 accuracy across all 30 comparisons in six settings.
+   **Under two further seeds (§4.14) the bandwidth-tuned kernels (HS-RBF,
+   Bures-RBF, QRE-RBF) fall significantly behind the twin, never ahead;**
+   the parameter-free Fidelity and HS-overlap stay tied. State it as "matches
+   at best", not "equivalent". The gain is the frame and the
+   SPD-kernel-in-an-SVM formulation, neither of which is quantum.
 6. **Cross-session transfer (§4.11) is parity too**, in the setting the paper
    had named as the most promising for a real quantum effect. Sensor-frame
    quantum kernels sit near chance (0.54-0.58) while classical baselines hold

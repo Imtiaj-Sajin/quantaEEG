@@ -65,8 +65,8 @@ Md.samiulislam.aiub@gmail.com (S I Saif); chayon@aiub.edu (M H R Chayon)}
 
 \begin{abstract}
 \textit{Objective.}
-Quantum machine learning is often proposed for EEG decoding, but such claims
-rarely include the controls that show the quantum part is doing the work.
+Quantum machine learning is often proposed for EEG decoding, usually without
+the controls that show the quantum part is doing the work.
 We ask whether quantum kernels beat well-tuned classical baselines, and if not,
 why.
 
@@ -92,9 +92,10 @@ is not quantum. Across \EquivNSettings{} settings (\EquivNDatasets{} datasets,
 \EquivNRegisters{} register sizes, within-subject, cross-subject and
 cross-session evaluation), two one-sided
 tests place the two families within $\pm\EquivWorstBound$ accuracy in all
-\EquivN{} comparisons, and within a pre-specified $\pm\EquivMargin$ in
-\EquivPass{} of them. Parity held against filter-bank CSP and in cross-session
-transfer, where the shift our argument does not cover is largest.
+\EquivN{} comparisons; under two further cross-validation partitions the
+bandwidth-tuned quantum kernels fall behind the twin, never ahead. Parity held
+against filter-bank CSP and in cross-session transfer, where non-congruence
+shift is largest.
 
 \textit{Significance.}
 We find no quantum advantage, and trace it to an invariance mismatch rather
@@ -190,7 +191,7 @@ Fourth, we show that the reversal is nonetheless \emph{not} evidence of quantum
 advantage, using a control we believe should be standard in this literature: a
 classical SPD-manifold kernel placed in the same classifier, on the same data,
 in the same frame, differing from the quantum kernels only in the metric. No
-quantum kernel is distinguishable from that twin in any of \EquivNSettings{} settings,
+quantum kernel exceeds that twin in any of \EquivNSettings{} settings,
 including cross-session transfer, the regime in which the shift our invariance
 argument does not cover is proportionally largest. The
 practical implication is uncomfortable but concrete: a quantum kernel compared
@@ -562,6 +563,11 @@ because the questions are logically distinct and a global correction would
 make the null results, which are the paper's actual claims, easier rather than
 harder to obtain.
 
+The outer partition is itself a source of variation, so the PhysioNet
+three-qubit suite, on which the decisive comparison is first made, is
+repeated in full under two further outer-partition seeds
+(table~\ref{tab:seeds}); nothing else changes between repetitions.
+
 Where the claim is that two methods are the \emph{same}, a non-significant
 difference is not sufficient evidence, so we additionally report two one-sided
 tests (TOST) on the paired differences against a margin fixed in advance
@@ -815,8 +821,8 @@ comparison in \EquivNSettings{} settings: \EquivNDatasets{} datasets,
 \EquivNRegisters{} register sizes, and within-subject, cross-subject and
 cross-session evaluation.
 
-In none of them is any quantum kernel distinguishable from its classical twin
-(figure~\ref{fig:twin}).
+In none of them, at the primary partition, is any quantum kernel
+distinguishable from its classical twin (figure~\ref{fig:twin}).
 On PhysioNet the differences span \TwinDeltaMin{} to \TwinDeltaMax{} with a
 smallest $p\TwinMinP$ in that setting; the twin itself, \TwinName,
 reaches \TwinAcc{} and is the second-best pipeline of the whole extended suite.
@@ -844,6 +850,29 @@ advantage --- it is one comparison of \EquivN{}, it does not survive the
 family, and its interval still lies inside $\pm\EquivWorstBound$ --- but it is
 the single place in this study where a quantum kernel is nominally ahead of a
 metric-matched classical control, and a reader is entitled to see it named.
+
+\emph{Robustness to the partition.} Every number above comes from one outer
+cross-validation partition. Table~\ref{tab:seeds} repeats the PhysioNet
+three-qubit suite under two more. The frame effect reproduces
+(\SeedFrameMin{} to \SeedFrameMax{} over all \SeedN{} partitions), and so
+does the uncontrolled reversal: the best reference-frame kernel leads the
+best classical baseline by \SeedHeadRefMin{} to \SeedHeadRefMax{} in
+\SeedHeadReversals{} of \SeedN{} partitions. The twin comparison is less
+forgiving than the primary partition suggests, and in one direction only.
+The parameter-free fidelity and Hilbert--Schmidt kernels stay tied to the
+twin under every partition (\SeedOverlapDeltaMin{} to
+\SeedOverlapDeltaMax, smallest $p\SeedOverlapMinP$), but the three
+bandwidth-parameterised kernels, which carry an extra hyperparameter to be
+tuned on \NTrials{} trials, fall behind it by up to \SeedRbfWorst{} with a
+smallest $p\SeedRbfMinP$; \SeedSigCount{} of the \SeedSigN{} comparisons
+across the three partitions are significant at $0.05$, \SeedSigFavourTwin{}
+in the twin's favour and \SeedSigFavourQuantum{} in the quantum kernel's.
+The equivalence bound for this dataset widens accordingly, from
+\EquivWorstBound{} at the primary partition to \SeedWorstBound{} over all
+three. We therefore state the PhysioNet result as an inequality rather than
+an equivalence: the quantum kernels match the classical twin at best, and a
+bandwidth to tune on \NTrials{} trials costs them a few points against it.
+Nothing in the repetitions moves in the quantum direction.
 
 We stress the counterfactual. Without this control, the same experiments
 support the claim that quantum kernels outperform tuned classical baselines at
@@ -875,7 +904,8 @@ machine, on the same covariances, with the same tuning budget, in the same
 reference frame; only the metric differs. Points are mean paired differences
 with 95\% confidence intervals for the difference; table~\ref{tab:equiv}
 gives the 90\% intervals that correspond to the equivalence test, which are
-narrower. Every interval here crosses zero in all \EquivNSettings{} settings. Note the axis
+narrower. Every interval here crosses zero in all \EquivNSettings{} settings
+at the primary partition (table~\ref{tab:seeds} for two more). Note the axis
 range: the entire plot spans eight accuracy points, against a frame effect
 (tables~\ref{tab:frame} and \ref{tab:crosssession}) of up to $\CsFrameQMax$.}
 \end{figure}
@@ -1101,13 +1131,16 @@ that is not currently standard.
 
 That control, an SPD kernel in the same classifier, same data, same frame,
 differing only in the metric, removes the claim entirely. Across \EquivNSettings{} settings
-no quantum kernel separates from its classical twin, and the twin is itself
-among the strongest pipelines we evaluated. The gain therefore belongs to the
+no quantum kernel exceeds its classical twin; the twin is itself among the
+strongest pipelines we evaluated, and under other partitions of PhysioNet it
+is significantly ahead of the bandwidth-tuned quantum kernels. The gain therefore belongs to the
 reference frame and to the kernel formulation, both of which are available
 classically and neither of which requires a quantum computer. Once the
-invariance groups are matched, the quantum geometries are not better; they are
-not worse either, which is itself informative, since it locates the ceiling
-precisely where the algebra says it must be.
+invariance groups are matched, the quantum geometries are not better; the
+parameter-free ones are not worse either, which is itself informative, since
+it locates the ceiling precisely where the algebra says it must be, and the
+bandwidth-tuned ones pay a small, partition-dependent price for their extra
+hyperparameter.
 
 We draw two lessons. The first is specific: quantum information geometry is a
 mathematically exact description of EEG covariances that confers no
@@ -1178,7 +1211,9 @@ single dataset would leave open is addressed by section~\ref{sec:crossdataset}.
 than absolute. Two one-sided tests place the quantum kernels and their
 classical twins within $\pm\EquivWorstBound$ accuracy of one another across all
 \EquivN{} comparisons (table~\ref{tab:equiv}), so we can exclude differences
-larger than that, but not smaller ones. The TOST implementation is the paired
+larger than that, but not smaller ones; under two further partitions of
+PhysioNet the bound widens to $\pm\SeedWorstBound$, every departure being in
+the twin's favour (table~\ref{tab:seeds}). The TOST implementation is the paired
 $t$ form and assumes the per-subject differences are approximately normal; at
 $n=\NSubjects$ that is mild, at $n=\BciNSubjects$ it is a real limitation and
 the IV-2a bounds should be read as indicative.
@@ -1250,8 +1285,10 @@ reverses the sign of the classical-versus-quantum comparison.
 
 It would be straightforward to stop there and report a quantum advantage. The
 control that prevents this, a classical SPD kernel identical in every respect
-but the metric, shows that no quantum kernel is distinguishable from its
-classical twin in any of \EquivNSettings{} settings, including against filter-bank CSP, in
+but the metric, shows that no quantum kernel exceeds its classical twin in
+any of \EquivNSettings{} settings, and that where the two can be told apart at
+all, under other partitions of PhysioNet, it is the twin that is ahead. Parity
+holds against filter-bank CSP, in
 cross-subject transfer, where all nine geometries fall within
 \TransferSpread, and in cross-session transfer, the setting we had named in
 advance as the most likely to show a real quantum effect. The improvement is

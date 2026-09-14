@@ -212,8 +212,9 @@ only the metric differs. The comparator is the stronger of the two classical
 kernels in each setting, which is the conservative choice. Columns give the
 best quantum kernel in that setting, the classical twin, their difference, and
 the smallest $p$ obtained by \emph{any} of the five quantum kernels against the
-twin. No quantum kernel is distinguishable from its classical twin in any
-setting.}
+twin. At the primary partition no quantum kernel is distinguishable from its
+classical twin in any setting; table~\ref{tab:seeds} repeats the PhysioNet
+row under two further partitions.}
 \begin{tabular}{@{}lccccc@{}}
 \hline
 Setting & $n$ & Quantum & Twin & $\Delta$ (range over 5) & $\min p$ \\
@@ -333,6 +334,33 @@ quantum/HS-overlap & 0.560 & 0.754 & $+0.1944$ & 0.008 & 8/9 \\
 quantum/HS-RBF & 0.578 & 0.746 & $+0.1686$ & 0.004 & \textbf{9/9} \\
 classical/TS+LR & 0.717 & 0.738 & $+0.0216$ & 0.039 & 8/9 \\
 classical/MDM & 0.701 & 0.732 & $+0.0312$ & 0.023 & 7/9 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+%% ------------------------------------------------------ Table: seeds
+\begin{table}[htbp]
+\caption{\label{tab:seeds}The PhysioNet three-qubit comparison under three
+different outer cross-validation partitions (seeds). Each row repeats the
+full extended suite with new fold assignments; the inner search, the reference
+state and every other element are unchanged. Columns give the frame effect
+(range over the five kernels), the best reference-frame quantum kernel and
+the classical twin, the quantum-minus-twin difference (range over the five
+kernels), the smallest $p$ against the twin, and how many of the five
+comparisons pass two one-sided tests at the pre-specified $\pm0.02$
+margin, with the largest bound. The frame effect and the uncontrolled
+reversal reproduce in every partition; the twin comparison moves against the
+bandwidth-parameterised quantum kernels under the other two partitions and
+never in their favour (see text).}
+\begin{tabular}{@{}lcccccc@{}}
+\hline
+Seed & Frame $\Delta$ & Quantum & Twin & Quantum $-$ twin & $\min p$ &
+TOST \\
+\hline
+0 & $[+0.050, +0.106]$ & 0.630 & 0.621 & $[-0.0151, +0.0081]$ & 0.183 & 1/5 ($\le0.032$) \\
+1 & $[+0.039, +0.104]$ & 0.613 & 0.609 & $[-0.0220, +0.0040]$ & 0.030 & 2/5 ($\le0.039$) \\
+2 & $[+0.032, +0.107]$ & 0.618 & 0.616 & $[-0.0284, +0.0022]$ & \ensuremath{<}0.001 & 1/5 ($\le0.042$) \\
 \hline
 \end{tabular}
 \end{table}

@@ -1093,6 +1093,44 @@ density matrix on 4 qubits), n = 30, nested CV, five batches merged into
 
 ---
 
+### 4.14 Seeds 1 and 2: the twin comparison is an inequality, not an equivalence
+
+The PhysioNet 3-qubit extended suite re-run with `--seed 1` and `--seed 2`
+(new outer partitions, everything else identical; ~3 min/subject/process,
+`raw_folds_refstate_motor8_q4_seed{1,2}.csv`).
+
+| seed | frame Δ (5 kernels) | best ref-quantum | twin | quantum − twin | min p | TOST ±0.02 |
+|---|---|---|---|---|---|---|
+| 0 | +0.050 to +0.106 | Fidelity 0.630 | 0.621 | −0.015 to +0.008 | 0.18 | 1/5, bound 0.032 |
+| 1 | +0.039 to +0.104 | Fidelity 0.613 | 0.609 | −0.022 to +0.004 | 0.030 | 2/5, bound 0.039 |
+| 2 | +0.032 to +0.107 | Fidelity 0.618 | 0.616 | −0.028 to +0.002 | 0.0008 | 1/5, bound 0.042 |
+
+Per kernel it splits cleanly by family:
+
+- **Parameter-free overlap kernels** (Fidelity, HS-overlap): tied under every
+  seed, Δ from −0.008 to +0.008, min p = 0.19.
+- **Bandwidth-parameterised kernels** (HS-RBF, Bures-RBF, QRE-RBF): behind
+  the twin by 0.016–0.028 under seeds 1 and 2, p from 0.046 down to 0.0008.
+  Five of the nine RBF comparisons across the three seeds are significant at
+  0.05, **all in the twin's favour**; zero in the quantum kernel's.
+- Frame effect and the uncontrolled reversal (best ref-quantum minus best
+  classical +0.018 to +0.022) reproduce in 3/3 seeds.
+
+**Reading.** On 45 trials per subject, tuning a bandwidth multiplier inside
+the inner CV costs the RBF-type kernels a few points relative to the
+affine-invariant Riemannian kernel, which has no bandwidth. The paper now
+states the PhysioNet result as an inequality: quantum kernels match the twin
+*at best*, and the seed-0 equivalence bound (0.032) is the optimistic figure;
+0.042 is the honest one for this dataset. This strengthens the conclusion
+(no quantum advantage; the twin is the ceiling) while weakening the
+"equivalence" wording, and the paper's abstract, §3.5, §4.1, §4.3(ii) and
+the conclusion were all changed to say "matches at best / never exceeds".
+
+Do not describe the seed-0 result as "the" PhysioNet result any more; cite
+`tab:seeds` alongside `tab:twin`.
+
+---
+
 ## 5. Datasets worth using
 
 | Dataset | Access | Size | Why |

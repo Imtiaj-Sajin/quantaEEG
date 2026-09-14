@@ -223,8 +223,9 @@ only the metric differs. The comparator is the stronger of the two classical
 kernels in each setting, which is the conservative choice. Columns give the
 best quantum kernel in that setting, the classical twin, their difference, and
 the smallest $p$ obtained by \emph{any} of the five quantum kernels against the
-twin. No quantum kernel is distinguishable from its classical twin in any
-setting.}
+twin. At the primary partition no quantum kernel is distinguishable from its
+classical twin in any setting; table~\ref{tab:seeds} repeats the PhysioNet
+row under two further partitions.}
 \begin{tabular}{@{}lccccc@{}}
 \hline
 Setting & $n$ & Quantum & Twin & $\Delta$ (range over 5) & $\min p$ \\
@@ -485,8 +486,10 @@ state and every other element are unchanged. Columns give the frame effect
 the classical twin, the quantum-minus-twin difference (range over the five
 kernels), the smallest $p$ against the twin, and how many of the five
 comparisons pass two one-sided tests at the pre-specified $\pm""" + f"{margin:g}" + r"""$
-margin, with the largest bound. The conclusion does not depend on the
-partition.}
+margin, with the largest bound. The frame effect and the uncontrolled
+reversal reproduce in every partition; the twin comparison moves against the
+bandwidth-parameterised quantum kernels under the other two partitions and
+never in their favour (see text).}
 \begin{tabular}{@{}lcccccc@{}}
 \hline
 Seed & Frame $\Delta$ & Quantum & Twin & Quantum $-$ twin & $\min p$ &
@@ -721,6 +724,10 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
     seeds = d.get("seeds_per", {})
     if len(seeds) >= 2:
         fr_all, dl_all, p_all, bounds, heads = [], [], [], [], []
+        # Per-family bookkeeping: the bandwidth-parameterised kernels (an extra
+        # hyperparameter tuned on 45 trials) behave differently from the
+        # parameter-free overlap kernels under resampling, and the prose says so.
+        rbf, ovl, sig = [], [], []
         for seed, per in sorted(seeds.items()):
             twin = _best_twin(per, TWINS)
             ks = [k for k in REF_KERNELS if k in per.columns]
@@ -732,11 +739,24 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
             dl_all += [v["delta"] for v in st.values()]
             p_all += [v["p"] for v in st.values()]
             bounds += [_tost_bound((per[k] - per[twin]).dropna()) for k in ks]
+            for k, v in st.items():
+                (rbf if "RBF" in k else ovl).append((v["delta"], v["p"]))
+                if v["p"] < 0.05:
+                    sig.append(v["delta"])
             cl = [c for c in per.columns if c.startswith("classical/")]
             if cl:
                 bc = per[cl].mean().idxmax()
                 bq = max(ks, key=lambda k: per[k].mean())
                 heads.append(paired(per, bq, bc)["delta"])
+        defs["SeedRbfWorst"] = f"{min(x for x, _ in rbf):+.4f}"
+        defs["SeedRbfMinP"] = fmt_p_eq(min(p for _, p in rbf))
+        defs["SeedOverlapDeltaMin"] = f"{min(x for x, _ in ovl):+.4f}"
+        defs["SeedOverlapDeltaMax"] = f"{max(x for x, _ in ovl):+.4f}"
+        defs["SeedOverlapMinP"] = fmt_p_eq(min(p for _, p in ovl))
+        defs["SeedSigCount"] = f"{len(sig)}"
+        defs["SeedSigN"] = f"{len(rbf) + len(ovl)}"
+        defs["SeedSigFavourQuantum"] = f"{sum(x > 0 for x in sig)}"
+        defs["SeedSigFavourTwin"] = f"{sum(x < 0 for x in sig)}"
         defs["SeedN"] = f"{len(seeds)}"
         defs["SeedFrameMin"] = f"{min(fr_all):+.3f}"
         defs["SeedFrameMax"] = f"{max(fr_all):+.3f}"
