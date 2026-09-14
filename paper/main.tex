@@ -479,7 +479,35 @@ regression; and tangent space with an RBF SVM.
 Four controls isolate specific confounds: the entanglement ablation described
 above; \emph{dimension-matched} linear and RBF SVMs operating on exactly the
 same PCA features the circuit kernels receive; and a log-Euclidean tangent-space
-classifier as the classical geometric twin of the density-matrix kernels.
+classifier as a first classical geometric comparator for the density-matrix
+kernels.
+
+The control the argument ultimately rests on is stricter than that, and we
+define it here because everything in section~\ref{sec:refresults} depends on
+it. A \emph{metric-matched twin} is a classical kernel on the SPD manifold used
+exactly as the density-matrix kernels are used: the same covariances, the same
+reference-state whitening (\ref{eq:refstate}), a precomputed Gram matrix in
+the same support vector machine, and the same hyperparameter grid. Only the
+metric differs. We use the two SPD kernels pyRiemann provides
+\cite{barachant2013}: the affine-invariant Riemannian kernel,
+$\exp(-\gamma\,\delta_R^2)$ with $\delta_R$ the affine-invariant distance, and
+the log-Euclidean kernel. Whichever of the two scores higher in a given setting
+is the comparator, which is the conservative choice. Because the twin shares
+every element of the quantum pipeline except the metric, any difference
+between them is attributable to the metric alone; because it is
+congruence-invariant by construction, it is the right comparator for the
+reference-frame kernels specifically.
+
+Two further suites reuse this design. A \emph{filter-bank} suite splits the
+8--30 Hz band into four sub-bands (8--12, 12--16, 16--22 and 22--30 Hz) and
+stacks them, so that one covariance spans $4\times 8=32$ dimensions --- a
+single density matrix on five qubits --- and adds filter-bank CSP
+\cite{ang2008} and filter-bank tangent-space baselines alongside
+filter-bank versions of every kernel and twin. A \emph{cross-subject} suite
+pools the trials of all but one subject, trains on the pool, and tests on the
+held-out subject; its hyperparameters are chosen by subject-grouped inner
+cross-validation on the training subjects, so no held-out subject influences
+any choice. Both suites are described where their results appear.
 
 \subsection{Evaluation protocol and statistics}
 
@@ -537,7 +565,12 @@ Table~\ref{tab:main} reports within-subject performance for all \NPipelines{}
 pipelines; Figure~\ref{fig:benchmark} shows the same data with per-subject spread.
 Quantum kernels occupy five of the bottom six positions. Absolute accuracies
 are modest because EEGMMIDB contains many near-chance subjects, which is
-precisely why paired testing is required.
+precisely why paired testing is required. They are also in line with the
+field: the MOABB reproducibility benchmark \cite{chevallier2024} reports
+65.8--68.2\,\% for CSP and tangent-space pipelines on this dataset and
+paradigm using the full 64-channel montage, against which our
+\BestClassicalAcc{} on eight channels is the expected reduction, not a sign of
+a mistuned baseline.
 
 The primary pre-specified comparison, best classical versus best quantum, is
 significant: \BestClassicalName{} exceeded \BestQuantumName{} by
@@ -687,7 +720,7 @@ invariant only under orthogonal congruence, while the tangent-space, MDM and
 CSP baselines they are being compared against are invariant under the full
 congruence group that EEG's nuisances generate. We now re-run the entire
 benchmark with the density-matrix kernels expressed relative to a training-set
-reference state ((\ref{eq:refstate})), changing nothing else. The core
+reference state (\ref{eq:refstate}), changing nothing else. The core
 pipelines reproduce their published values to $\le 0.0001$, so the two suites
 are directly comparable.
 
@@ -722,7 +755,7 @@ The headline comparison consequently reverses. Against \HeadBestClassical, the
 best sensor-frame quantum kernel loses by \HeadSensorDelta{}
 ($p\HeadSensorP$, classical better in \HeadSensorBetter{} subjects); the best
 reference-frame kernel, \HeadRefKernel, instead leads by
-$\left|\HeadRefDelta\right|$ ($p\HeadRefP$, classical better in only
+\HeadRefLead{} ($p\HeadRefP$, classical better in only
 \HeadRefBetter). This does not reach conventional significance, and we do not
 claim it as an effect. We dwell on it because it is the size and shape of
 result that this literature routinely reports as a positive finding, and
@@ -742,7 +775,7 @@ within- versus cross-subject evaluation.
 In none of them is any quantum kernel distinguishable from its classical twin
 (figure~\ref{fig:twin}).
 On PhysioNet the differences span \TwinDeltaMin{} to \TwinDeltaMax{} with a
-smallest $p$ of \TwinMinP{} in that setting; the twin itself, \TwinName,
+smallest $p\TwinMinP$ in that setting; the twin itself, \TwinName,
 reaches \TwinAcc{} and is the second-best pipeline of the whole extended suite.
 The apparent quantum advantage is therefore attributable to two things, neither
 of them quantum: expressing the states in the reference frame, and using an
@@ -797,8 +830,9 @@ against a classical SPD-manifold kernel \cite{barachant2013} used in the
 same support vector
 machine, on the same covariances, with the same tuning budget, in the same
 reference frame; only the metric differs. Points are mean paired differences
-with 95\% confidence intervals. Every interval crosses zero in all four
-settings. Note the axis range: the entire plot spans eight accuracy points,
+with 95\% confidence intervals for the difference; table~\ref{tab:equiv}
+gives the 90\% intervals that correspond to the equivalence test, which are
+narrower. Every interval here crosses zero in all four settings. Note the axis range: the entire plot spans eight accuracy points,
 against a frame effect (figure~\ref{fig:frame}) of up to nineteen.}
 \end{figure}
 
@@ -852,6 +886,12 @@ $\mathrm{tr}(\rho\sigma)$ is the SWAP-test observable, $S$ shots give an
 unbiased estimate with variance $(1-k^2)/S$, which we simulate by sampling
 each unordered Gram entry binomially and projecting back to the positive
 semi-definite cone (table~\ref{tab:shots} and figure~\ref{fig:transfer}(b)).
+One departure from the main protocol should be stated: here the reference
+state is estimated from all of a subject's trials rather than the training
+split alone. It is label-free, and the question is estimation cost rather than
+generalisation, so shot levels are comparable with one another; the absolute
+values are not comparable with the nested-CV benchmark and are not used that
+way.
 
 The variance gain reported above does \emph{not} translate into a
 proportionate saving in shots; the reference frame requires more shots to
@@ -884,13 +924,24 @@ shots.}
 
 \subsection{Computational cost}
 
-The cost asymmetry is substantial. \FastestName{} reached its accuracy in
-\FastestSec~s per subject, while \SlowestName{} required \SlowestSec~s, a
-factor of \SpeedRatio, for no accuracy gain. This is measured under noiseless,
-infinite-shot simulation; on hardware, estimating $\mathrm{tr}(\rho\sigma)$ to
-precision $\epsilon$ costs $O(\epsilon^{-2})$ shots per Gram entry, and the
-concentration results above imply that the required $\epsilon$ shrinks
-exponentially with register size.
+The cost asymmetry survives the frame correction, which is the comparison
+that matters now that accuracy is at parity. In the sensor frame the gap is
+stark but partly beside the point, since the quantum kernels were also losing:
+\FastestName{} reached its accuracy in \FastestSec~s per subject while
+\SlowestName{} required \SlowestSec~s, a factor of \SpeedRatio. In the
+reference frame the like-for-like comparison is against the classical twin,
+which delivers the same accuracy. On IV-2a the twin costs \BciCostTwinSec~s
+per subject; \BciCostSlowName{} costs \BciCostSlowSec~s, a factor of
+\BciCostRatio, for an accuracy difference table~\ref{tab:equiv} bounds at
+under $\pm\EquivBciWorst$. On PhysioNet the ratio is \PhysCostRatio. The
+quantum kernel is not merely no better; it is the same answer at several times
+the price.
+
+All of this is measured under noiseless, infinite-shot simulation. On
+hardware, estimating $\mathrm{tr}(\rho\sigma)$ to precision $\epsilon$ costs
+$O(\epsilon^{-2})$ shots per Gram entry; section~\ref{sec:shots} puts the
+resulting budget at $10^5$--$10^6$ shots per entry for near-ceiling accuracy,
+which the classical twin does not pay at all.
 
 %% =====================================================================
 \section{Discussion}
@@ -918,7 +969,7 @@ decoding is the classical state of the art. Comparing the two families in the
 sensor frame therefore measures, in part, a difference of invariance groups
 rather than a difference of geometries.
 
-Correcting this ((\ref{eq:refstate})) relieves concentration by
+Correcting this (\ref{eq:refstate}) relieves concentration by
 \GramGainMin--\GramGainMax$\times$, lifts every kernel on both datasets, and
 reverses the sign of the headline comparison. Taken alone, that is a
 publishable claim of quantum advantage at $p\HeadRefP$, replicated on a second

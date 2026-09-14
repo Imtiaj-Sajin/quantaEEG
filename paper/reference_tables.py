@@ -112,8 +112,8 @@ def table_frame(d: dict, paired, fmt_p, esc, out: list[str]) -> bool:
 \caption{\label{tab:frame}Effect of referring the density-matrix kernels to a
 reference state. Each kernel is evaluated twice under an identical protocol,
 differing only in whether the states are expressed in the sensor frame
-((\ref{eq:density})) or relative to the training-set Fr\'echet mean
-((\ref{eq:refstate})). $\Delta$ is the mean per-subject accuracy gain from the
+(\ref{eq:density}) or relative to the training-set Fr\'echet mean
+(\ref{eq:refstate}). $\Delta$ is the mean per-subject accuracy gain from the
 reference frame, tested by paired Wilcoxon signed-rank across subjects. Every
 kernel improves on both datasets; on IV-2a every kernel improves in every
 subject.}
@@ -437,12 +437,27 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
             defs["HeadSensorP"] = fmt_p_eq(s1["p"])
             defs["HeadSensorBetter"] = f"{s1['n_better']}/{s1['n']}"
             defs["HeadRefDelta"] = f"{s2['delta']:+.4f}"
+            defs["HeadRefLead"] = f"{abs(s2['delta']):.4f}"
             defs["HeadRefP"] = fmt_p_eq(s2["p"])
             defs["HeadRefBetter"] = f"{s2['n_better']}/{s2['n']}"
             defs["HeadRefKernel"] = esc(bq_r)
 
     if d["bci_per"] is not None:
         frame_stats(d["bci_per"], FRAME_PAIRS, "Bci")
+
+    # Wall-clock cost in the reference frame, where the accuracy comparison is
+    # actually made. The core-suite cost macros describe the sensor frame.
+    for prefix, summ in (("Phys", d["phys_summary"]), ("Bci", d["bci_summary"])):
+        if summ is None:
+            continue
+        sec = summ.set_index("pipeline")["sec_per_subject"]
+        twin = "control/riemann-kernel-SVM"
+        slow = max(REF_KERNELS, key=lambda k: sec.get(k, 0.0))
+        if twin in sec and slow in sec:
+            defs[prefix + "CostTwinSec"] = f"{sec[twin]:.1f}"
+            defs[prefix + "CostSlowName"] = esc(slow)
+            defs[prefix + "CostSlowSec"] = f"{sec[slow]:.1f}"
+            defs[prefix + "CostRatio"] = f"{sec[slow] / sec[twin]:.1f}"
 
     if d["fb_per"] is not None:
         per = d["fb_per"]
