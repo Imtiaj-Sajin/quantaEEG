@@ -65,6 +65,13 @@ def build_zip(dest: Path) -> list[str]:
         sources.append((src, name))
     if BBL.exists():
         sources.append((BBL, "main.bbl"))
+    # main.tex cites supplementary tables and figures through xr, which reads
+    # supplementary.aux; without it every such reference prints as ??.
+    supp_aux = PAPER / "build" / "supplementary.aux"
+    if not supp_aux.exists():
+        raise FileNotFoundError(
+            f"{supp_aux} missing; build supplementary.tex before packing")
+    sources.append((supp_aux, "supplementary.aux"))
     for fig in referenced_figures():
         sources.append((find_figure(fig), Path(fig).name))
 

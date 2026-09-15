@@ -1,0 +1,102 @@
+%% =====================================================================
+%%  Supplementary material for the manuscript in main.tex.
+%%
+%%  Every number is a macro from macros_auto.tex and every table is generated
+%%  by make_tables.py into supp_table_*_auto.tex, exactly as in the main text.
+%%  Items are numbered S1, S2, ... and the main text cites them through the
+%%  xr package, so build this file BEFORE main.tex:
+%%      latexmk -pdf -outdir=build supplementary.tex
+%%      latexmk -pdf -outdir=build main.tex
+%% =====================================================================
+\documentclass{iopjournal}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\graphicspath{{../results/figures_paper/}{../results/figures/}{figures/}}
+\input{macros_auto}
+
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thesection}{S\arabic{section}}
+
+\begin{document}
+
+\articletype{Supplementary material}
+
+\title{Supplementary material for: Quantum Kernels for EEG: An Invariance
+Mismatch Masquerading as Advantage}
+
+\author{Md.~Imtiaj~Alam~Sajin$^{1,*}$\orcid{0009-0009-2423-1835},
+Md~Wahiduzzaman~Suva$^{1}$,
+Esm~E~Moula~Chowdhury~Abha$^{1}$,
+Samiul~Islam~Saif$^{1}$\orcid{0009-0009-7116-7151} and
+Muhammad~Hasibur~Rashid~Chayon$^{1}$\orcid{0000-0003-3741-6651}}
+
+\affil{$^1$Department of Computer Science, American International
+University-Bangladesh (AIUB), Dhaka, Bangladesh}
+
+\affil{$^*$Author to whom any correspondence should be addressed.}
+
+\email{26-94090-2@student.aiub.edu}
+
+\keywords{supplementary tables and figures}
+
+\begin{abstract}
+Hyperparameter grids for every pipeline, the per-subject differences behind
+the main benchmark, the kernel-concentration and register-sweep tables, the
+cross-session and register-sweep figure, and the cross-subject and finite-shot
+figure and table. Each item is referred to from the main text.
+\end{abstract}
+
+\section{Hyperparameter grids}
+
+\input{supp_table_grids_auto}
+
+\section{Per-subject differences in the sensor-frame benchmark}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig3_paired_differences.pdf}
+\caption{\label{fig:paired}Paired per-subject accuracy differences against the
+Riemannian tangent-space reference. Dots are individual subjects; diamonds are
+means. Points left of zero indicate worse performance than the reference.}
+\end{figure}
+
+\section{Kernel concentration versus register size}
+
+\input{supp_table_concentration_auto}
+
+\input{supp_table_sweep_auto}
+
+\section{Cross-session transfer and the register sweep}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig10_crosssession_sweep.pdf}
+\caption{\label{fig:crosssession}(a) Cross-session transfer within subject on
+IV-2a, both directions averaged. In the sensor frame the quantum kernels sit
+near chance while the classical baselines do not; whitening each session by
+its own label-free mean closes the gap and leaves every SPD-kernel geometry
+tied. (b) Off-diagonal Gram variance versus register size in both frames on
+PhysioNet ($n=\SweepN$). Solid, reference frame; dashed, sensor frame. In the
+reference frame no kernel falls below its three-qubit value at any larger
+register.}
+\end{figure}
+
+\section{Cross-subject transfer and finite-shot estimation}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig9_transfer_shots.pdf}
+\caption{\label{fig:transfer}(a) Cross-subject transfer, leave-one-subject-out.
+Recentring helps every method and helps the quantum kernels (Q) most, but in
+the reference frame all nine geometries are indistinguishable. (b) Accuracy
+against shot budget. The reference frame needs more shots to approach its own
+ceiling because that ceiling is higher, yet from $\ShotCrossover$ shots per
+Gram entry it already exceeds what the sensor frame attains with unlimited
+shots.}
+\end{figure}
+
+\input{supp_table_shots_auto}
+
+\end{document}

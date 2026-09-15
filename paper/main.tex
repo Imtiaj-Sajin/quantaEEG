@@ -29,6 +29,12 @@
 %% since a float is not legal in the preamble.
 \input{macros_auto}
 
+%% Supplementary items (tables and figures S1, S2, ...) are cited through xr
+%% from supplementary.aux, so build supplementary.tex first. Labels from that
+%% document carry the prefix S-.
+\usepackage{xr}
+\externaldocument[S-]{supplementary}
+
 %% Review model: single-anonymous, chosen by the corresponding author on
 %% 2026-09-15. Reviewers see the author list, so there is one manuscript
 %% and nothing is hidden. (A double-anonymous build existed briefly and is
@@ -545,7 +551,7 @@ these make up the sixteen pipelines of the \emph{core suite}, all operating in
 the sensor frame. The \emph{extended suite} adds seven: the same five
 density-matrix kernels in the reference frame (\ref{eq:refstate}), and the
 two classical SPD kernels described next, for twenty-three pipelines in all.
-Table~\ref{tab:grids} lists every hyperparameter grid and every fixed setting.
+Table~\ref{S-tab:grids} lists every hyperparameter grid and every fixed setting.
 Where a comparison names ``the best quantum kernel'' without qualification it
 means the most accurate quantum pipeline of the suite in question; the
 density-matrix comparisons of section~\ref{sec:refresults} always name the
@@ -673,7 +679,7 @@ $\Delta=\PrimaryDelta$ ($p\PrimaryP$, $d_z=\PrimaryDz$), and was superior in
 \PrimaryBetter{} subjects (Table~\ref{tab:key}).
 
 Against the Riemannian tangent-space reference (Table~\ref{tab:tests},
-Figure~\ref{fig:paired}), \NSurviveHolm{} of \NFamilyTests{} comparisons survived
+Figure~\ref{S-fig:paired}), \NSurviveHolm{} of \NFamilyTests{} comparisons survived
 Holm correction. Only two reached $p<0.05$ uncorrected, and in both the quantum
 model was \emph{worse}. No quantum kernel exceeded the reference at any
 significance level.
@@ -688,13 +694,6 @@ Every pipeline, classical baselines included, received the same inner
 hyperparameter search.}
 \end{figure}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{fig3_paired_differences.pdf}
-\caption{\label{fig:paired}Paired per-subject accuracy differences against the
-Riemannian tangent-space reference. Dots are individual subjects; diamonds are
-means. Points left of zero indicate worse performance than the reference.}
-\end{figure}
 
 \subsection{The controls: entanglement and dimension matching}
 
@@ -722,7 +721,7 @@ real biological data rather than synthetic constructions.
 
 Exploiting (\ref{eq:density}), we swept register size by varying the channel
 count over powers of two ($4/8/16/32/64$ channels $=2$--$6$ qubits) with no
-change of method (Table~\ref{tab:concentration}, Figure~\ref{fig:concentration}). Two
+change of method (Table~\ref{S-tab:concentration}, Figure~\ref{fig:concentration}). Two
 findings emerge.
 
 First, \textbf{entanglement accelerates the collapse}. The entangled IQP kernel
@@ -834,7 +833,7 @@ The register sweep of section~\ref{sec:concentration} was made in the sensor
 frame, and its second finding, that the density-matrix kernels are saturated
 by the data rather than by the register, has to be re-examined now that most
 of that saturation is known to be an artefact of the frame. Repeating the
-sweep in both frames (table~\ref{tab:sweep}, figure~\ref{fig:crosssession}(b))
+sweep in both frames (table~\ref{S-tab:sweep}, figure~\ref{S-fig:crosssession}(b))
 gives a cleaner answer. In the reference frame no kernel's Gram variance falls
 below its three-qubit value at any larger register, and at six qubits it
 stands at \SweepRefRatioMin--\SweepRefRatioMax{} times that value; the
@@ -1047,7 +1046,7 @@ advantage on thirty subjects.
 
 Within-subject accuracy is not the field's bottleneck; transfer to a new user
 is. It is also the setting in which a different geometry is most often
-conjectured to help. Table~\ref{tab:transfer} and figure~\ref{fig:transfer}(a)
+conjectured to help. Table~\ref{tab:transfer} and figure~\ref{S-fig:transfer}(a)
 report leave-one-subject-out evaluation over \TransferN{} subjects, training on
 the pooled trials of all others.
 
@@ -1079,7 +1078,7 @@ going to anywhere, and we had named it in advance as the most promising place
 to look. IV-2a provides it: two recording sessions of \CsTrialsPerSession{}
 trials per subject. For each subject and in both directions we train on one
 session and test on the other (table~\ref{tab:crosssession},
-figure~\ref{fig:crosssession}(a)); hyperparameters are tuned inside the
+figure~\ref{S-fig:crosssession}(a)); hyperparameters are tuned inside the
 training session only, and in the reference frame each session is whitened by
 its own label-free mean, which for the test session is the unsupervised
 adaptation a deployed decoder can legitimately perform.
@@ -1112,18 +1111,6 @@ metric. Either the non-congruence part of session shift is too small to matter
 at this register, or it is not something the Bures, fidelity or
 relative-entropy weightings exploit better than the affine-invariant one.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{fig10_crosssession_sweep.pdf}
-\caption{\label{fig:crosssession}(a) Cross-session transfer within subject on
-IV-2a, both directions averaged. In the sensor frame the quantum kernels sit
-near chance while the classical baselines do not; whitening each session by
-its own label-free mean closes the gap and leaves every SPD-kernel geometry
-tied. (b) Off-diagonal Gram variance versus register size in both frames on
-PhysioNet ($n=\SweepN$). Solid, reference frame; dashed, sensor frame. In the
-reference frame no kernel falls below its three-qubit value at any larger
-register.}
-\end{figure}
 
 \subsection{Finite-shot estimation}
 \label{sec:shots}
@@ -1132,7 +1119,7 @@ All results so far assume noiseless, infinite-shot simulation. Since
 $\mathrm{tr}(\rho\sigma)$ is the SWAP-test observable, $S$ shots give an
 unbiased estimate with variance $(1-k^2)/S$, which we simulate by sampling
 each unordered Gram entry binomially and projecting back to the positive
-semi-definite cone (table~\ref{tab:shots} and figure~\ref{fig:transfer}(b)).
+semi-definite cone (table~\ref{S-tab:shots} and figure~\ref{S-fig:transfer}(b)).
 One departure from the main protocol should be stated: here the reference
 state is estimated from all of a subject's trials rather than the training
 split alone. It is label-free, and the question is estimation cost rather than
@@ -1157,17 +1144,6 @@ matrix costs $10^8$--$10^9$ shots, and the IV-2a trial count raises that by a
 further factor of about forty. The reference frame makes these kernels work;
 it does not make them cheap.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{fig9_transfer_shots.pdf}
-\caption{\label{fig:transfer}(a) Cross-subject transfer, leave-one-subject-out.
-Recentring helps every method and helps the quantum kernels (Q) most, but in
-the reference frame all nine geometries are indistinguishable. (b) Accuracy
-against shot budget. The reference frame needs more shots to approach its own
-ceiling because that ceiling is higher, yet from $\ShotCrossover$ shots per
-Gram entry it already exceeds what the sensor frame attains with unlimited
-shots.}
-\end{figure}
 
 \subsection{Computational cost}
 
@@ -1268,7 +1244,7 @@ orthogonal invariance, EEG's nuisances generate the congruence group, and the
 mismatch alone accounts for their sensor-frame deficit. Bandwidth tuning
 \cite{shaydulin2022}, which we apply throughout, and the exponential
 concentration of Thanasilp \textit{et al} \cite{thanasilp2024} address a
-different failure, one that grows with qubit count; table~\ref{tab:sweep}
+different failure, one that grows with qubit count; table~\ref{S-tab:sweep}
 shows it is not the failure at work here, since in the reference frame every
 density-matrix kernel has more Gram variance at six qubits than at three.
 
@@ -1357,7 +1333,7 @@ conditioning and spectral shape, on which the quantum relative entropy and the
 Bures distance weight differently from the affine-invariant metric, carry more
 of the shift. Section~\ref{sec:crosssession} reports the outcome: parity, with
 no quantum-versus-twin comparison reaching even $p<0.5$. Larger registers
-were the third candidate, and the sweep of table~\ref{tab:sweep} shows that
+were the third candidate, and the sweep of table~\ref{S-tab:sweep} shows that
 the reference-frame kernels do not concentrate with qubit count. That removes
 a concern rather than the parity, since the metric-matched comparison at five
 qubits (section~\ref{sec:filterbank}) had already tied.

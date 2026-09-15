@@ -279,7 +279,12 @@ def main(argv=None) -> int:
     table_main(summary, out)
     table_tests(tests, out)
     table_key(per, out)
-    table_concentration(decay, out)
+
+    # Supplementary tables, each in its own file so supplementary.tex decides
+    # their order. The main text refers to them through xr as table S<n>.
+    supp: dict[str, list[str]] = {}
+    supp["concentration"] = list(header)
+    table_concentration(decay, supp["concentration"])
 
     # Second dataset, when its results are present. The manuscript degrades
     # gracefully to a single-dataset paper if the IV-2a run has not been done.
@@ -314,12 +319,14 @@ def main(argv=None) -> int:
         built.append("cross-session")
     if rt.table_seeds(ref, paired, fmt_p, esc, out):
         built.append("seeds")
-    if rt.table_sweep(ref, out):
-        built.append("register sweep")
-    if rt.table_shots(ref, out):
-        built.append("shots")
-    if gt.table_grids(out):
-        built.append("hyperparameter grids")
+    supp["sweep"], supp["shots"], supp["grids"] = (list(header), list(header),
+                                                   list(header))
+    if rt.table_sweep(ref, supp["sweep"]):
+        built.append("register sweep (supplementary)")
+    if rt.table_shots(ref, supp["shots"]):
+        built.append("shots (supplementary)")
+    if gt.table_grids(supp["grids"]):
+        built.append("hyperparameter grids (supplementary)")
     rt.macros(ref, paired, fmt_p, esc, mac)
     rt.equivalence_macros(res, mac)
     print(f"  + reference-frame tables: {', '.join(built) if built else 'none'}")
@@ -332,6 +339,9 @@ def main(argv=None) -> int:
     dest = Path(args.out)
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text("\n".join(out), encoding="utf-8")
+    for name, lines in supp.items():
+        (dest.parent / f"supp_table_{name}_auto.tex").write_text(
+            "\n".join(lines), encoding="utf-8")
     print(f"wrote {dest}  ({len(out)} lines)")
     print(f"  {df.subject.nunique()} subjects, {df.pipeline.nunique()} pipelines")
     print(f"  primary: delta={paired(per, *KEY_COMPARISONS[0][:2])['delta']:+.4f}")

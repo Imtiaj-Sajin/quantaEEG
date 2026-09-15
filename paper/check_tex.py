@@ -85,6 +85,14 @@ for pat in ("Tref", "Fref", "Sref", "Eref", "ref"):
     refs |= set(re.findall(
         re.escape(BS) + pat + r"\{([^}]*)\}", tex, flags=re.IGNORECASE))
 
+# Labels defined in the supplementary document, cited from main.tex through
+# xr with the prefix S-.
+supp_text = ""
+for f in [HERE / "supplementary.tex", *sorted(HERE.glob("supp_table_*_auto.tex"))]:
+    if f.exists():
+        supp_text += f.read_text(encoding="utf-8")
+labels |= {"S-" + l for l in re.findall(re.escape(BS + "label{") + r"([^}]*)}", supp_text)}
+
 print(f"\nlabels defined                    : {sorted(labels)}")
 print(f"refs used                         : {sorted(refs)}")
 dangling = sorted(refs - labels)
@@ -129,7 +137,8 @@ def _strip_tex_comments(text: str) -> str:
 
 dash_hits = []
 for name, text in (("main.tex", tex), ("tables_auto.tex", tab),
-                   ("macros_auto.tex", mac), ("refs.bib", bib)):
+                   ("macros_auto.tex", mac), ("refs.bib", bib),
+                   ("supplementary material", supp_text)):
     body = _strip_tex_comments(text)
     for i, line in enumerate(body.splitlines(), 1):
         if any(c in line for c in EM_CHARS) or "\\textemdash" in line \
