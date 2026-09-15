@@ -207,8 +207,14 @@ def load_moabb(
     fmax: float = 30.0,
     resample: float = 128.0,
     min_trials: int = 30,
+    n_classes: int = 2,
 ) -> list[Epochs]:
-    """Load a MOABB left-hand versus right-hand motor-imagery dataset.
+    """Load a MOABB motor-imagery dataset.
+
+    ``n_classes=2`` (default) is left hand versus right hand, labels 0 and 1,
+    exactly as every two-class result in the paper was produced. ``n_classes=4``
+    is IV-2a's full task (left hand, right hand, feet, tongue), labels 0 to 3 in
+    that order, used to show the result is not specific to one class pair.
 
     Band-pass and resampling match the PhysioNet pipeline. The epoch window is
     left at the dataset's own standard interval rather than forced to match,
@@ -234,7 +240,13 @@ def load_moabb(
     if subjects is None:
         subjects = list(ds.subject_list)
 
-    paradigm = LeftRightImagery(fmin=fmin, fmax=fmax, resample=resample)
+    if n_classes == 2:
+        paradigm = LeftRightImagery(fmin=fmin, fmax=fmax, resample=resample)
+    else:
+        from moabb.paradigms import MotorImagery
+        paradigm = MotorImagery(n_classes=n_classes, fmin=fmin, fmax=fmax,
+                                resample=resample)
+    four_class_order = ["left_hand", "right_hand", "feet", "tongue"]
 
     out: list[Epochs] = []
     for s in subjects:
@@ -259,8 +271,14 @@ def load_moabb(
             names = ch_names
         X = ep_mne.get_data(copy=False)
 
-        y_int = (np.asarray(y) == "right_hand").astype(int)
-        if len(y_int) < min_trials or len(np.unique(y_int)) < 2:
+        if n_classes == 2:
+            y_int = (np.asarray(y) == "right_hand").astype(int)
+        else:
+            unknown = set(np.asarray(y)) - set(four_class_order)
+            if unknown:
+                raise ValueError(f"unexpected labels {unknown}")
+            y_int = np.array([four_class_order.index(v) for v in y])
+        if len(y_int) < min_trials or len(np.unique(y_int)) < n_classes:
             print(f"  [skip] subject {s}: only {len(y_int)} usable trials")
             continue
 

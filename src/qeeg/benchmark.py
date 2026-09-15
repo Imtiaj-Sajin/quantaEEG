@@ -280,6 +280,8 @@ def main(argv=None) -> int:
                     help="override the output filename tag (batch runs)")
     ap.add_argument("--no-stats", action="store_true",
                     help="skip summary/tests (use when merging batches later)")
+    ap.add_argument("--classes", type=int, default=2, choices=(2, 4),
+                    help="MOABB datasets only: 4 = IV-2a left/right/feet/tongue")
     ap.add_argument("--reference", type=str, default="classical/TS+LR",
                     help="baseline for the paired significance tests")
     args = ap.parse_args(argv)
@@ -300,7 +302,8 @@ def main(argv=None) -> int:
     if args.dataset == "physionet":
         eps = load_many(subjects, channels=chans)
     else:
-        eps = load_moabb(args.dataset, subjects=subjects, channels=chans)
+        eps = load_moabb(args.dataset, subjects=subjects, channels=chans,
+                         n_classes=args.classes)
     print(f"  usable: {len(eps)} subjects, "
           f"{sum(len(e) for e in eps)} trials total")
     if not eps:
