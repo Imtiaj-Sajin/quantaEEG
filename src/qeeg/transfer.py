@@ -1,7 +1,7 @@
 """Cross-subject transfer: the setting where the geometry actually has to earn it.
 
 Within-subject accuracy is a crowded problem on which classical methods are
-already excellent. The unsolved problem in BCI is transfer -- a new user should
+already excellent. The unsolved problem in BCI is transfer: a new user should
 not have to sit through a calibration session. That is where a better geometry
 could plausibly matter, and it is the setting this module evaluates:
 leave-one-subject-out, train on the pooled trials of every other subject.
@@ -10,7 +10,7 @@ Why the frame matters here more than anywhere else
 --------------------------------------------------
 Inter-subject variability is dominated by congruence: different head geometry,
 electrode placement, skull conductivity and source mixing act on the spatial
-covariance as C -> A C A^T. So the naive version of the transfer hypothesis --
+covariance as C -> A C A^T. So the naive version of the transfer hypothesis:
 "quantum distances (Bures, quantum relative entropy) are more robust to
 inter-subject covariance shift than the affine-invariant Riemannian distance"
 -- is not merely unsupported, it is algebraically impossible. AIRM is invariant
@@ -32,8 +32,8 @@ What is still open, and what this tests
 Congruence is not all of the shift. Subjects differ in conditioning, effective
 rank, and how peaked their spatial spectrum is, and none of that is removed by
 recentring. Bures and the quantum relative entropy weight the eigenvalue
-spectrum differently from AIRM -- QRE penalises support mismatch heavily, Bures
-compresses large eigenvalue ratios -- so within the reference frame they may
+spectrum differently from AIRM: QRE penalises support mismatch heavily, Bures
+compresses large eigenvalue ratios, so within the reference frame they may
 still order transfer differently. That is the real hypothesis, and it is
 falsifiable.
 

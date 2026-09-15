@@ -1075,7 +1075,7 @@ density matrix on 4 qubits), n = 30, nested CV, five batches merged into
 | HS-overlap-ref-SVM | 0.622 | +0.016 | 0.116 |
 | HS-RBF-ref-SVM | 0.619 | +0.013 | 0.219 |
 | Fidelity-ref-SVM | 0.614 | +0.008 | 0.435 |
-| TS+LR | 0.606 | — | — |
+| TS+LR | 0.606 | (reference) | n/a |
 | CSP+LDA | 0.600 | −0.006 | 0.597 |
 | sensor-frame quantum kernels | 0.516–0.542 | −0.063 to −0.090 | ≤ 0.013 |
 
@@ -1295,8 +1295,8 @@ invariant, so the benchmark was partly measuring an invariance mismatch. Refer
 the states to a training-set reference state and the quantum kernels become
 exactly affine invariant (§4.6, proved and verified to 1e-15), concentration
 relieves 4.7-9.5x, and within-subject accuracy jumps enough to *reverse* the
-headline comparison. But the new Riemannian-kernel control -- same input, same
-SVM, same budget, same frame, only the metric differs -- matches every quantum
+headline comparison. But the new Riemannian-kernel control (same input, same
+SVM, same budget, same frame, only the metric differs) matches every quantum
 kernel to within noise. So the gain is the frame plus the kernel formulation,
 not quantum structure. Cross-subject transfer says the same thing with power
 to spare: all nine geometries tie (§4.7).
@@ -1350,11 +1350,12 @@ to spare: all nine geometries tie (§4.7).
 
 **Next, in priority order**
 
-1. Absorb Cho2017 (above) and rebuild; read the PDF end to end once more.
-2. **Author confirmation.** Order and the CRediT `\roles{}` draft are marked
-   NOT FINAL. `\funding{}` says no grant. Confirm Chayon's affiliation.
-3. Regenerate the Overleaf zip (`paper/build/quantaEEG-overleaf.zip`).
-4. Choose single- or double-anonymous review (`[anonymous]` class option).
+1. Done 2026-09-15: Cho2017 absorbed, five authors in the confirmed order,
+   ethics statement added, abstract abbreviations defined, submission zip
+   made flat with IOP-safe names.
+2. **CRediT roles** for Suva and Abha are placeholders. `\funding{}` says no
+   grant. Confirm Chayon's affiliation.
+3. Choose single- or double-anonymous review (`[anonymous]` class option).
 5. Optional, and the one place a real quantum effect could still hide (§4.4
    of the paper): few-trial calibration, where the reference state is poorly
    estimated. Not needed for submission.

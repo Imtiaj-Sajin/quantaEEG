@@ -56,9 +56,11 @@ fi
 grep -m1 'ProvidesClass{iopjournal}' iopjournal.cls | sed 's/^/  version: /'
 grep -m1 'Copyright' iopjournal.cls | sed 's/^ *%* */  /'
 
-# iopart-num.bst is IOP's numeric bibliography style and IS on CTAN.
-curl -fsSL --max-time 60 -o iopart-num.bst "$CTAN/iopart-num.bst"
-printf '  %-26s %8s bytes\n' "iopart-num.bst" "$(wc -c < iopart-num.bst)"
+# iopart-num.bst is IOP's numeric bibliography style and IS on CTAN. It is saved
+# as iopart_num.bst: IOP's submission guidelines allow only letters, digits and
+# underscores in uploaded file names, and main.tex asks for iopart_num.
+curl -fsSL --max-time 60 -o iopart_num.bst "$CTAN/iopart-num.bst"
+printf '  %-26s %8s bytes\n' "iopart_num.bst" "$(wc -c < iopart_num.bst)"
 
 echo
 echo "Done. Build with:"

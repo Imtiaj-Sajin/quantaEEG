@@ -18,7 +18,7 @@ classical state of the art and why it transfers.
 The quantum quantities are not. tr(rho sigma), Uhlmann fidelity, the Bures
 distance and the quantum relative entropy are invariant only under the
 *orthogonal* subgroup. Measured in the sensor frame they are therefore
-sensitive to a nuisance the baseline is immune to -- and, as `gram_report`
+sensitive to a nuisance the baseline is immune to, and, as `gram_report`
 shows on real data, that sensitivity is an order of magnitude larger than the
 entire discriminative spread of the kernel.
 

@@ -6,7 +6,7 @@ __pycache__/
 venv/
 
 # Run artefacts: logs and mid-run checkpoints are machine-specific noise.
-# Final result CSV/JSON and figures ARE committed -- they are the scientific
+# Final result CSV/JSON and figures ARE committed: they are the scientific
 # record and should travel with the code.
 results/*.log
 results/*.partial.csv
@@ -15,7 +15,7 @@ results/_*/
 # Large cached datasets live in ~/mne_data, never in the repo.
 mne_data/
 
-# LaTeX build products. The compiled PDF IS tracked -- it is the artefact
+# LaTeX build products. The compiled PDF IS tracked: it is the artefact
 # people actually want to read, and a reader should not need a TeX toolchain
 # plus the non-CTAN IOP class files just to see the manuscript. Everything
 # else in build/ is intermediate.
@@ -28,11 +28,14 @@ paper/build/*
 *.log
 *.xdv
 
-# Third-party IOP files -- fetched by paper/get_iop_class.sh from IOP's own
-# package, not redistributed here.
+# Third-party IOP files, fetched by paper/get_iop_class.sh from IOP's own
+# package and not redistributed here.
 paper/iopjournal.cls
 paper/orcid.pdf
 paper/iopart-num.bst
+paper/iopart_num.bst
+# The IOP template zip as downloaded by hand from IOP's site.
+ioplatextemplate.zip
 # Legacy: the manuscript used iopart until 2026-09-05. Kept so a stale
 # checkout does not accidentally commit them.
 paper/iopart.cls

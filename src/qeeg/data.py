@@ -184,7 +184,7 @@ MOABB_DATASETS = {
     "bci2b": "BNCI2014_004",
     # Cho et al. 2017 (GigaDB): 52 subjects, 64 channels, ~200 left/right MI
     # trials each, one session. Included for statistical power on the
-    # reference-frame claim -- n = 52 tightens the equivalence bounds -- not
+    # reference-frame claim, n = 52 tightens the equivalence bounds, not
     # as a third dataset for its own sake. ~200 MB per subject via MOABB.
     "cho2017": "Cho2017",
 }

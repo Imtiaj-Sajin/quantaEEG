@@ -41,17 +41,22 @@
 \title{Quantum Kernels for EEG: An Invariance Mismatch Masquerading as
 Advantage}
 
-%% AUTHOR ORDER IS NOT FINAL -- CONFIRM BEFORE SUBMITTING.
-%% Order below is the usual convention (student first, supervisor last).
-%% All three names were read from the ORCID public records rather than typed:
+%% Author order set by the corresponding author on 2026-09-15: Sajin first,
+%% Suva second, Abha third, Saif fourth; the supervisor stays last.
+%% Names with ORCIDs were read from the public ORCID records:
 %%   0009-0009-2423-1835 -> "Md. Imtiaj Alam Sajin"
 %%   0009-0009-7116-7151 -> "Samiul Islam Saif"
 %%   0000-0003-3741-6651 -> "Muhammad Hasibur Rashid Chayon"
+%% Suva and Abha have no ORCID on record here; their names are exactly as the
+%% corresponding author supplied them. Add \orcid{...} if they have one.
 %% Chayon's ORCID lists two employers (AIUB and IUBAT); AIUB is used here as
 %% the institution where the work was supervised. Confirm.
-\author{Md. Imtiaj Alam Sajin$^{1,*}$\orcid{0009-0009-2423-1835},
-Samiul Islam Saif$^{1}$\orcid{0009-0009-7116-7151} and
-Muhammad Hasibur Rashid Chayon$^{1}$\orcid{0000-0003-3741-6651}}
+%% Non-breaking spaces keep each name on one line in the ragged author list.
+\author{Md.~Imtiaj~Alam~Sajin$^{1,*}$\orcid{0009-0009-2423-1835},
+Md~Wahiduzzaman~Suva$^{1}$,
+Esm~E~Moula~Chowdhury~Abha$^{1}$,
+Samiul~Islam~Saif$^{1}$\orcid{0009-0009-7116-7151} and
+Muhammad~Hasibur~Rashid~Chayon$^{1}$\orcid{0000-0003-3741-6651}}
 
 \affil{$^1$Department of Computer Science, American International
 University-Bangladesh (AIUB), Dhaka, Bangladesh}
@@ -61,21 +66,23 @@ University-Bangladesh (AIUB), Dhaka, Bangladesh}
 %% A student address expires; the gmail is the durable contact and is listed
 %% second so the correspondence route survives graduation.
 \email{26-94090-2@student.aiub.edu, imtiajsajin@gmail.com (M I A Sajin);
-Md.samiulislam.aiub@gmail.com (S I Saif); chayon@aiub.edu (M H R Chayon)}
+26-94088-2@student.aiub.edu (M W Suva); 26-94089-2@student.aiub.edu
+(E E M C Abha); Md.samiulislam.aiub@gmail.com (S I Saif); chayon@aiub.edu
+(M H R Chayon)}
 
 \begin{abstract}
 \textit{Objective.}
-Quantum machine learning is often proposed for EEG decoding, usually without
-controls showing that the quantum part does the work. We ask whether quantum
+Quantum machine learning is often proposed for electroencephalography (EEG)
+decoding, usually without controls showing that the quantum part does the work. We ask whether quantum
 kernels beat well-tuned classical baselines, and if not, why.
 
 \textit{Approach.}
 A trace-normalised EEG covariance matrix is a quantum density matrix, so
 quantum information geometry applies directly. We benchmark Hilbert--Schmidt,
 fidelity, Bures and quantum-relative-entropy kernels against tuned Riemannian,
-CSP and filter-bank baselines on \EquivNDatasets{} motor-imagery datasets
-under one nested cross-validation budget. One asymmetry stands out: the
-quantum quantities are invariant only under orthogonal congruence, while EEG's
+common spatial pattern and filter-bank baselines on \EquivNDatasets{}
+motor-imagery datasets under one nested cross-validation budget. The quantum
+quantities are invariant only under orthogonal congruence, while EEG's
 nuisances span the full congruence group that classical baselines handle.
 Borrowing recentring from Riemannian transfer learning, we refer each state to
 a training-set Fr\'echet mean, prove this restores exact affine invariance,
@@ -265,8 +272,8 @@ A single dataset cannot separate a property of the methods from a property of
 the data. PhysioNet gives breadth but only \NTrials{} trials per subject, so a
 negative result there invites the objection that the quantum models were
 starved. We therefore repeat the entire benchmark on BCI Competition IV-2a
-(\BciNSubjects{} subjects, \BciNTrials{} trials each, \BciNFoldScores{} fold
-scores), accessed through MOABB \cite{moabb2018}. The two datasets sit at
+\cite{tangermann2012} (\BciNSubjects{} subjects, \BciNTrials{} trials each,
+\BciNFoldScores{} fold scores), accessed through MOABB \cite{moabb2018}. The two datasets sit at
 opposite corners of the design space: many subjects with little data each
 versus few subjects with a great deal.
 
@@ -532,8 +539,8 @@ reference-frame kernels specifically.
 
 Three further suites reuse this design. A \emph{filter-bank} suite splits the
 8--30 Hz band into four sub-bands (8--12, 12--16, 16--22 and 22--30 Hz) and
-stacks them, so that one covariance spans $4\times 8=32$ dimensions --- a
-single density matrix on five qubits --- and adds filter-bank CSP
+stacks them, so that one covariance spans $4\times 8=32$ dimensions, a
+single density matrix on five qubits, and adds filter-bank CSP
 \cite{ang2008} and filter-bank tangent-space baselines alongside
 filter-bank versions of every kernel and twin. A \emph{cross-subject} suite
 pools the trials of all but one subject, trains on the pool, and tests on the
@@ -571,8 +578,8 @@ Two points about the correction structure, since several families appear
 below. Holm correction is applied \emph{within} each family, and the families
 are the pre-specified ones: the suite-wide comparison against the reference
 pipeline, the pre-specified contrasts of table~\ref{tab:key}, and the
-metric-matched twin comparisons. These were fixed by the design of the study
---- one family per question asked --- and not selected after inspecting
+metric-matched twin comparisons. These were fixed by the design of the study,
+one family per question asked, and not selected after inspecting
 results; no comparison reported here was chosen because it was significant. We
 deliberately do not apply a single global correction across every family,
 because the questions are logically distinct and a global correction would
@@ -830,8 +837,8 @@ reference-frame kernel, \HeadRefKernel, instead leads by
 \HeadRefBetter). This does not reach conventional significance, and we do not
 claim it as an effect. We dwell on it because it is the size and shape of
 result that this literature routinely reports as a positive finding, and
-because everything needed to present it as one --- two datasets, a consistent
-direction, a larger margin on the better-powered data --- is in hand at this
+because everything needed to present it as one (two datasets, a consistent
+direction, a larger margin on the better-powered data) is in hand at this
 point in the analysis.
 
 \emph{Third, it is not a quantum advantage, and the control that establishes
@@ -946,7 +953,8 @@ reference frame; only the metric differs. Points are mean paired differences
 with 95\% confidence intervals for the difference; table~\ref{tab:equiv}
 gives the 90\% intervals that correspond to the equivalence test, which are
 narrower. Every interval crosses zero except the fidelity kernel on Cho2017,
-drawn in orange, which lies inside the pre-specified margin (see text);
+drawn as an orange diamond, which lies inside the pre-specified margin (see
+text);
 table~\ref{tab:seeds} repeats the PhysioNet block under two more partitions.
 Note the axis
 range: the entire plot spans eight accuracy points, against a frame effect
@@ -1358,7 +1366,7 @@ replication.
 %% =====================================================================
 %% These are iopjournal's structured end-matter commands. All of them except
 %% \suppdata are suppressed automatically by the [anonymous] class option, so
-%% do NOT hand-anonymise the file for double-anonymous review -- add the
+%% do NOT hand-anonymise the file for double-anonymous review: add the
 %% option instead.
 
 %% TODO: computing resources, and anyone who helped but is not an author.
@@ -1375,11 +1383,16 @@ or not-for-profit sectors was received for this work.}
 %% (https://credit.niso.org). The corresponding author must verify that each
 %% listed contribution is accurate and that every author meets authorship
 %% criteria; a contribution that does not meet them belongs in \ack instead.
+%% Suva and Abha were added on 2026-09-15 with no record of their specific
+%% work, so they carry only the minimum role every author must hold. Replace
+%% with what they actually did (e.g. investigation, validation, software).
+%% CRediT terms are written with parentheses rather than a spaced dash.
 \roles{\textbf{Md. Imtiaj Alam Sajin}: conceptualisation, methodology,
 software, formal analysis, investigation, data curation, visualisation,
-writing -- original draft. \textbf{Samiul Islam Saif}: software,
-investigation. \textbf{Muhammad Hasibur Rashid Chayon}: supervision, writing
--- review and editing.}
+writing (original draft). \textbf{Md Wahiduzzaman Suva}: writing (review and
+editing). \textbf{Esm E Moula Chowdhury Abha}: writing (review and editing).
+\textbf{Samiul Islam Saif}: software, investigation. \textbf{Muhammad Hasibur
+Rashid Chayon}: supervision, writing (review and editing).}
 
 \data{The PhysioNet EEG Motor Movement/Imagery Database is publicly available
 at \url{https://physionet.org/content/eegmmidb/1.0.0/}, BCI Competition
@@ -1390,12 +1403,27 @@ code, configuration and result files supporting this study, including the
 per-fold scores behind every table and figure, are openly available at
 \url{https://github.com/Imtiaj-Sajin/quantaEEG}.}
 
+%% JNE expects an ethics statement for any research involving human
+%% participants, including secondary analysis of existing recordings.
+%% iopjournal defines no command for it, so it is a plain unnumbered section.
+%% It names no author or institution, so it is safe under [anonymous].
+\section*{Ethical statement}
+This study is a secondary analysis of three publicly available,
+de-identified EEG datasets \cite{schalk2004,goldberger2000,tangermann2012,cho2017}.
+No new data were collected and the authors had no contact with any
+participant. The recordings were acquired by their original investigators
+under the ethical approval and informed-consent procedures described in the
+cited dataset publications, and were used here in accordance with the terms
+under which they are distributed.
+
 \section*{Conflicts of interest}
 The authors declare no conflicts of interest.
 
 %% No \section*{References} here: under iopjournal the thebibliography
 %% environment emits that heading itself, and adding our own printed it twice.
-\bibliographystyle{iopart-num}
+%% The style file is named with an underscore: IOP's submission guidelines
+%% allow only letters, digits and underscores in uploaded file names.
+\bibliographystyle{iopart_num}
 \bibliography{refs}
 
 \end{document}

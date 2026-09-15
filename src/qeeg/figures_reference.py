@@ -10,7 +10,7 @@ inputs are absent, so a partial checkout still produces what it can.
 Figures
 -------
 fig5_circuits   the three circuit feature maps, including the entanglement
-                ablation -- a quantum paper should show its circuits
+                ablation: a quantum paper should show its circuits
 fig6_reference  why the sensor frame is the wrong one: schematic, the
                 invariance check to machine precision, and the measured
                 relief of concentration
@@ -42,6 +42,8 @@ from .figures import (  # noqa: E402
 )
 
 SENSOR_C, REF_C = ORANGE, BLUE
+# Hatch for sensor-frame bars: the frames must differ by more than colour.
+SENSOR_HATCH = "////"
 
 FRAME_PAIRS = [
     ("quantum/Fidelity-SVM", "quantum/Fidelity-ref-SVM", "Fidelity"),
@@ -180,8 +182,10 @@ def fig_reference(res: Path, out: Path) -> bool:
     r.pop("cond_A", None)
     names = list(r)
     xs = np.arange(len(names))
+    # Sensor bars are hatched so the two frames differ by more than colour.
     ax1.bar(xs - 0.19, [r[k]["sensor"] for k in names], width=0.36,
-            color=SENSOR_C, label="Sensor")
+            color=SENSOR_C, label="Sensor", hatch=SENSOR_HATCH,
+            edgecolor="white", linewidth=0)
     ax1.bar(xs + 0.19, [max(r[k]["reference"], 1e-17) for k in names],
             width=0.36, color=REF_C, label="Reference")
     ax1.set_yscale("log")
@@ -211,7 +215,8 @@ def fig_reference(res: Path, out: Path) -> bool:
     ref = [gram[(gram.frame == "reference") & (gram.kernel == k)]["var"].mean()
            for k in order]
     xs = np.arange(len(order))
-    ax2.bar(xs - 0.19, sen, width=0.36, color=SENSOR_C)
+    ax2.bar(xs - 0.19, sen, width=0.36, color=SENSOR_C, hatch=SENSOR_HATCH,
+            edgecolor="white", linewidth=0)
     ax2.bar(xs + 0.19, ref, width=0.36, color=REF_C)
     for i, (a, b) in enumerate(zip(sen, ref)):
         ax2.text(i + 0.19, b * 1.12, f"{b / a:.1f}$\\times$", ha="center",
@@ -227,10 +232,10 @@ def fig_reference(res: Path, out: Path) -> bool:
 
     # (d) where the overlaps actually sit.
     ax3 = fig.add_subplot(gs[1, 2])
-    for frame, col in (("sensor", SENSOR_C), ("reference", REF_C)):
+    for frame, col, mk in (("sensor", SENSOR_C, "s"), ("reference", REF_C, "o")):
         sub = gram[(gram.frame == frame) & (gram.kernel == "HS-overlap")]
         ax3.errorbar(sub["mean"], np.arange(len(sub)),
-                     xerr=sub["std"], fmt="o", ms=2.6, lw=0.8, color=col,
+                     xerr=sub["std"], fmt=mk, ms=2.8, lw=0.8, color=col,
                      alpha=0.85, label=frame.capitalize())
     ax3.set_xlabel(r"$\mathrm{tr}(\rho\sigma)$, off-diagonal")
     ax3.set_ylabel("subject")
@@ -270,6 +275,9 @@ def fig_frame(res: Path, out: Path) -> bool:
     block_colors = {name: c for name, c in
                     (("PhysioNet", SENSOR_C), ("Cho2017", GREEN), ("BCI IV-2a", REF_C))}
     block_colors = [block_colors[name] for name, _ in blocks]
+    # And a hatch per dataset, so the bars are separable in greyscale.
+    hatch_of = {"PhysioNet": "////", "Cho2017": "....", "BCI IV-2a": ""}
+    block_hatches = [hatch_of[name] for name, _ in blocks]
 
     F._style()
     fig, axes = plt.subplots(1, len(blocks) + 1,
@@ -318,7 +326,8 @@ def fig_frame(res: Path, out: Path) -> bool:
                 labs.append(lab)
         ys = np.arange(len(vals))
         ax.barh(ys + (bi - (len(blocks) - 1) / 2) * width, vals, height=width,
-                color=block_colors[bi], label=name)
+                color=block_colors[bi], label=name, hatch=block_hatches[bi],
+                edgecolor="white", linewidth=0)
     ax.set_yticks(np.arange(len(labs)))
     ax.set_yticklabels(labs, fontsize=8)
     ax.invert_yaxis()
@@ -414,8 +423,11 @@ def fig_twin(res: Path, out: Path) -> bool:
                 continue
             d = (per[k] - per[twin]).dropna()
             m, h = _ci(d)
-            col = REF_C if abs(m) < h else ORANGE
-            ax.errorbar(m, y, xerr=h, fmt="o", ms=4.6, lw=1.3, color=col,
+            # An interval that excludes zero differs in shape as well as colour.
+            crosses = abs(m) < h
+            col = REF_C if crosses else ORANGE
+            ax.errorbar(m, y, xerr=h, fmt="o" if crosses else "D",
+                        ms=4.6 if crosses else 5.4, lw=1.3, color=col,
                         capsize=2.4, zorder=3)
             labels.append(k.split("/")[-1].replace("-SVM", "")
                           .replace("FB-", "").replace("-ref", ""))
@@ -478,8 +490,10 @@ def fig_crosssession_sweep(res: Path, out: Path) -> bool:
         for y, p in zip(ys, order):
             ax.plot([sen[p], ref[p]], [y, y], color=GRID, lw=2.4, zorder=1,
                     solid_capstyle="round")
-        ax.scatter(sen[order], ys, s=26, color=SENSOR_C, zorder=3, label="Sensor")
-        ax.scatter(ref[order], ys, s=26, color=REF_C, zorder=3, label="Reference")
+        # Sensor frame drawn as open markers, reference frame as filled ones.
+        ax.scatter(sen[order], ys, s=28, facecolors="white", edgecolors=SENSOR_C,
+                   linewidths=1.4, zorder=3, label="Sensor")
+        ax.scatter(ref[order], ys, s=28, color=REF_C, zorder=3, label="Reference")
         for y, p in zip(ys, order):
             q = p.startswith("quantum")
             ax.text(0.462, y, "Q" if q else "C", fontsize=7,
@@ -556,8 +570,10 @@ def fig_transfer_shots(res: Path, out: Path) -> bool:
                     solid_capstyle="round")
         grp = ["quantum" if p.startswith("quantum") else "classical"
                for p in order]
-        ax.scatter(sen[order], ys, s=26, color=SENSOR_C, zorder=3, label="Sensor")
-        ax.scatter(ref[order], ys, s=26, color=REF_C, zorder=3, label="Reference")
+        # Sensor frame drawn as open markers, reference frame as filled ones.
+        ax.scatter(sen[order], ys, s=28, facecolors="white", edgecolors=SENSOR_C,
+                   linewidths=1.4, zorder=3, label="Sensor")
+        ax.scatter(ref[order], ys, s=28, color=REF_C, zorder=3, label="Reference")
         for y, p, g in zip(ys, order, grp):
             ax.text(0.462, y, "Q" if g == "quantum" else "C", fontsize=7,
                     color=ORANGE if g == "quantum" else BLUE, va="center",
@@ -582,8 +598,9 @@ def fig_transfer_shots(res: Path, out: Path) -> bool:
             for frame, col in (("sensor", SENSOR_C), ("reference", REF_C)):
                 s = sub[(sub.frame == frame) & (sub.shots > 0)]
                 g = s.groupby("shots")["accuracy"].mean().sort_index()
-                ax.plot(g.index, g.values, ls, color=col, lw=1.5, marker="o",
-                        ms=3.4)
+                ax.plot(g.index, g.values, ls, color=col, lw=1.5,
+                        marker="s" if frame == "sensor" else "o", ms=3.6,
+                        mfc="white" if frame == "sensor" else col)
             inf = sub[(sub.frame == "sensor") & (sub.shots == -1)].accuracy.mean()
             ax.axhline(inf, color=SENSOR_C, lw=0.9, ls=":")
         ax.set_xscale("log")
@@ -594,8 +611,9 @@ def fig_transfer_shots(res: Path, out: Path) -> bool:
                 ha="right", va="bottom")
         ax.text(9.0e5, 0.5585, "sensor frame, infinite shots", fontsize=7,
                 color=SENSOR_C, ha="right", va="bottom")
-        ax.plot([], [], "-", color=REF_C, label="Reference")
-        ax.plot([], [], "-", color=SENSOR_C, label="Sensor")
+        ax.plot([], [], "-", color=REF_C, marker="o", ms=3.6, label="Reference")
+        ax.plot([], [], "-", color=SENSOR_C, marker="s", ms=3.6, mfc="white",
+                label="Sensor")
         ax.plot([], [], "-", color=INK_MUTED, label="HS overlap")
         ax.plot([], [], "--", color=INK_MUTED, label="HS-RBF")
         ax.legend(fontsize=7, loc="lower right", ncol=2)

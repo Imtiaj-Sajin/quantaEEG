@@ -2,8 +2,8 @@
 
 Everything else in this study is infinite-shot and noiseless, which is the
 setting most favourable to the quantum side. That is fine for a negative
-result -- if quantum kernels lose under ideal simulation they lose on hardware
-too -- but it is not fine once the reference-state kernels reach parity
+result: if quantum kernels lose under ideal simulation they lose on hardware
+too, but it is not fine once the reference-state kernels reach parity
 (RESEARCH.md 4.6). A parity claim has to survive the estimation cost, so this
 module puts a shot budget on it.
 
@@ -74,7 +74,7 @@ from .quantum import (
 SHOT_GRID = (100, 1_000, 10_000, 100_000, 1_000_000, None)  # None = infinite
 
 # Shot noise makes a Gram matrix nearly degenerate, and libsvm's SMO can then
-# iterate for an unbounded time on particular noise draws -- observed here as a
+# iterate for an unbounded time on particular noise draws: observed here as a
 # single subject consuming 500+ CPU-seconds of work that takes ~31 s at other
 # draws. Cap the iterations. The cap applies identically to every frame, shot
 # level and hyperparameter, so it cannot bias the comparison; it bounds the
@@ -89,7 +89,7 @@ def swap_test_sample(K: np.ndarray, shots: int | None,
 
     Only the upper triangle is sampled and then mirrored: a device estimates
     each unordered pair once, and pretending otherwise would halve the noise
-    for free. Diagonal entries tr(rho^2) are sampled too -- purity is not
+    for free. Diagonal entries tr(rho^2) are sampled too: purity is not
     known exactly on hardware either.
     """
     if shots is None:

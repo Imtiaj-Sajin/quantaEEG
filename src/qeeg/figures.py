@@ -6,7 +6,7 @@ Design notes (so the choices are reviewable, not taste):
 - Palette is a validated categorical set; adjacent-pair CVD Delta E >= 8 and
   normal-vision Delta E >= 15 in both the 6-slot (lines) and 3-slot (bars) cuts.
 - Three slots sit below 3:1 contrast on the light surface, so every figure
-  ships visible direct labels as relief -- identity is never colour-alone.
+  ships visible direct labels as relief: identity is never colour-alone.
 - Line style carries a second, colour-independent channel (kernel family), so
   the figures survive greyscale printing and colour-vision deficiency.
 - One y-axis per panel. No dual axes anywhere.

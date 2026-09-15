@@ -83,7 +83,7 @@ class DensityKernelSVC(BaseEstimator, ClassifierMixin):
     congruence group (electrode gain, referencing, source mixing, session and
     subject changes). In the reference frame they become exactly
     affine-invariant, matching the invariance that makes tangent-space
-    decoding the classical state of the art -- and note that pyriemann's
+    decoding the classical state of the art, and note that pyriemann's
     ``TangentSpace`` already whitens by that same mean internally, so a
     sensor-frame quantum kernel is not being compared like for like against
     it. See `qeeg.quantum.reference_whitener` and `qeeg.reference`.
@@ -240,7 +240,7 @@ class SPDKernelSVC(BaseEstimator, ClassifierMixin):
     SPD matrices but ships no classifier that uses them directly; the standard
     pipelines project to the tangent space first. Using them as precomputed
     SVM kernels gives the density-matrix kernels a comparator that differs from
-    them in the *geometry* alone -- same input, same classifier, same tuning
+    them in the *geometry* alone: same input, same classifier, same tuning
     budget, only the metric changes.
 
     Both pyriemann kernels are centred on a reference matrix, defaulting to the

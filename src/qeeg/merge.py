@@ -4,7 +4,7 @@ The full 30-subject nested-CV run is ~50 minutes of compute, longer than a
 single foreground process is allowed here, so it is executed as a sequence of
 small batches (``--subject-list`` + ``--tag``). This module concatenates their
 per-fold CSVs and recomputes the summary and paired statistics over the pooled
-subjects, which is identical to what a single long run would have produced --
+subjects, which is identical to what a single long run would have produced:
 subjects are evaluated independently, so batching changes nothing statistically.
 """
 

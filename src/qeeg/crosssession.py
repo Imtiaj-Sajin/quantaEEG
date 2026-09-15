@@ -6,8 +6,8 @@ that once the frame is corrected every geometry ties there, as the algebra
 says it must. Cross-session shift is the interesting complement. Within one
 subject, across two recordings of the same paradigm, the congruence component
 is far milder: same head, same cap, similar impedances. What remains is the
-residual the invariance argument says nothing about -- drift in conditioning,
-effective rank and spectral shape -- and it is exactly the regime in which a
+residual the invariance argument says nothing about: drift in conditioning,
+effective rank and spectral shape, and it is exactly the regime in which a
 quantum divergence, which weights the eigenvalue spectrum differently from the
 affine-invariant metric, could still separate from its classical twin.
 
@@ -23,8 +23,8 @@ tuned by stratified inner CV *inside the training session only*; the test
 session influences nothing.
 
 Two frames:
-  sensor     -- covariances as recorded;
-  reference  -- each session whitened by its OWN Frechet mean, computed
+  sensor: covariances as recorded;
+  reference: each session whitened by its OWN Frechet mean, computed
                 without labels. For the test session this is the unlabelled
                 data a real deployment has before it decodes anything.
 

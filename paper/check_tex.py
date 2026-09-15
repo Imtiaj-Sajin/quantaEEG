@@ -114,6 +114,46 @@ for name, text in (("main.tex", tex), ("tables_auto.tex", tab),
     if not ok:
         problems.append(f"unbalanced braces in {name}")
 
+# --------------------------------------------------------------- dashes
+# House rule: no em-dashes anywhere in the manuscript or the project. That
+# covers the Unicode character, LaTeX's --- ligature, \textemdash, and a
+# spaced double hyphen used as punctuation. Ranges (8--30) are en-dashes and
+# are fine. Comments are stripped first so banner rules like %% ---- pass.
+print("\nem-dash rule:")
+EM_CHARS = (chr(0x2014), chr(0x2015))  # em-dash, horizontal bar
+
+
+def _strip_tex_comments(text: str) -> str:
+    return re.sub(r"(?<!\\)%.*", "", text)
+
+
+dash_hits = []
+for name, text in (("main.tex", tex), ("tables_auto.tex", tab),
+                   ("macros_auto.tex", mac), ("refs.bib", bib)):
+    body = _strip_tex_comments(text)
+    for i, line in enumerate(body.splitlines(), 1):
+        if any(c in line for c in EM_CHARS) or "\\textemdash" in line \
+                or re.search(r"(?<!-)---(?!-)", line) \
+                or re.search(r"\S\s+--\s+\S", line):
+            dash_hits.append(f"{name}:{i}: {line.strip()[:80]}")
+# Repo-wide: the Unicode character in any text file we own.
+for p in HERE.parent.rglob("*"):
+    if any(part in {".git", "__pycache__", "build"} for part in p.parts) or not p.is_file():
+        continue
+    if p.suffix not in {".py", ".md", ".tex", ".bib", ".sh", ".txt", ".csv", ".json"}:
+        continue
+    try:
+        s = p.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, OSError):
+        continue
+    if any(c in s for c in EM_CHARS):
+        dash_hits.append(f"{p.relative_to(HERE.parent)}: contains an em-dash character")
+print(f"  {'none found' if not dash_hits else str(len(dash_hits)) + ' found'}")
+for h in dash_hits[:20]:
+    print(f"    {h}")
+if dash_hits:
+    problems.append(f"em-dashes present: {len(dash_hits)}")
+
 # ------------------------------------------------------------- figures
 figs = set(re.findall(re.escape(BS + "includegraphics") + r"(?:\[[^\]]*\])?\{([^}]*)\}", tex))
 print(f"\nfigures referenced                : {sorted(figs)}")

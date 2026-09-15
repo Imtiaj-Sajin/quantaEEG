@@ -8,10 +8,10 @@ Two families are implemented.
    qubits. Quantum information geometry then applies to EEG directly, with no
    ad-hoc squeezing of features into rotation angles:
 
-   - tr(rho sigma) -- Hilbert-Schmidt overlap. This is exactly the quantity a
+   - tr(rho sigma): Hilbert-Schmidt overlap. This is exactly the quantity a
      SWAP test estimates, and it is provably PSD (an inner product in
      Hilbert-Schmidt space), hence a valid SVM kernel with no repair needed.
-   - F(rho, sigma) -- Uhlmann fidelity, the quantum generalisation of the
+   - F(rho, sigma): Uhlmann fidelity, the quantum generalisation of the
      Bhattacharyya coefficient. Its induced distance is the Bures metric,
      which coincides with the Bures-Wasserstein distance that appears in the
      Riemannian EEG literature as a distance but, to our knowledge, never as

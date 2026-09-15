@@ -3,6 +3,16 @@
 Auto-loaded at the start of every Claude Code session. Keep it current; it is
 what makes a fresh session on any machine immediately useful.
 
+## House rules (set by the corresponding author, apply everywhere)
+
+1. **No em-dashes, ever.** Not in the manuscript, docs, code comments, commit
+   messages or chat. That means no U+2014 character, no LaTeX `---`, no
+   `\textemdash`, and no spaced double hyphen used as punctuation. Use a
+   comma, colon, parentheses or a new sentence. En-dashes in numeric ranges
+   (`8--30 Hz`) are fine. `python paper/check_tex.py` fails if one appears.
+2. **Never add Claude as a co-author on commits.** No `Co-Authored-By:` trailer
+   naming Claude or Anthropic, in any commit message or PR description.
+
 ## What this project is
 
 A **controlled benchmark of quantum and quantum-inspired kernels for EEG
@@ -121,7 +131,7 @@ cross-references, unbalanced environments and missing figures, the things that
 would otherwise only surface on first compile.
 
 **Compiles.** MiKTeX/`latexmk`: 26 pages, 0 warnings, 0 overfull boxes, 14
-tables, 11 figures, 37 references. Run `bash paper/get_iop_class.sh` once
+tables, 11 figures, 38 references. Run `bash paper/get_iop_class.sh` once
 first: it downloads IOP's own `ioplatextemplate.zip` and extracts
 `iopjournal.cls` + `orcid.pdf` (neither is on CTAN).
 
@@ -135,7 +145,7 @@ revert. `iopjournal` defines none of the iopart-isms (`\sref`, `\eref`,
 `paper/README.md`.
 
 Note the `-outdir` BibTeX trap documented in `paper/README.md`: without
-`BIBINPUTS` set, BibTeX silently produces an empty bibliography and the error
+`BIBINPUTS` and `BSTINPUTS` set (the latter finds `iopart_num.bst`), BibTeX silently produces an empty bibliography and the error
 surfaces as a misleading `missing \item` from `main.bbl`.
 
 `check_tex.py` is a pre-flight, not a substitute for compiling, and the
@@ -281,13 +291,21 @@ is needed for the argument; they close the "one seed, two datasets" objection.
 
 Outstanding, in order:
 
-1. **Author confirmation.** Order, and the CRediT `\roles{}` draft in
-   `main.tex`, are marked NOT FINAL. Only the corresponding author can settle
-   who did what.
+1. **CRediT roles.** Author order was set on 2026-09-15 (Sajin, Suva, Abha,
+   Saif, Chayon). Suva's and Abha's `\roles{}` entries are placeholders
+   ("writing, review and editing") until the corresponding author says what
+   they did; do not invent contributions.
 2. **`\funding{}`** currently states no specific grant. Correct it if that is
    wrong; IOP parse that section.
-3. **Read the PDF end to end** after each rebuild. `check_tex.py` cannot see
+3. **Single- or double-anonymous review.** For double, add `[anonymous]` to
+   `\documentclass` and rebuild; never hand-strip names.
+4. **Read the PDF end to end** after each rebuild. `check_tex.py` cannot see
    rendering problems.
+
+Submission upload: `python paper/make_overleaf_zip.py --check` builds
+`paper/build/quantaEEG_submission.zip`, one flat folder with IOP-safe file
+names (IOP's guidelines forbid subfolders and any character other than
+letters, digits and underscore), and compiles it from a clean unpack.
 
 Do **not** add more datasets beyond Cho2017. Mechanism and controls change a
 reviewer's mind; a fourth dataset does not.

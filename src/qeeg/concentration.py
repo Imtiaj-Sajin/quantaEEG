@@ -8,7 +8,7 @@ synthetic. This module runs the same test on biological data.
 Because a d-channel EEG covariance, trace-normalised, is a density matrix on a
 d-dimensional Hilbert space, sweeping the channel count over powers of two
 sweeps the qubit count directly: 4, 8, 16, 32, 64 channels = 2, 3, 4, 5, 6
-qubits. No re-encoding, no change of method -- only the register size moves.
+qubits. No re-encoding, no change of method: only the register size moves.
 
 The reported statistic is the variance of the off-diagonal Gram entries. Under
 exponential concentration it should fall geometrically with qubit count; a

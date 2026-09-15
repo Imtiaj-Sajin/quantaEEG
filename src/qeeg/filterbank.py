@@ -12,7 +12,7 @@ Two problems solved by one construction.
 
 2. **Register size.** RESEARCH.md 4.1b(b) found that density-matrix kernels
    concentrate from the data rather than from qubit count, and are *relieved*
-   by adding dimensions -- the opposite of circuit kernels. The corollary was
+   by adding dimensions: the opposite of circuit kernels. The corollary was
    that the density-matrix route should be run wider. A filter bank is the
    principled way to do that without adding electrodes: filtering into
    ``n_bands`` sub-bands and stacking gives an ``n_bands * n_ch`` dimensional

@@ -2,7 +2,7 @@
 
 Draft targeting **Journal of Neural Engineering** (IOP Publishing, Q1),
 structured abstract (*Objective / Approach / Main results / Significance*),
-numeric references via `iopart-num`.
+numeric references via `iopart-num` (shipped as `iopart_num.bst`).
 
 > **Template status: migrated to IOP's official class**, 2026-09-05. Built with
 > `iopjournal.cls [2024/01/31]`, taken from IOP's own `ioplatextemplate.zip`.
@@ -17,9 +17,12 @@ Checked against IOP's own sources on 2026-09-05, not from memory.
 | Requirement | Source | Ours |
 |---|---|---|
 | Structured abstract *Objective / Approach / Main results / Significance* | JNE "About" page, verbatim | matches exactly |
-| Abstract ≤ 300 words | JNE guidelines | **298** (measured from the rendered PDF; re-check after any abstract edit, the margin is 2 words) |
-| Paper ≤ 12 000 words / 14 journal pages | JNE "About" page | **10 551** excluding the reference list |
-| Numeric reference style | `iopart-num` | 35 entries, all resolved |
+| Abstract ≤ 300 words, no undefined abbreviations, no figure/table/reference numbers | IOP `iopjournal-guidelines.pdf` and JNE page | **297**; EEG and common spatial pattern spelled out, 2026-09-15 |
+| Paper ≤ 12 000 words | JNE "About" page | about **9 100** in the body, excluding tables, captions and references |
+| Numeric reference style | `iopart-num` | 38 entries, all resolved |
+| Upload files in one flat folder; names only `a-z A-Z 0-9 _` | IOP `iopjournal-guidelines.pdf` section 1.1 | `make_overleaf_zip.py` enforces both and refuses otherwise |
+| Ethical statement for research on human participants | JNE page | `Ethical statement` section, secondary analysis of public data |
+| Colour is not the only carrier of information in figures | IOP template figure guidance | frames differ by marker shape and hatching as well as colour |
 | Every macro used is class-provided | checked against `iopjournal.cls` | all present, compiles with 0 warnings |
 
 **The class, and how it got here.** `get_iop_class.sh` downloads
@@ -29,7 +32,7 @@ proceed unless the class declares itself, and echoes the version and copyright
 line so a silent substitution would be visible. `iopart-num.bst` still comes
 from CTAN; IOP ship no `.bst`.
 
-`iopart.cls` is *not in IOP's package at all* — it is the legacy class, and it
+`iopart.cls` is *not in IOP's package at all*: it is the legacy class, and it
 had been taken from a third-party GitHub mirror whose claimed byte-identity to
 IOP's copy could not be checked against anything. That is why migrating was
 worth doing even though IOP state that using their class is "not essential"
@@ -49,7 +52,7 @@ anyone restores a file from git history:
 | `\sref \eref \fref \tref` | plain `\ref` |
 | `\br \mr \ms`, `\begin{indented}` | `\hline`, plain `table` |
 | data availability as `\section*` | `\data{}` |
-| — | `\orcid \funding \roles \suppdata` |
+| (none) | `\orcid \funding \roles \suppdata` |
 
 Three traps this migration hit, none of them visible to `check_tex.py`:
 
@@ -102,17 +105,18 @@ hand-transcribed manuscript silently rots.
 
 ## Building
 
-**The draft compiles cleanly: 26 pages, 14 tables, 11 figures, 37
+**The draft compiles cleanly: 26 pages, 14 tables, 11 figures, 38
 references, 0 LaTeX warnings, 0 overfull boxes, 0 BibTeX warnings**
-(MiKTeX/`latexmk`, 2026-09-15, `iopjournal`). Abstract 297/300 words.
+(MiKTeX/`latexmk`, 2026-09-15, `iopjournal`). Abstract 296/300 words.
 
 ### Overleaf
 
 `python paper/make_overleaf_zip.py --check` packs `main.tex`, the generated
 macro and table files, `refs.bib`, the IOP class, its ORCID icon, the
-bibliography style and every figure PDF the document includes into
-`paper/build/quantaEEG-overleaf.zip`, then unpacks it into a temporary
-directory and compiles it there. Upload the zip as a new Overleaf project;
+bibliography style, the compiled `main.bbl` and every figure PDF the document
+includes into `paper/build/quantaEEG_submission.zip`, all in one flat folder
+with IOP-safe file names, then unpacks it into a temporary directory and
+compiles it there. The same zip works for Overleaf and for ScholarOne. Upload the zip as a new Overleaf project;
 nothing else is needed. Rebuild it after every `make_tables.py` run, since the
 zip carries copies of the generated files.
 
@@ -126,6 +130,7 @@ which points nowhere near the real cause. Set the search paths:
 ```bash
 export PATH="$PATH:/c/Users/User/AppData/Local/Programs/MiKTeX/miktex/bin/x64"
 export BIBINPUTS="<abs-path-to>/paper;"
+export BSTINPUTS="<abs-path-to>/paper;"   # finds iopart_num.bst
 export TEXINPUTS="<abs-path-to>/paper;"
 latexmk -pdf -interaction=nonstopmode -outdir=build main.tex
 ```
@@ -137,7 +142,7 @@ later passes resolve:
 
 ```bash
 grep -E "Warning" build/main.log | grep -viE "font|miktex|update"   # expect none
-grep -c bibitem build/main.bbl                                       # expect 35
+grep -c bibitem build/main.bbl                                       # expect 38
 ```
 
 The build uses [Tectonic](https://tectonic-typesetting.github.io/): a single
@@ -193,27 +198,28 @@ standalone viewing, and writes to `results/figures/`.
       `holm1979` (Scand. J. Statist. 6:65--70, 1979 predates DOI assignment;
       JSTOR only) and `demsar2006` (JMLR registers no DOIs). Their metadata is
       from standing knowledge and has *not* been checked against a publisher
-      record — eyeball those two once before submitting. Re-running a CrossRef
+      record, so eyeball those two once before submitting. Re-running a CrossRef
       lookup on them will not help; that has been tried.
 - [x] **Compile at least once.** Done 2026-09-03, the first successful build.
       It caught `\tfrac`, undefined under `iopams`, which the static checker
       cannot see.
 - [x] **Affiliation filled** (AIUB, Dhaka), 2026-09-03.
 - [ ] **Complete the `\ack` section** (funding, compute).
-- [ ] Add co-authors if applicable.
-- [ ] **Read the PDF end to end.** It compiles and every number is generated
-      from a CSV, but nobody has yet read it as a reader would.
+- [x] **Co-authors added**, 2026-09-15: Sajin, Suva, Abha, Saif, Chayon, in
+      that order. Suva's and Abha's CRediT roles are placeholders to replace.
+- [x] **Read the PDF end to end.** Done after every rebuild since 2026-09-14.
 - [x] **Abstract within the 300-word limit.** Cut from 473 to 299 words on
       2026-09-03 and measured from the rendered PDF, not the source, since
       macros expand.
 - [x] **Abstract, length and structured-abstract headings checked against
       IOP's own pages**, 2026-09-05. Abstract 299/300 words; body 8921/12000;
       headings match JNE's four verbatim. See "Which IOP class" above.
-- [ ] **Decide: stay on `iopart` or migrate to `iopjournal`.** IOP's current
+- [x] **Migrated to `iopjournal`** (2026-09-05); the class is byte-identical
+      to the copy in IOP's `ioplatextemplate.zip` (re-checked 2026-09-15).
+      Original note: IOP's current
       package ships `iopjournal.cls` and does not include `iopart.cls`. Not a
       blocker (IOP accept any common TeX), but `iopjournal` is what they
-      distribute now and it carries `\orcid`, `unding`, `
-oles` (CRediT)
+      distribute now and it carries `\orcid`, `\funding`, `\roles` (CRediT)
       and `\data` metadata commands plus the `[anonymous]` option for
       double-anonymous review. Migration notes are in the table above.
 - [ ] Check JNE's other author guidelines: limits do change.
@@ -227,9 +233,9 @@ critiques, and removing it would make the paper indefensible.
 
 ## Status
 
-Complete draft, **compiling to 20 pages** on IOP's `iopjournal` class:
+Complete draft, **compiling to 26 pages** on IOP's `iopjournal` class:
 abstract, introduction, methods, results, discussion, limitations,
-conclusion, structured end matter, eleven tables, ten figures, 35
+conclusion, structured end matter, fourteen tables, eleven figures, 38
 references.
 
 The argument is a **negative result with an identified mechanism**, and the

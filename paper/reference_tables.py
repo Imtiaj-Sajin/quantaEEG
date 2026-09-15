@@ -186,7 +186,7 @@ Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & Better \\
 
 
 # --------------------------------------------------------------------------
-# Table: the classical-twin control -- the decisive one
+# Table: the classical-twin control: the decisive one
 # --------------------------------------------------------------------------
 
 def table_twin(d: dict, paired, fmt_p, esc, out: list[str]) -> bool:
@@ -297,7 +297,8 @@ Equiv. & Bound \\
     for _, r in d.iterrows():
         lead = r["setting"] if r["setting"] != prev else ""
         prev = r["setting"]
-        mark = r"\checkmark" if r["equivalent"] else "---"
+        # A cross, not a dash: the project uses no em-dashes anywhere.
+        mark = r"\checkmark" if r["equivalent"] else r"$\times$"
         out.append(
             f"{lead} & {r['kernel']} & {int(r['n'])} & ${r['mean']:+.4f}$ & "
             f"$[{r['ci_low']:+.4f}, {r['ci_high']:+.4f}]$ & "
