@@ -38,8 +38,7 @@ quantum/Fidelity-SVM & Quantum & 0.523 & 0.082 & 0.557 & 4.68 \\
 \caption{\label{tab:tests}Paired comparisons against the classical/TS+LR
 reference across subjects (Wilcoxon signed-rank, two-sided). $\Delta$ is the
 mean per-subject accuracy difference; $d_z$ is the paired effect size;
-$p_{\mathrm{Holm}}$ is corrected across the whole family of comparisons. No
-comparison survives correction.}
+$p_{\mathrm{Holm}}$ is corrected across the whole family of comparisons. No comparison survives correction.}
 \begin{tabular}{@{}lccccc@{}}
 \hline
 Pipeline & $\Delta$ accuracy & $p$ & $p_{\mathrm{Holm}}$ & $d_z$ & Better in \\
@@ -69,9 +68,7 @@ quantum/Fidelity-SVM & $-0.0714$ & 0.013 & 0.179 & $-0.498$ & 10/30 \\
 second. The entanglement ablation contrasts the IQP circuit kernel with an
 otherwise identical circuit whose entangling gates are deleted; the
 dimension-matched control contrasts it with a linear SVM on exactly the same
-PCA features. Only the primary classical-versus-quantum contrast is
-statistically significant; both ablations point in the expected direction but
-do not reach significance on accuracy at $n=30$.}
+PCA features. Significant at $p<0.05$ with $n=30$: Best classical versus best quantum; the others are not.}
 \begin{tabular}{@{}lcccc@{}}
 \hline
 Comparison & $\Delta$ accuracy & $p$ & $d_z$ & Better in \\
@@ -120,8 +117,7 @@ quantum/Fidelity-SVM & 0.580 & 0.616 & 0.523 \\
 \caption{\label{tab:cross}Pre-specified comparisons on both datasets, combined by
 Fisher's method. Positive $\Delta$ favours the first-named pipeline. At $n=9$ the
 two-sided signed-rank test cannot return $p<0.0039$, so the IV-2a entries marked
-$\dagger$ sit at that floor: the test is saturated rather than merely significant.
-Both classical-versus-quantum contrasts hold in every one of the nine IV-2a subjects.}
+$\dagger$ sit at that floor: the test is saturated rather than merely significant. Both classical-versus-quantum contrasts hold in every one of the 9 IV-2a subjects.}
 \begin{tabular}{@{}llccc@{}}
 \hline
 Comparison & Dataset & $\Delta$ acc & $p$ & Better \\

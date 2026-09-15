@@ -639,6 +639,95 @@ def fig_transfer_shots(res: Path, out: Path) -> bool:
 
 
 # ==========================================================================
+# Figure 11: few-trial calibration
+# ==========================================================================
+
+def fig_calibration(res: Path, out: Path) -> bool:
+    """Accuracy against training-set size, and quantum minus twin with 90 % CI."""
+    from scipy.stats import t as tdist
+
+    data = []
+    for key, label in (("cho2017", "Cho2017"), ("bci2a", "IV-2a")):
+        df = _read(res, f"calib_folds_{key}.csv")
+        if df is not None:
+            per = (df.groupby(["n_train", "pipeline", "subject"])["accuracy"]
+                   .mean().unstack("pipeline"))
+            data.append((label, per))
+    if not data:
+        return False
+
+    twin = "control/riemann-kernel-SVM"
+    ref = [b for _, b, _ in FRAME_PAIRS]
+    sensor = [a for a, _, _ in FRAME_PAIRS]
+    F._style()
+    fig, axes = plt.subplots(2, len(data), figsize=(4.7 * len(data), 6.6),
+                             squeeze=False, gridspec_kw={"height_ratios": [1.25, 1.0]})
+    for col, (label, per) in enumerate(data):
+        ks = sorted(per.index.get_level_values(0).unique())
+        ax = axes[0, col]
+        mean = per.groupby(level=0).mean()
+        for q in ref:
+            if q in mean:
+                ax.plot(ks, mean.loc[ks, q], "-", color=ORANGE, lw=0.9, alpha=0.55)
+        sq = [s for s in sensor if s in mean]
+        if sq:
+            ax.plot(ks, mean.loc[ks, sq].max(axis=1), ":", color=ORANGE, lw=1.4,
+                    marker="s", ms=3.2, mfc="white", label="best sensor-frame quantum")
+        ax.plot([], [], "-", color=ORANGE, lw=0.9, label="reference-frame quantum (5)")
+        for name, style, colour, mk, lab in (
+                (twin, "-", BLUE, "o", "Riemannian twin"),
+                ("classical/TS+LR", "--", INK_2, "^", "TS+LR"),
+                ("classical/CSP+LDA", "-.", GREEN, "D", "CSP+LDA")):
+            if name in mean:
+                ax.plot(ks, mean.loc[ks, name], style, color=colour, lw=1.6,
+                        marker=mk, ms=3.6, label=lab)
+        ax.set_xscale("log", base=2)
+        ax.set_xticks(ks)
+        ax.set_xticklabels([str(int(k)) for k in ks])
+        ax.axhline(0.5, color=INK_MUTED, lw=0.8, ls=":")
+        ax.set_title(f"{label}  ($n={per.index.get_level_values(1).nunique()}$)",
+                     fontsize=9.5, color=INK, loc="left", pad=8)
+        ax.set_ylabel("test accuracy" if col == 0 else "")
+        if col == 0:
+            ax.legend(fontsize=6.8, loc="upper left")
+        F._despine(ax)
+
+        ax = axes[1, col]
+        offsets = np.linspace(-0.12, 0.12, len(ref))
+        markers = ["o", "s", "^", "D", "v"]
+        for q, off, mk in zip(ref, offsets, markers):
+            if q not in per.columns or twin not in per.columns:
+                continue
+            m, h = [], []
+            for k in ks:
+                d = (per.loc[k, q] - per.loc[k, twin]).dropna().to_numpy()
+                se = d.std(ddof=1) / np.sqrt(len(d)) if len(d) > 1 else 0.0
+                m.append(d.mean())
+                h.append(float(tdist.ppf(0.95, max(len(d) - 1, 1))) * se)
+            xs = [k * 2 ** off for k in ks]
+            ax.errorbar(xs, m, yerr=h, fmt=mk, ms=3.4, lw=1.0, capsize=2,
+                        color=ORANGE, mfc="white" if mk in "sD" else ORANGE,
+                        label=q.split("/")[1].replace("-ref-SVM", ""))
+        ax.axhline(0, color=INK, lw=1.0)
+        ax.set_xscale("log", base=2)
+        ax.set_xticks(ks)
+        ax.set_xticklabels([str(int(k)) for k in ks])
+        ax.set_xlabel("training trials $k$")
+        ax.set_ylabel(r"$\Delta$ accuracy, quantum $-$ twin" if col == 0 else "")
+        if col == 0:
+            ax.legend(fontsize=6.6, ncol=2, loc="lower right")
+        F._despine(ax)
+
+    F._caption(fig, (
+        "Top: test accuracy against the number of training trials. Bottom: each "
+        "reference-frame quantum kernel minus the\nRiemannian twin, with 90% "
+        "intervals. A quantum advantage under a poorly estimated reference state "
+        "would\nappear as intervals above zero at small k."))
+    F._save(fig, out, "fig11_calibration")
+    return True
+
+
+# ==========================================================================
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
@@ -661,6 +750,7 @@ def main(argv=None) -> int:
         "fig8_twin": fig_twin(res, out),
         "fig9_transfer_shots": fig_transfer_shots(res, out),
         "fig10_crosssession_sweep": fig_crosssession_sweep(res, out),
+        "fig11_calibration": fig_calibration(res, out),
     }
     for k, v in built.items():
         print(f"  {'ok  ' if v else 'skip'} {k}")

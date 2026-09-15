@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import wilcoxon
 
+import calibration_tables as cal
 import cross_tables as ct
 import grids_table as gt
 import reference_tables as rt
@@ -117,14 +118,16 @@ Pipeline & Group & Accuracy & SD & AUC & Runtime (s) \\
 
 
 def table_tests(tests: pd.DataFrame, out: list[str]) -> None:
+    k = int((tests.p_holm < 0.05).sum())
+    survive = ("No comparison survives correction." if k == 0 else
+               f"{k} of {len(tests)} comparisons survive correction.")
     out.append(r"""
 %% ---------------------------------------------------------------- Table 2
 \begin{table}[htbp]
 \caption{\label{tab:tests}Paired comparisons against the """ + esc(REFERENCE) + r"""
 reference across subjects (Wilcoxon signed-rank, two-sided). $\Delta$ is the
 mean per-subject accuracy difference; $d_z$ is the paired effect size;
-$p_{\mathrm{Holm}}$ is corrected across the whole family of comparisons. No
-comparison survives correction.}
+$p_{\mathrm{Holm}}$ is corrected across the whole family of comparisons. """ + survive + r"""}
 \begin{tabular}{@{}lccccc@{}}
 \hline
 Pipeline & $\Delta$ accuracy & $p$ & $p_{\mathrm{Holm}}$ & $d_z$ & Better in \\
@@ -142,6 +145,16 @@ Pipeline & $\Delta$ accuracy & $p$ & $p_{\mathrm{Holm}}$ & $d_z$ & Better in \\
 
 
 def table_key(per: pd.DataFrame, out: list[str]) -> None:
+    stats = [(label, paired(per, a, b)) for a, b, label in KEY_COMPARISONS
+             if a in per.columns and b in per.columns]
+    sig = [label for label, s in stats if s["p"] < 0.05]
+    n = stats[0][1]["n"] if stats else 0
+    if not sig:
+        verdict = f"No contrast is statistically significant at $n={n}$."
+    else:
+        names = ", ".join(x.replace("vs.\\ ", "versus ") for x in sig)
+        verdict = (f"Significant at $p<0.05$ with $n={n}$: {names}; the others "
+                   "are not.")
     out.append(r"""
 %% ---------------------------------------------------------------- Table 3
 \begin{table}[htbp]
@@ -149,9 +162,7 @@ def table_key(per: pd.DataFrame, out: list[str]) -> None:
 second. The entanglement ablation contrasts the IQP circuit kernel with an
 otherwise identical circuit whose entangling gates are deleted; the
 dimension-matched control contrasts it with a linear SVM on exactly the same
-PCA features. Only the primary classical-versus-quantum contrast is
-statistically significant; both ablations point in the expected direction but
-do not reach significance on accuracy at $n=30$.}
+PCA features. """ + verdict + r"""}
 \begin{tabular}{@{}lcccc@{}}
 \hline
 Comparison & $\Delta$ accuracy & $p$ & $d_z$ & Better in \\
@@ -172,6 +183,14 @@ Comparison & $\Delta$ accuracy & $p$ & $d_z$ & Better in \\
 
 
 def table_concentration(decay: pd.DataFrame, out: list[str]) -> None:
+    slope = decay.set_index("kernel")["log_variance_slope_per_qubit"]
+    if {"IQP-entangled", "IQP-product"} <= set(slope.index) and slope["IQP-product"] != 0:
+        ratio = slope["IQP-entangled"] / slope["IQP-product"]
+        entangle_note = (f" The entangled circuit kernel concentrates "
+                         f"${ratio:.1f}\\times$ faster in log-slope than the same "
+                         "circuit with entanglers removed.")
+    else:
+        entangle_note = ""
     out.append(r"""
 %% ---------------------------------------------------------------- Table 4
 \begin{table}[htbp]
@@ -179,9 +198,7 @@ def table_concentration(decay: pd.DataFrame, out: list[str]) -> None:
 size on real EEG. Register size is swept by varying the channel count over
 powers of two (4/8/16/32/64 channels $=$ 2--6 qubits), with no change of method.
 The statistic is the variance of the off-diagonal Gram entries; a factor below
-one means concentration worsens with scale. The entangled circuit kernel
-concentrates $2.5\times$ faster in log-slope than the same circuit with
-entanglers removed.}
+one means concentration worsens with scale.""" + entangle_note + r"""}
 \begin{tabular}{@{}lcccc@{}}
 \hline
 Kernel & Log-slope / qubit & Factor / qubit & Var (2 qubits) & Var (6 qubits) \\
@@ -327,6 +344,10 @@ def main(argv=None) -> int:
         built.append("shots (supplementary)")
     if gt.table_grids(supp["grids"]):
         built.append("hyperparameter grids (supplementary)")
+    calib = cal.load(res)
+    if cal.table_calibration(calib, fmt_p, out):
+        built.append("few-trial calibration")
+    cal.macros(calib, fmt_p_eq, esc, mac)
     rt.macros(ref, paired, fmt_p, esc, mac)
     rt.equivalence_macros(res, mac)
     print(f"  + reference-frame tables: {', '.join(built) if built else 'none'}")

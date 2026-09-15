@@ -82,19 +82,28 @@ def table_bci(summary_b, summary_p, out, esc, group_label) -> None:
 
 def table_cross(per_p, per_b, comparisons, paired, fmt_p, out) -> None:
     """Pre-specified comparisons on both datasets, plus Fisher combination."""
+    n_b = len(per_b)
+    floor = wilcoxon_floor(n_b)
+    primary = [paired(per_b, a, b) for a, b, _ in comparisons[:1]
+               if a in per_b.columns and b in per_b.columns]
+    dens = (paired(per_b, BEST_CLASSICAL, DENSITY_PIPE)
+            if BEST_CLASSICAL in per_b.columns and DENSITY_PIPE in per_b.columns
+            else None)
+    held = [r for r in primary + ([dens] if dens else []) if r["n_better"] == r["n"]]
+    every = (f" Both classical-versus-quantum contrasts hold in every one of the "
+             f"{n_b} IV-2a subjects." if len(held) == 2 else "")
     out.append(
         "\n%% ---------------------------------------------------------------- Table 6\n"
         r"\begin{table}[htbp]" "\n"
         r"\caption{\label{tab:cross}Pre-specified comparisons on both datasets, "
         "combined by\n"
         r"Fisher's method. Positive $\Delta$ favours the first-named pipeline. "
-        "At $n=9$ the\n"
-        "two-sided signed-rank test cannot return $p<0.0039$, so the IV-2a "
+        f"At $n={n_b}$ the\n"
+        f"two-sided signed-rank test cannot return $p<{floor:.4f}$, so the IV-2a "
         "entries marked\n"
         r"$\dagger$ sit at that floor: the test is saturated rather than merely "
-        "significant.\n"
-        "Both classical-versus-quantum contrasts hold in every one of the nine "
-        "IV-2a subjects.}\n"
+        "significant."
+        + every + "}\n"
         r"\begin{tabular}{@{}llccc@{}}" "\n"
         r"\hline" "\n"
         r"Comparison & Dataset & $\Delta$ acc & $p$ & Better \\" "\n"
