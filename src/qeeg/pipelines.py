@@ -311,11 +311,15 @@ def make_pipelines(
     Parameters
     ----------
     suite : {"core", "extended"}
-        ``core`` is the 15-pipeline suite the published results were produced
-        with; it is the default so those runs reproduce byte for byte.
-        ``extended`` adds the reference-state quantum kernels, the quantum
-        relative-entropy kernel, and the Riemannian/log-Euclidean kernel
-        controls that are the density-matrix kernels' exact classical twins.
+        ``core`` is the 16 sensor-frame pipelines: 5 classical baselines, 5
+        density-matrix kernels (HS overlap, fidelity, HS-RBF, Bures-RBF,
+        QRE-RBF), 2 circuit kernels and 4 controls. ``extended`` is core plus
+        7: the same 5 density-matrix kernels referred to the training-set
+        reference state, and the Riemannian and log-Euclidean SPD-kernel
+        twins, 23 pipelines in all. Until 2026-09-16 the sensor-frame QRE-RBF
+        kernel was only in ``extended``, so the core suite had 15; moving it
+        lets the paper's first table show every sensor-frame kernel. Every
+        other pipeline, grid and seed is unchanged.
     """
     if suite not in ("core", "extended"):
         raise ValueError(f"unknown suite {suite!r}")
@@ -366,17 +370,17 @@ def make_pipelines(
     # Bandwidth-corrected quantum-geometric kernels: the working versions.
     pipes["quantum/HS-RBF-SVM"] = _dens("hs_rbf")
     pipes["quantum/Bures-RBF-SVM"] = _dens("bures_rbf")
+    pipes["quantum/QRE-RBF-SVM"] = _dens("qre_rbf")
 
     if suite == "extended":
-        # The same four kernels, plus the quantum relative entropy, evaluated
-        # relative to the training-set reference state instead of in the sensor
-        # frame. This is the like-for-like comparison against TangentSpace,
-        # which whitens by that same mean before it does anything else.
+        # The same five kernels evaluated relative to the training-set
+        # reference state instead of in the sensor frame. This is the
+        # like-for-like comparison against TangentSpace, which whitens by that
+        # same mean before it does anything else.
         pipes["quantum/HS-overlap-ref-SVM"] = _dens("hs", "riemann")
         pipes["quantum/Fidelity-ref-SVM"] = _dens("fidelity", "riemann")
         pipes["quantum/HS-RBF-ref-SVM"] = _dens("hs_rbf", "riemann")
         pipes["quantum/Bures-RBF-ref-SVM"] = _dens("bures_rbf", "riemann")
-        pipes["quantum/QRE-RBF-SVM"] = _dens("qre_rbf")
         pipes["quantum/QRE-RBF-ref-SVM"] = _dens("qre_rbf", "riemann")
 
     # ---- Quantum: circuit embedding kernels on reduced TS features -----

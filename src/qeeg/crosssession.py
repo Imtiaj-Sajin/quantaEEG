@@ -224,7 +224,9 @@ def paired_tests(df: pd.DataFrame) -> pd.DataFrame:
     twins = [t for t in ("control/riemann-kernel-SVM", "control/logeuclid-kernel-SVM")
              if t in ref.columns]
     if twins:
-        twin = max(twins, key=lambda t: ref[t].mean())
+        # The Riemannian kernel is the invariance-matched twin; see
+        # paper/reference_tables._best_twin for why it is fixed.
+        twin = twins[0]
         for p in ref.columns:
             if not p.startswith("quantum/"):
                 continue

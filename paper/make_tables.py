@@ -19,6 +19,7 @@ import pandas as pd
 from scipy.stats import wilcoxon
 
 import cross_tables as ct
+import grids_table as gt
 import reference_tables as rt
 
 REFERENCE = "classical/TS+LR"
@@ -255,6 +256,9 @@ def main(argv=None) -> int:
     tests = pd.read_csv(
         res / f"tests_vs_{REFERENCE.replace('/', '-')}_{args.tag}.csv")
     decay = pd.read_csv(res / "concentration_decay.csv")
+    conc_raw = res / "concentration_raw.csv"
+    conc_n = (pd.read_csv(conc_raw)["subject"].nunique()
+              if conc_raw.exists() else None)
     meta = json.loads((res / f"meta_{args.tag}.json").read_text())
     per = df.groupby(["pipeline", "subject"])["accuracy"].mean().unstack("pipeline")
 
@@ -268,6 +272,8 @@ def main(argv=None) -> int:
     # abstract quotes them), while table floats are only legal in the body.
     mac: list[str] = list(header)
     macros(df, summary, tests, per, meta, mac)
+    if conc_n:
+        mac.append(f"\\newcommand{{\\ConcNSubjects}}{{{conc_n}}}")
 
     out: list[str] = list(header)
     table_main(summary, out)
@@ -312,6 +318,8 @@ def main(argv=None) -> int:
         built.append("register sweep")
     if rt.table_shots(ref, out):
         built.append("shots")
+    if gt.table_grids(out):
+        built.append("hyperparameter grids")
     rt.macros(ref, paired, fmt_p, esc, mac)
     rt.equivalence_macros(res, mac)
     print(f"  + reference-frame tables: {', '.join(built) if built else 'none'}")

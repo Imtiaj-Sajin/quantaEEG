@@ -353,9 +353,16 @@ def fig_frame(res: Path, out: Path) -> bool:
 # ==========================================================================
 
 def _ci(d):
+    """Mean and half-width of the 90 % t interval.
+
+    90 %, not 95 %: it is the interval that corresponds to the two one-sided
+    tests at alpha = 0.05, so the figure and the equivalence table count the
+    same intervals as excluding zero.
+    """
+    from scipy.stats import t as tdist
     d = np.asarray(d, float)
     se = d.std(ddof=1) / np.sqrt(len(d))
-    return d.mean(), 1.96 * se
+    return d.mean(), float(tdist.ppf(0.95, len(d) - 1)) * se
 
 
 def fig_twin(res: Path, out: Path) -> bool:
@@ -375,7 +382,7 @@ def fig_twin(res: Path, out: Path) -> bool:
         settings.append(("PhysioNet, 5 qubits", _per(fb),
                          [b.replace("quantum/", "quantum/FB-")
                           for _, b, _ in FRAME_PAIRS],
-                         "control/FB-logeuclid-kernel-SVM"))
+                         "control/FB-riemann-kernel-SVM"))
     tr = _read(res, "transfer_folds_motor8.csv")
     if tr is not None:
         per_t = (tr[tr.frame == "reference"]
@@ -452,7 +459,7 @@ def fig_twin(res: Path, out: Path) -> bool:
     ax.set_yticks(ypos)
     ax.set_yticklabels(labels, fontsize=8)
     ax.set_xlabel(r"$\Delta$ accuracy, quantum kernel $-$ classical twin"
-                  "\n(95% CI; same data, same SVM, same frame, only the metric differs)")
+                  "\n(90% CI; same data, same SVM, same frame, only the metric differs)")
     ax.set_xlim(-0.036, xmax)
     ax.set_xticks([-0.03, -0.02, -0.01, 0.0, 0.01, 0.02])
     ax.set_ylim(y + 0.6, 1.0)

@@ -436,6 +436,19 @@ less obviously, the quantum kernels can now at best \emph{match} the
 Riemannian metric on any nuisance that is a congruence; parity, not
 superiority, is the ceiling the algebra permits.
 
+The proposition's scope should be stated exactly, because the transfer
+experiments go beyond it. It covers a congruence \emph{common} to every state
+being compared, which is the situation within one subject and one session. In
+cross-subject and cross-session evaluation we whiten each subject or session by
+its own mean. If subject or session $s$ is distorted by its own $A_s$, the
+same argument turns each distortion into an orthogonal $U_s$, but the $U_s$
+differ between subjects or sessions, and nothing in the whitening removes that
+relative rotation. Neither the quantum kernels nor the Riemannian twin is
+invariant to it, so the proposition does not predict parity there. Whether
+parity survives that residual, together with any change in spectral shape or
+conditioning, is an empirical question, and
+sections~\ref{sec:transfer} and~\ref{sec:crosssession} test it.
+
 To state the contribution precisely: the alignment is borrowed, the reason for
 needing it is not. What we add is the observation that quantum kernels lack an
 invariance the classical baselines already possess, a proof that recentring
@@ -526,21 +539,41 @@ same PCA features the circuit kernels receive; and a log-Euclidean tangent-space
 classifier as a first classical geometric comparator for the density-matrix
 kernels.
 
+Together with the two circuit kernels and the five sensor-frame density-matrix
+kernels (Hilbert--Schmidt overlap, fidelity, HS-RBF, Bures-RBF and QRE-RBF),
+these make up the sixteen pipelines of the \emph{core suite}, all operating in
+the sensor frame. The \emph{extended suite} adds seven: the same five
+density-matrix kernels in the reference frame (\ref{eq:refstate}), and the
+two classical SPD kernels described next, for twenty-three pipelines in all.
+Table~\ref{tab:grids} lists every hyperparameter grid and every fixed setting.
+Where a comparison names ``the best quantum kernel'' without qualification it
+means the most accurate quantum pipeline of the suite in question; the
+density-matrix comparisons of section~\ref{sec:refresults} always name the
+kernel explicitly.
+
 The control the argument ultimately rests on is stricter than that, and we
 define it here because everything in section~\ref{sec:refresults} depends on
 it. A \emph{metric-matched twin} is a classical kernel on the SPD manifold used
-exactly as the density-matrix kernels are used: the same covariances, the same
-reference-state whitening (\ref{eq:refstate}), a precomputed Gram matrix in
-the same support vector machine, and the same hyperparameter grid. Only the
-metric differs. We use the two SPD kernels pyRiemann provides
-\cite{barachant2013}: the affine-invariant Riemannian kernel,
-$\exp(-\gamma\,\delta_R^2)$ with $\delta_R$ the affine-invariant distance, and
-the log-Euclidean kernel. Whichever of the two scores higher in a given setting
-is the comparator, which is the conservative choice. Because the twin shares
-every element of the quantum pipeline except the metric, any difference
-between them is attributable to the metric alone; because it is
-congruence-invariant by construction, it is the right comparator for the
-reference-frame kernels specifically.
+exactly as the reference-frame density-matrix kernels are used: the same
+covariances, referred to the same training-set Fr\'echet mean, a precomputed
+Gram matrix in the same support vector machine, and the same grid over the SVM
+cost $C$. Only the metric differs. Our twin is the Riemannian kernel of
+pyRiemann \cite{barachant2013},
+$k_R(X,Y)=\mathrm{tr}\left[\log(M^{-1/2}XM^{-1/2})\,\log(M^{-1/2}YM^{-1/2})\right]$
+with $M$ the training-set Fr\'echet mean, the inner product of the two states in
+the tangent space at the reference. It has no bandwidth, so it is tuned over
+$C$ alone, as are the two overlap kernels; the three bandwidth-parameterised
+quantum kernels additionally tune a bandwidth multiplier. Because a common
+congruence maps $M^{-1/2}XM^{-1/2}$ to $U(M^{-1/2}XM^{-1/2})U^{\mathsf T}$ for
+an orthogonal $U$, exactly as in the proposition, $k_R$ has the same
+affine invariance as the reference-frame quantum kernels, which is why it is
+the twin in every setting. We also report pyRiemann's log-Euclidean kernel,
+$\mathrm{tr}[(\log X-\log M)(\log Y-\log M)]$, as a second classical kernel. It
+centres in the log domain rather than whitening, is not congruence-invariant,
+and so is not a twin; it is shown because it is sometimes the stronger
+classical kernel. Because the twin shares every element of the quantum
+pipeline except the metric, a difference between them is attributable to the
+metric.
 
 Three further suites reuse this design. A \emph{filter-bank} suite splits the
 8--30 Hz band into four sub-bands (8--12, 12--16, 16--22 and 22--30 Hz) and
@@ -598,7 +631,13 @@ repeated in full under two further outer-partition seeds
 
 Where the claim is that two methods are the \emph{same}, a non-significant
 difference is not sufficient evidence, so we additionally report two one-sided
-tests (TOST) on the paired differences against a margin fixed in advance
+tests (TOST) on the paired differences against a margin of $\pm\EquivMargin$
+accuracy. The margin was not pre-registered: it was chosen after the first
+within-subject PhysioNet and IV-2a analyses, the filter-bank analysis and
+the cross-subject analysis, and before every other analysis, and it was not
+moved afterwards. Because of that, table~\ref{tab:equiv} also reports the
+smallest margin at which each equivalence would hold, so the result can be
+read at any margin
 (table~\ref{tab:equiv}). The margin, its justification and the achieved
 equivalence bounds are given there.
 
@@ -708,7 +747,7 @@ route should use \emph{more} channels, not fewer.
 \centering
 \includegraphics[width=\textwidth]{fig1_concentration.pdf}
 \caption{\label{fig:concentration}Kernel variance versus register size on real
-EEG ($n=10$ subjects). Lower is worse: a kernel whose variance collapses cannot
+EEG ($n=\ConcNSubjects$ subjects). Lower is worse: a kernel whose variance collapses cannot
 separate trials. Line style encodes the kernel family. The entangled circuit
 kernel (orange, dashed) decays fastest.}
 \end{figure}
@@ -741,8 +780,8 @@ dataset.
 
 Statistically (Table~\ref{tab:cross}), on IV-2a the best classical pipeline beat the
 best quantum kernel by $\BciPrimaryDelta$ ($p\BciPrimaryP$,
-$d_z=\BciPrimaryDz$) in \BciPrimaryBetter{} subjects, and beat the
-density-matrix kernel by $\BciDensDelta$ ($d_z=\BciDensDz$) in
+$d_z=\BciPrimaryDz$) in \BciPrimaryBetter{} subjects. CSP+LDA, the classical comparator fixed on
+PhysioNet, beat the sensor-frame fidelity kernel by $\BciDensDelta$ ($d_z=\BciDensDz$) in
 \BciDensBetter{} subjects. Combining the two independent datasets by Fisher's
 method gives $p\FisherPrimaryP$ and $p\FisherDensP$ respectively.
 
@@ -777,7 +816,7 @@ CSP baselines they are being compared against are invariant under the full
 congruence group that EEG's nuisances generate. We now re-run the entire
 benchmark with the density-matrix kernels expressed relative to a training-set
 reference state (\ref{eq:refstate}), changing nothing else. The core
-pipelines reproduce their published values to $\le 0.0001$, so the two suites
+pipelines reproduce their values in table~\ref{tab:main} to $\le 0.0001$, so the two suites
 are directly comparable.
 
 Three consequences follow, and the third is the one that matters.
@@ -870,7 +909,7 @@ projection.
 A non-significant difference is only an absence of evidence, and the claim we
 are making deserves better than that, so we test equivalence directly
 (table~\ref{tab:equiv}). Two one-sided tests on the paired differences, with a
-margin of $\pm\EquivMargin$ accuracy fixed in advance, establish equivalence in
+margin of $\pm\EquivMargin$ accuracy, establish equivalence in
 \EquivPass{} of \EquivN{} comparisons; across all \EquivN{} the agreement is
 within $\pm\EquivWorstBound$. The evidence is strongest where it should be, on
 the two better-powered datasets: on IV-2a and on Cho2017 all \EquivBciN{} and
@@ -891,7 +930,7 @@ better in \ChoTwinTopBetter{} subjects), while the other four kernels sit
 within \ChoTwinRestDeltaMin{} to \ChoTwinRestDeltaMax{} of it (smallest
 $p\ChoTwinRestMinP$). This is the strongest evidence in the study of a
 quantum divergence separating from a metric-matched control in its own
-favour, and three facts bound it. It lies inside the pre-specified margin, so
+favour, and three facts bound it. It lies inside the $\pm\EquivMargin$ margin, so
 the two kernels are equivalent at $\pm\EquivMargin$ and distinguishable only
 because \ChoNSubjects{} subjects resolve a single accuracy point. It does not
 reach the best classical pipeline: on this dataset \ChoBestClassical{} at
@@ -958,7 +997,7 @@ reference frame; only the metric differs. Points are mean paired differences
 with 95\% confidence intervals for the difference; table~\ref{tab:equiv}
 gives the 90\% intervals that correspond to the equivalence test, which are
 narrower. Every interval crosses zero except the fidelity kernel on Cho2017,
-drawn as an orange diamond, which lies inside the pre-specified margin (see
+drawn as an orange diamond, which lies inside the $\pm\EquivMargin$ margin (see
 text);
 table~\ref{tab:seeds} repeats the PhysioNet block under two more partitions.
 Note the axis
@@ -1047,9 +1086,10 @@ adaptation a deployed decoder can legitimately perform.
 
 Two things happen. First, the frame matters more here than anywhere else in
 the study. In the sensor frame the quantum kernels reach only \CsSensorQMin{}
-to \CsSensorQMax, close to chance, while the classical baselines, which do not
-see the session change as a change of frame, reach \CsSensorClMin{} to
-\CsSensorClMax. Recentring is worth \CsFrameQMin{} to \CsFrameQMax{} to the
+to \CsSensorQMax, close to chance, while the two classical baselines, tangent-space logistic regression and
+MDM, which do not see the session change as a change of frame, reach
+\CsSensorClMin{} to \CsSensorClMax, and the two classical SPD kernels
+higher still (table~\ref{tab:crosssession}). Recentring is worth \CsFrameQMin{} to \CsFrameQMax{} to the
 quantum kernels (all $p\le\CsFrameQMaxP$) and \CsFrameClMin{} to
 \CsFrameClMax{} to the classical ones. Session-to-session change evidently has
 a large congruence component after all, whatever its residual, and a kernel
@@ -1304,7 +1344,7 @@ outside our scope.
 Our claim is that the quantum geometries match their classical twins once the
 invariance groups agree, so what would overturn it is a setting in which a
 quantum divergence separates from a metric-matched classical comparator by
-more than the pre-specified margin and reaches the best classical pipeline.
+more than the stated margin and reaches the best classical pipeline.
 Cho2017 supplies a separation of one accuracy point in the fidelity kernel's
 favour (section~\ref{sec:refresults}) that does neither. We identified three
 candidates before running the extended experiments, and two of them have now

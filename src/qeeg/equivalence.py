@@ -19,17 +19,17 @@ the mean difference lies entirely inside (-m, +m) when alpha = 0.05.
 
 Choosing the margin
 -------------------
-The margin is a scientific judgement and must be fixed in advance, not chosen
-to make the result come out. We use **m = 0.02 accuracy**, on two grounds:
+The margin is a scientific judgement. We use **m = 0.02 accuracy**. Be
+exact about its history, because the paper is: it was NOT pre-registered. It
+was set on 2026-09-05, after the first within-subject PhysioNet (n = 30) and
+IV-2a analyses, the filter-bank analysis and the cross-subject analysis had
+been run, and before the cross-session, four-qubit, seed, Cho2017 and
+full-cohort (n = 104) analyses. Grounds:
 
-1. It was smaller than the smallest effect the paper treated as real when
-   it was fixed: on the two datasets then available the reference-frame
-   correction was worth +0.050 (PhysioNet, 3 qubits) to +0.187 (IV-2a), so
-   a residual difference below 0.02 was at most 40 % of the weakest effect
-   claimed. Cho2017, added later, has two kernels whose frame gain (+0.012,
-   +0.013) is below the margin; the paper notes this and keeps the margin,
-   because moving it after seeing the data is exactly what pre-specification
-   exists to prevent.
+1. It was smaller than the smallest effect the paper then treated as real:
+   the reference-frame correction was worth +0.050 (PhysioNet, 3 qubits) to
+   +0.187 (IV-2a). Some later settings have smaller corrections for some
+   kernels; the margin was not moved.
 2. It is below what is operationally meaningful in a motor-imagery BCI, where
    a two-point accuracy change does not alter whether a system is usable.
 
@@ -126,8 +126,19 @@ def _per(df):
 
 
 def _best_twin(per, twins):
-    avail = [t for t in twins if t in per.columns]
-    return max(avail, key=lambda t: per[t].mean()) if avail else None
+    """The comparator: the Riemannian SPD kernel, always.
+
+    It is the only classical kernel here with the reference-frame quantum
+    kernels' invariance group: pyRiemann whitens by the Frechet mean before
+    taking logarithms, so a common congruence cancels exactly, to machine
+    precision. The log-Euclidean kernel centres in the log domain instead and
+    is not congruence-invariant, so it is reported as a second classical
+    kernel, never used as the twin. (Until 2026-09-16 the stronger of the
+    two was used, which made the log-Euclidean kernel the comparator in the
+    five-qubit setting.)
+    """
+    riemann = [t for t in twins if "riemann" in t and t in per.columns]
+    return riemann[0] if riemann else None
 
 
 def collect(results: Path, margin: float = MARGIN) -> pd.DataFrame:

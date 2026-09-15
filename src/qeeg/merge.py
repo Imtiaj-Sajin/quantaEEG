@@ -45,12 +45,36 @@ def merge(results: Path, pattern: str, tag: str, reference: str) -> pd.DataFrame
             results / f"tests_vs_{reference.replace('/', '-')}_{tag}.csv",
             index=False)
 
-    (results / f"meta_{tag}.json").write_text(json.dumps({
+    # Carry the per-batch metadata through, so a merged run is described as
+    # completely as a single one: trial counts per subject (the manuscript's
+    # trial-count macro reads them), suite, seed, channels and CV protocol.
+    # Settings must agree across batches; a mismatch means batches from
+    # different configurations were mixed, which is refused.
+    meta = {
         "merged_from": [Path(f).name for f in files],
         "subjects_used": sorted(int(s) for s in df["subject"].unique()),
         "n_subjects": int(df["subject"].nunique()),
         "reference": reference,
-    }, indent=2))
+    }
+    batch_metas = []
+    for f in files:
+        mp = Path(f).with_name(Path(f).name.replace("raw_folds_", "meta_", 1)
+                               .replace(".csv", ".json"))
+        if mp.exists():
+            batch_metas.append(json.loads(mp.read_text()))
+    if batch_metas:
+        trials = {}
+        for m in batch_metas:
+            trials.update(m.get("n_trials_per_subject", {}))
+        meta["n_trials_per_subject"] = dict(sorted(trials.items(), key=lambda kv: int(kv[0])))
+        for key in ("dataset", "suite", "seed", "channels", "n_qubits",
+                    "outer_cv", "inner_cv"):
+            values = {json.dumps(m.get(key), sort_keys=True) for m in batch_metas}
+            if len(values) > 1:
+                raise SystemExit(f"refusing to merge: batches disagree on {key}: {values}")
+            meta[key] = batch_metas[0].get(key)
+        meta["total_seconds"] = round(sum(m.get("total_seconds") or 0 for m in batch_metas), 1)
+    (results / f"meta_{tag}.json").write_text(json.dumps(meta, indent=2))
 
     pd.set_option("display.width", 200)
     print("\n=== SUMMARY (mean over subjects) ===")

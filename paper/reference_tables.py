@@ -118,9 +118,38 @@ def load(res: Path) -> dict:
 
 
 def _best_twin(per: pd.DataFrame, twins: list[str]) -> str | None:
-    """The stronger of the two SPD-kernel controls: the conservative comparator."""
-    avail = [t for t in twins if t in per.columns]
-    return max(avail, key=lambda t: per[t].mean()) if avail else None
+    """The comparator: the Riemannian SPD kernel, always.
+
+    It is the only classical kernel here with the reference-frame quantum
+    kernels' invariance group: pyRiemann whitens by the Frechet mean before
+    taking logarithms, so a common congruence cancels exactly, to machine
+    precision. The log-Euclidean kernel centres in the log domain instead and
+    is not congruence-invariant, so it is reported as a second classical
+    kernel, never used as the twin. (Until 2026-09-16 the stronger of the
+    two was used, which made the log-Euclidean kernel the comparator in the
+    five-qubit setting.)
+    """
+    riemann = [t for t in twins if "riemann" in t and t in per.columns]
+    return riemann[0] if riemann else None
+
+
+def holm(pvals) -> list[float]:
+    """Holm-Bonferroni adjusted p-values, in the input order."""
+    p = np.asarray(pvals, dtype=float)
+    order = np.argsort(p)
+    m = len(p)
+    adj = np.empty(m)
+    running = 0.0
+    for rank, i in enumerate(order):
+        running = max(running, min(1.0, (m - rank) * p[i]))
+        adj[i] = running
+    return adj.tolist()
+
+
+def _second_kernel(per: pd.DataFrame, twins: list[str]) -> str | None:
+    """The log-Euclidean SPD kernel, reported alongside the twin."""
+    le = [t for t in twins if "logeuclid" in t and t in per.columns]
+    return le[0] if le else None
 
 
 # --------------------------------------------------------------------------
@@ -144,12 +173,12 @@ reference state. Each kernel is evaluated twice under an identical protocol,
 differing only in whether the states are expressed in the sensor frame
 (\ref{eq:density}) or relative to the training-set Fr\'echet mean
 (\ref{eq:refstate}). $\Delta$ is the mean per-subject accuracy gain from the
-reference frame, tested by paired Wilcoxon signed-rank across subjects. Every
-kernel improves on every dataset; on IV-2a every kernel improves in every
-subject.}
-\begin{tabular}{@{}llccccc@{}}
+reference frame, tested by paired Wilcoxon signed-rank across subjects;
+$p_{\mathrm{Holm}}$ corrects for every row of this table as one family.
+Every kernel improves on every dataset.}
+\begin{tabular}{@{}llcccccc@{}}
 \hline
-Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & Better \\
+Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & $p_{\mathrm{Holm}}$ & Better \\
 \hline""")
 
     blocks = [("PhysioNet, 3\\,q", d["phys_per"])]
@@ -160,23 +189,28 @@ Dataset & Kernel & Sensor & Reference & $\Delta$ & $p$ & Better \\
     if have_bci:
         blocks.append(("IV-2a, 3\\,q", d["bci_per"]))
 
-    for bi, (dname, per) in enumerate(blocks):
-        if bi:
-            out.append(r"\hline")
-        first = True
+    # One Holm family over every row, computed before any row is written.
+    rows = []
+    for dname, per in blocks:
         for a, b, label in FRAME_PAIRS:
-            if a not in per.columns or b not in per.columns:
-                continue
-            s = paired(per, b, a)
-            lead = f"{dname} ($n={s['n']}$)" if first else ""
-            first = False
-            better = f"{s['n_better']}/{s['n']}"
-            if s["n_better"] == s["n"]:
-                better = f"\\textbf{{{better}}}"
-            out.append(
-                f"{lead} & {label} & {per[a].mean():.3f} & {per[b].mean():.3f} & "
-                f"$\\bf {s['delta']:+.4f}$ & {fmt_p(s['p'])} & {better} \\\\"
-            )
+            if a in per.columns and b in per.columns:
+                rows.append((dname, per, a, b, label, paired(per, b, a)))
+    p_holm = holm([r[5]["p"] for r in rows])
+
+    prev = None
+    for (dname, per, a, b, label, s), ph in zip(rows, p_holm):
+        if prev is not None and dname != prev:
+            out.append(r"\hline")
+        lead = f"{dname} ($n={s['n']}$)" if dname != prev else ""
+        prev = dname
+        better = f"{s['n_better']}/{s['n']}"
+        if s["n_better"] == s["n"]:
+            better = f"\\textbf{{{better}}}"
+        out.append(
+            f"{lead} & {label} & {per[a].mean():.3f} & {per[b].mean():.3f} & "
+            f"$\\bf {s['delta']:+.4f}$ & {fmt_p(s['p'])} & {fmt_p(ph)} & "
+            f"{better} \\\\"
+        )
 
     out.append(r"""\hline
 \end{tabular}
@@ -220,22 +254,23 @@ def table_twin(d: dict, paired, fmt_p, esc, out: list[str]) -> bool:
 \caption{\label{tab:twin}The decisive control. Each quantum kernel is compared
 against an SPD-manifold kernel used in the same support vector machine, on the
 same covariances, with the same tuning budget, in the same reference frame:
-only the metric differs. The comparator is the stronger of the two classical
-kernels in each setting, which is the conservative choice. Columns give the
-best quantum kernel in that setting, the classical twin, their difference, and
-the smallest $p$ obtained by \emph{any} of the five quantum kernels against the
-twin. At the primary partition no quantum kernel separates from its classical
-twin by more than the study-wide equivalence bound; the one significant
-separation, the fidelity kernel on Cho2017, is discussed in the text, and
-table~\ref{tab:seeds} repeats the PhysioNet row under two further
+only the metric differs. In every setting the twin is the affine-invariant
+Riemannian kernel, the one classical kernel here that shares the
+reference-frame quantum kernels' invariance under congruence. The
+log-Euclidean kernel lacks that invariance and is shown for comparison only.
+Columns give the best quantum kernel, the twin, the log-Euclidean kernel, the
+range of the five quantum-minus-twin differences, and the smallest $p$
+obtained by \emph{any} of the five quantum kernels against the twin.
+Table~\ref{tab:seeds} repeats the PhysioNet three-qubit row under two further
 partitions.}
-\begin{tabular}{@{}lccccc@{}}
+\begin{tabular}{@{}lcccccc@{}}
 \hline
-Setting & $n$ & Quantum & Twin & $\Delta$ (range over 5) & $\min p$ \\
+Setting & $n$ & Quantum & Twin & Log-Eucl. & $\Delta$ (range over 5) & $\min p$ \\
 \hline""")
 
     for label, per, kernels, twins in settings:
         twin = _best_twin(per, twins)
+        second = _second_kernel(per, twins)
         ks = [k for k in kernels if k in per.columns]
         if twin is None or not ks:
             continue
@@ -243,8 +278,10 @@ Setting & $n$ & Quantum & Twin & $\Delta$ (range over 5) & $\min p$ \\
         best = max(ks, key=lambda k: per[k].mean())
         s = stats[best]
         deltas = [v["delta"] for v in stats.values()]
+        second_acc = f"{per[second].mean():.3f}" if second else "n/a"
         out.append(
-            f"{label} & {s['n']} & {per[best].mean():.3f} & {per[twin].mean():.3f} & "
+            f"{label} & {s['n']} & {per[best].mean():.3f} & "
+            f"{per[twin].mean():.3f} & {second_acc} & "
             f"$[{min(deltas):+.4f}, {max(deltas):+.4f}]$ & "
             f"{fmt_p(min(v['p'] for v in stats.values()))} \\\\"
         )
@@ -279,12 +316,13 @@ def table_equivalence(res: Path, out: list[str], margin: float = 0.02) -> bool:
 twin, by two one-sided tests on the paired per-subject differences. A
 non-significant difference would only be an absence of evidence; TOST instead
 takes a \emph{difference} as its null, so rejecting it supports equivalence.
-The margin $m=""" + f"{margin:g}" + r"""$ accuracy was fixed in advance, when
-the two datasets then available put the reference-frame correction at
-\PhysFrameMin{} or more for every kernel; across all settings it now spans
-\FrameEffectMin{} to \FrameEffectMax, and the two Cho2017 kernels that gain
-less than the margin are noted in the text rather than used to move it. CI is
-the 90\,\% interval, which
+The margin $m=""" + f"{margin:g}" + r"""$ accuracy is not pre-registered. It
+was chosen after the first within-subject analyses of PhysioNet and IV-2a, the
+filter-bank analysis and the cross-subject analysis had been run, from the size
+of the reference-frame effects they showed, and before every other analysis
+reported here. It is left unchanged although some later effects are smaller
+(the correction now spans \FrameEffectMin{} to \FrameEffectMax). CI is the
+90\,\% interval, which
 corresponds to TOST at $\alpha=0.05$; ``bound'' is the smallest margin at which
 equivalence would hold, so a reader preferring a stricter margin can read the
 answer off directly.}
@@ -602,8 +640,11 @@ def table_shots(d: dict, out: list[str]) -> bool:
     out.append(r"""
 %% ------------------------------------------------------- Table: shot budget
 \begin{table}[htbp]
-\caption{\label{tab:shots}Accuracy under finite-shot estimation.
-$\mathrm{tr}(\rho\sigma)$ is the SWAP-test observable, so $S$ shots give an
+\caption{\label{tab:shots}Accuracy under finite-shot estimation. Unlike every
+other table, the reference state here is estimated from all of a subject's
+trials, not the training split alone; it uses no labels, but these accuracies
+are comparable only with one another, not with the nested cross-validation
+results. $\mathrm{tr}(\rho\sigma)$ is the SWAP-test observable, so $S$ shots give an
 unbiased estimate with variance $(1-k^2)/S$; we sample each unordered pair
 binomially and project the Gram matrix back to the positive semi-definite cone.
 The reference frame needs \emph{more} shots to approach its own ceiling,

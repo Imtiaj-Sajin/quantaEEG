@@ -1,0 +1,60 @@
+bash scripts/cohort_job.sh all_core_b01 1,2,3,4,5,6,7,8,9,10,11
+bash scripts/cohort_job.sh all_core_b02 12,13,14,15,16,17,18,19,20,21,22
+bash scripts/cohort_job.sh all_ext_b01 1,2,3,4,5,6,7,8,9,10,11 --suite extended
+bash scripts/cohort_job.sh all_ext_b02 12,13,14,15,16,17,18,19,20,21,22 --suite extended
+bash scripts/cohort_job.sh all_16ch_b01 1,2,3,4,5,6,7,8,9,10,11 --suite extended --channels motor16
+bash scripts/cohort_job.sh all_16ch_b02 12,13,14,15,16,17,18,19,20,21,22 --suite extended --channels motor16
+bash scripts/cohort_job.sh all_ext_s1_b01 1,2,3,4,5,6,7,8,9,10,11 --suite extended --seed 1
+bash scripts/cohort_job.sh all_ext_s1_b02 12,13,14,15,16,17,18,19,20,21,22 --suite extended --seed 1
+bash scripts/cohort_job.sh all_ext_s2_b01 1,2,3,4,5,6,7,8,9,10,11 --suite extended --seed 2
+bash scripts/cohort_job.sh all_ext_s2_b02 12,13,14,15,16,17,18,19,20,21,22 --suite extended --seed 2
+bash scripts/cohort_job.sh all_fb_b01 1,2,3,4,5,6,7,8,9,10,11 --suite filterbank
+bash scripts/cohort_job.sh all_fb_b02 12,13,14,15,16,17,18,19,20,21,22 --suite filterbank
+bash scripts/cohort_job.sh all_core_b03 23,24,25,26,27,28,29,30,31,32,33
+bash scripts/cohort_job.sh all_core_b04 34,35,36,37,38,39,40,41,42,43,44
+bash scripts/cohort_job.sh all_core_b05 45,46,47,48,49,50,51,52,53,54,55
+bash scripts/cohort_job.sh all_core_b06 56,57,58,59,60,61,62,63,64,65,66
+bash scripts/cohort_job.sh all_core_b07 67,68,69,70,71,72,73,74,75,76,77
+bash scripts/cohort_job.sh all_core_b08 78,79,80,81,82,83,84,85,86,87,90
+bash scripts/cohort_job.sh all_core_b09 91,93,94,95,96,97,98,99,101,102,103
+bash scripts/cohort_job.sh all_core_b10 105,106,107,108,109
+bash scripts/cohort_job.sh all_ext_b03 23,24,25,26,27,28,29,30,31,32,33 --suite extended
+bash scripts/cohort_job.sh all_ext_b04 34,35,36,37,38,39,40,41,42,43,44 --suite extended
+bash scripts/cohort_job.sh all_ext_b05 45,46,47,48,49,50,51,52,53,54,55 --suite extended
+bash scripts/cohort_job.sh all_ext_b06 56,57,58,59,60,61,62,63,64,65,66 --suite extended
+bash scripts/cohort_job.sh all_ext_b07 67,68,69,70,71,72,73,74,75,76,77 --suite extended
+bash scripts/cohort_job.sh all_ext_b08 78,79,80,81,82,83,84,85,86,87,90 --suite extended
+bash scripts/cohort_job.sh all_ext_b09 91,93,94,95,96,97,98,99,101,102,103 --suite extended
+bash scripts/cohort_job.sh all_ext_b10 105,106,107,108,109 --suite extended
+bash scripts/cohort_job.sh all_16ch_b03 23,24,25,26,27,28,29,30,31,32,33 --suite extended --channels motor16
+bash scripts/cohort_job.sh all_16ch_b04 34,35,36,37,38,39,40,41,42,43,44 --suite extended --channels motor16
+bash scripts/cohort_job.sh all_16ch_b05 45,46,47,48,49,50,51,52,53,54,55 --suite extended --channels motor16
+bash scripts/cohort_job.sh all_16ch_b06 56,57,58,59,60,61,62,63,64,65,66 --suite extended --channels motor16
+bash scripts/cohort_job.sh all_16ch_b07 67,68,69,70,71,72,73,74,75,76,77 --suite extended --channels motor16
+bash scripts/cohort_job.sh all_16ch_b08 78,79,80,81,82,83,84,85,86,87,90 --suite extended --channels motor16
+bash scripts/cohort_job.sh all_16ch_b09 91,93,94,95,96,97,98,99,101,102,103 --suite extended --channels motor16
+bash scripts/cohort_job.sh all_16ch_b10 105,106,107,108,109 --suite extended --channels motor16
+bash scripts/cohort_job.sh all_ext_s1_b03 23,24,25,26,27,28,29,30,31,32,33 --suite extended --seed 1
+bash scripts/cohort_job.sh all_ext_s1_b04 34,35,36,37,38,39,40,41,42,43,44 --suite extended --seed 1
+bash scripts/cohort_job.sh all_ext_s1_b05 45,46,47,48,49,50,51,52,53,54,55 --suite extended --seed 1
+bash scripts/cohort_job.sh all_ext_s1_b06 56,57,58,59,60,61,62,63,64,65,66 --suite extended --seed 1
+bash scripts/cohort_job.sh all_ext_s1_b07 67,68,69,70,71,72,73,74,75,76,77 --suite extended --seed 1
+bash scripts/cohort_job.sh all_ext_s1_b08 78,79,80,81,82,83,84,85,86,87,90 --suite extended --seed 1
+bash scripts/cohort_job.sh all_ext_s1_b09 91,93,94,95,96,97,98,99,101,102,103 --suite extended --seed 1
+bash scripts/cohort_job.sh all_ext_s1_b10 105,106,107,108,109 --suite extended --seed 1
+bash scripts/cohort_job.sh all_ext_s2_b03 23,24,25,26,27,28,29,30,31,32,33 --suite extended --seed 2
+bash scripts/cohort_job.sh all_ext_s2_b04 34,35,36,37,38,39,40,41,42,43,44 --suite extended --seed 2
+bash scripts/cohort_job.sh all_ext_s2_b05 45,46,47,48,49,50,51,52,53,54,55 --suite extended --seed 2
+bash scripts/cohort_job.sh all_ext_s2_b06 56,57,58,59,60,61,62,63,64,65,66 --suite extended --seed 2
+bash scripts/cohort_job.sh all_ext_s2_b07 67,68,69,70,71,72,73,74,75,76,77 --suite extended --seed 2
+bash scripts/cohort_job.sh all_ext_s2_b08 78,79,80,81,82,83,84,85,86,87,90 --suite extended --seed 2
+bash scripts/cohort_job.sh all_ext_s2_b09 91,93,94,95,96,97,98,99,101,102,103 --suite extended --seed 2
+bash scripts/cohort_job.sh all_ext_s2_b10 105,106,107,108,109 --suite extended --seed 2
+bash scripts/cohort_job.sh all_fb_b03 23,24,25,26,27,28,29,30,31,32,33 --suite filterbank
+bash scripts/cohort_job.sh all_fb_b04 34,35,36,37,38,39,40,41,42,43,44 --suite filterbank
+bash scripts/cohort_job.sh all_fb_b05 45,46,47,48,49,50,51,52,53,54,55 --suite filterbank
+bash scripts/cohort_job.sh all_fb_b06 56,57,58,59,60,61,62,63,64,65,66 --suite filterbank
+bash scripts/cohort_job.sh all_fb_b07 67,68,69,70,71,72,73,74,75,76,77 --suite filterbank
+bash scripts/cohort_job.sh all_fb_b08 78,79,80,81,82,83,84,85,86,87,90 --suite filterbank
+bash scripts/cohort_job.sh all_fb_b09 91,93,94,95,96,97,98,99,101,102,103 --suite filterbank
+bash scripts/cohort_job.sh all_fb_b10 105,106,107,108,109 --suite filterbank

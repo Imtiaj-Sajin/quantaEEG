@@ -238,7 +238,13 @@ def _fit_eval_classical(proto, grid, X, y, groups, tr, te, inner_splits=3):
 # Runner
 # --------------------------------------------------------------------------
 
-def run_loso(epochs_list, recenter: bool) -> list[dict]:
+def run_loso(epochs_list, recenter: bool, heldout=None) -> list[dict]:
+    """Leave-one-subject-out over the pooled subjects.
+
+    ``heldout`` restricts which subjects are held out in this process; the
+    training pool is always every other subject. Splitting the held-out
+    list across processes therefore gives exactly the result of one run.
+    """
     frame = "reference" if recenter else "sensor"
     print(f"\n--- {frame} frame ---")
     X, y, groups = pooled_covariances(epochs_list, recenter=recenter)
@@ -249,6 +255,8 @@ def run_loso(epochs_list, recenter: bool) -> list[dict]:
 
     rows = []
     for held in np.unique(groups):
+        if heldout is not None and int(held) not in heldout:
+            continue
         te = np.flatnonzero(groups == held)
         tr = np.flatnonzero(groups != held)
         t0 = time.perf_counter()
@@ -300,6 +308,26 @@ def paired_frame_test(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(out).sort_values("delta", ascending=False)
 
 
+def merge_batches(out: Path, pattern: str, tag: str) -> int:
+    """Combine --heldout batch files into the canonical outputs."""
+    files = sorted(out.glob(pattern))
+    if not files:
+        print(f"no files match {pattern!r} in {out}")
+        return 1
+    df = pd.concat([pd.read_csv(f) for f in files], ignore_index=True)
+    dup = df.duplicated(["subject", "frame", "pipeline"]).sum()
+    if dup:
+        print(f"refusing: {dup} duplicated (subject, frame, pipeline) rows")
+        return 1
+    df.to_csv(out / f"transfer_folds_{tag}.csv", index=False)
+    summarise(df).to_csv(out / f"transfer_summary_{tag}.csv", index=False)
+    if df.frame.nunique() == 2:
+        paired_frame_test(df).to_csv(out / f"transfer_frame_tests_{tag}.csv", index=False)
+    print(f"merged {len(files)} files: {df.subject.nunique()} held-out subjects, "
+          f"{len(df)} rows -> transfer_folds_{tag}.csv")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--subjects", type=int, default=30)
@@ -311,7 +339,16 @@ def main(argv=None) -> int:
                     choices=("both", "sensor", "reference"))
     ap.add_argument("--out", type=str, default="results")
     ap.add_argument("--tag", type=str, default=None)
+    ap.add_argument("--heldout", type=str, default=None,
+                    help="comma list of subjects to hold out in this process "
+                         "(training still pools all others); for parallel runs")
+    ap.add_argument("--merge", type=str, default=None,
+                    help="glob of transfer_folds_*.csv batch files to merge "
+                         "into the --tag outputs, then exit")
     args = ap.parse_args(argv)
+
+    if args.merge:
+        return merge_batches(Path(args.out), args.merge, args.tag or args.channels)
 
     from .data import CHANNEL_SETS, load_many, load_moabb
 
@@ -325,12 +362,14 @@ def main(argv=None) -> int:
         print("Cross-subject transfer needs at least 3 subjects.")
         return 1
 
+    heldout = ({int(x) for x in args.heldout.split(",") if x.strip()}
+               if args.heldout else None)
     frames = (["sensor", "reference"] if args.frames == "both"
               else [args.frames])
     t0 = time.perf_counter()
     rows = []
     for f in frames:
-        rows += run_loso(eps, recenter=(f == "reference"))
+        rows += run_loso(eps, recenter=(f == "reference"), heldout=heldout)
     df = pd.DataFrame(rows)
 
     out = Path(args.out)
