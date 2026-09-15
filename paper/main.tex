@@ -29,40 +29,10 @@
 %% since a float is not legal in the preamble.
 \input{macros_auto}
 
-%% Double-anonymous review. The [anonymous] class option hides the author
-%% list, affiliations, emails, \ack, \funding, \roles and \data, but not the
-%% body text, and the body's code link names the corresponding author's
-%% GitHub account. These two switches follow the same option, so one flag
-%% produces a fully anonymous manuscript and the named version is unchanged.
-%%   named:     \documentclass{iopjournal}             (build main.tex)
-%%   anonymous: \documentclass[anonymous]{iopjournal}  (build main_anonymous.tex)
-%% The anonymised code archive is built by paper/make_anonymous_code_zip.py.
-\makeatletter
-\newcommand{\codestatement}{%
-  \if@anonymous
-    All code, configuration and per-fold results are provided to reviewers
-    as an anonymised supplementary archive, and the public repository will
-    be linked on publication.%
-  \else
-    Code and results are available at
-    \url{https://github.com/Imtiaj-Sajin/quantaEEG}.%
-  \fi}
-%% The class hides \email with \phantom, an unbreakable box; five addresses
-%% make it wider than the line and log an (invisible) overfull box. Under
-%% [anonymous] only, print IOP's own placeholder wording instead. The named
-%% build uses the class definition untouched.
-\if@anonymous
-  \renewcommand{\email}[1]{\vspace*{12pt}{\fontsize{8}{10}\selectfont
-    \raggedright {\bfseries E-mail:} removed for anonymity}\vspace{3mm}}
-\fi
-\newcommand{\anonsuppdata}{%
-  \if@anonymous
-    \suppdata{\textbf{Supplementary code.} (ZIP archive) Anonymised source
-    code, configuration and the per-fold result files behind every table and
-    figure, with instructions to regenerate all tables, figures and inline
-    numbers from them.}%
-  \fi}
-\makeatother
+%% Review model: single-anonymous, chosen by the corresponding author on
+%% 2026-09-15. Reviewers see the author list, so there is one manuscript
+%% and nothing is hidden. (A double-anonymous build existed briefly and is
+%% in git history at commit ccaaeb1 if the choice is ever revisited.)
 
 \begin{document}
 
@@ -635,7 +605,8 @@ equivalence bounds are given there.
 \subsection{Implementation}
 
 Analyses use MNE-Python \cite{mne2013}, pyRiemann, scikit-learn and PennyLane
-\cite{pennylane2018}. \codestatement
+\cite{pennylane2018}. Code and results are available at
+\url{https://github.com/Imtiaj-Sajin/quantaEEG}.
 
 %% =====================================================================
 \section{Results}
@@ -1435,10 +1406,6 @@ accessed through MOABB. All analysis
 code, configuration and result files supporting this study, including the
 per-fold scores behind every table and figure, are openly available at
 \url{https://github.com/Imtiaj-Sajin/quantaEEG}.}
-
-%% Shown only in the anonymous build, where \data above is suppressed: it
-%% tells reviewers where the anonymised code archive is. See the preamble.
-\anonsuppdata
 
 %% JNE expects an ethics statement for any research involving human
 %% participants, including secondary analysis of existing recordings.

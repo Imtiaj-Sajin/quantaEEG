@@ -1353,10 +1353,9 @@ to spare: all nine geometries tie (§4.7).
 1. Done 2026-09-15: Cho2017 absorbed, five authors in the confirmed order,
    ethics statement added, abstract abbreviations defined, submission zip
    made flat with IOP-safe names.
-2. Done 2026-09-15: CRediT roles set for all five authors; double-anonymous
-   review chosen, with anonymous manuscript and code archives built.
-3. `\funding{}` says no grant. Confirm Chayon's affiliation. Decide whether
-   the public GitHub repository goes private during review.
+2. Done 2026-09-15: CRediT roles set for all five authors; single-anonymous
+   review chosen, so there is one manuscript and one `submission.zip`.
+3. `\funding{}` says no grant. Confirm Chayon's affiliation.
 5. Optional, and the one place a real quantum effect could still hide (§4.4
    of the paper): few-trial calibration, where the reference state is poorly
    estimated. Not needed for submission.

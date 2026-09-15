@@ -21,7 +21,6 @@ mne_data/
 # else in build/ is intermediate.
 paper/build/*
 !paper/build/main.pdf
-!paper/build/main_anonymous.pdf
 *.aux
 *.bbl
 *.blg
