@@ -34,5 +34,5 @@ done
 
 echo "start $(date)" > "$log"
 PYTHONPATH=src python -u -m qeeg.benchmark --subject-list "$subs" --tag "$tag" \
-    --no-stats "$@" >> "$log" 2>&1
+    --no-stats --resume "$@" >> "$log" 2>&1
 echo "JOB_EXIT=$? $(date)" >> "$log"

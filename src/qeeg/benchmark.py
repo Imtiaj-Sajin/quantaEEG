@@ -280,6 +280,8 @@ def main(argv=None) -> int:
                     help="override the output filename tag (batch runs)")
     ap.add_argument("--no-stats", action="store_true",
                     help="skip summary/tests (use when merging batches later)")
+    ap.add_argument("--resume", action="store_true",
+                    help="continue from this tag's .partial.csv checkpoint")
     ap.add_argument("--classes", type=int, default=2, choices=(2, 4),
                     help="MOABB datasets only: 4 = IV-2a left/right/feet/tongue")
     ap.add_argument("--reference", type=str, default="classical/TS+LR",
@@ -331,8 +333,19 @@ def main(argv=None) -> int:
     partial = out / f"raw_folds_{tag}.partial.csv"
 
     all_rows = []
+    done: set[int] = set()
+    if args.resume and partial.exists():
+        # Every subject is evaluated independently with the same seed, so
+        # subjects already in the checkpoint are exactly what a fresh run would
+        # produce. Only complete subjects are ever written to the checkpoint.
+        prev = pd.read_csv(partial)
+        all_rows = prev.to_dict("records")
+        done = {int(s) for s in prev["subject"].unique()}
+        print(f"  resuming from {partial.name}: {len(done)} subjects already done")
     t0 = time.perf_counter()
     for i, ep in enumerate(eps, 1):
+        if ep.subject in done:
+            continue
         ts = time.perf_counter()
         rows = evaluate_subject(
             ep, pipelines, grids,

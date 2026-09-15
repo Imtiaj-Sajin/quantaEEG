@@ -202,6 +202,15 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
   parallel batch.** Each benchmark process otherwise spawns a full BLAS thread
   pool; five processes on twelve cores ran slower than one until this was set.
   `scripts/run_when_cached.sh` does it for the Cho2017 batches.
+- **Long runs must be launched detached from the Claude Code session.**
+  Background shell tasks die when the session ends; on 2026-09-16 that
+  stopped a 60-job queue at 13 %. Launch through Windows instead, which puts
+  the process outside the session's tree:
+  `Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments
+  @{CommandLine='"C:\Program Files\Git\bin\bash.exe" -lc "cd /g/codes/Ass/quantaEEG && bash scripts/run_revision.sh"'}`.
+  `scripts/run_revision.sh` is safe to relaunch: finished jobs skip, and
+  benchmark batches continue from their `.partial.csv` checkpoints with
+  `--resume` (verified identical to an uninterrupted run).
 - **Check for duplicate runs.** `tasklist`/`ps` under Git Bash have returned
   empty output unreliably here; verify with PowerShell
   `Get-CimInstance Win32_Process` before concluding a process died. Two

@@ -70,7 +70,7 @@ def main():
         tag = f"bci4_b{s:02d}"
         lines.append(job(tag, f"results/raw_folds_{tag}.csv",
                          f"python -u -m qeeg.benchmark --dataset bci2a --classes 4 "
-                         f"--suite extended --subject-list {s} --tag {tag} --no-stats"))
+                         f"--suite extended --subject-list {s} --tag {tag} --no-stats --resume"))
     print("\n".join(lines))
 
 
