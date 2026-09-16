@@ -174,6 +174,25 @@ for f in sorted(figs):
     if not hit:
         problems.append(f"missing figure: {f}")
 
+# ------------------------------------------------- generated table files
+# Each table is its own file so it can sit beside the text that discusses it.
+# The risk of that arrangement is a table that is generated and then never
+# inputted, which vanishes from the manuscript without any error.
+gen = {p.stem for p in HERE.glob("tab_*_auto.tex")}
+inputs = set(re.findall(re.escape(BS + "input") + r"\{(tab_\w+_auto)\}", tex))
+print(f"generated table files             : {len(gen)}")
+orphaned = gen - inputs
+if orphaned:
+    print(f"  NOT INPUTTED: {sorted(orphaned)}")
+    problems.append(f"generated but never inputted: {sorted(orphaned)}")
+for name in sorted(inputs):
+    if name not in gen:
+        problems.append(f"input of a table file that is not generated: {name}")
+    elif tex.count(BS + "input{" + name + "}") > 1:
+        problems.append(f"table inputted more than once: {name}")
+if not orphaned and not (inputs - gen):
+    print(f"  all {len(gen)} inputted exactly once")
+
 print()
 if problems:
     print(f"FAILED: {len(problems)} problem(s)")

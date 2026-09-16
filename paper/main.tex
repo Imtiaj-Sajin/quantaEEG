@@ -657,11 +657,10 @@ Analyses use MNE-Python \cite{mne2013}, pyRiemann, scikit-learn and PennyLane
 \section{Results}
 %% =====================================================================
 
-%% Auto-generated table floats; LaTeX places them near their references.
-\input{tables_auto}
 
 \subsection{Quantum kernels do not outperform tuned classical baselines}
 
+\input{tab_main_auto}
 Table~\ref{tab:main} reports within-subject performance for all \NPipelines{}
 pipelines; Figure~\ref{fig:benchmark} shows the same data with per-subject spread.
 Quantum kernels occupy five of the bottom six positions. Absolute accuracies
@@ -673,11 +672,13 @@ paradigm using the full 64-channel montage, against which our
 \BestClassicalAcc{} on eight channels is the expected reduction, not a sign of
 a mistuned baseline.
 
+\input{tab_key_auto}
 The primary pre-specified comparison, best classical versus best quantum, is
 significant: \BestClassicalName{} exceeded \BestQuantumName{} by
 $\Delta=\PrimaryDelta$ ($p\PrimaryP$, $d_z=\PrimaryDz$), and was superior in
 \PrimaryBetter{} subjects (Table~\ref{tab:key}).
 
+\input{tab_tests_auto}
 Against the Riemannian tangent-space reference (Table~\ref{tab:tests},
 Figure~\ref{S-fig:paired}), \NSurviveHolm{} of \NFamilyTests{} comparisons survived
 Holm correction. Only two reached $p<0.05$ uncorrected, and in both the quantum
@@ -754,6 +755,7 @@ kernel (orange, dashed) decays fastest.}
 \subsection{Replication on IV-2a: more data widens the gap}
 \label{sec:crossdataset}
 
+\input{tab_bci_auto}
 Repeating the entire benchmark on BCI Competition IV-2a reproduces the
 ordering and sharpens it (Table~\ref{tab:bci}, Figure~\ref{fig:cross}). The best classical
 pipeline reached \BciBestClassicalAcc{} against \BciBestQuantumAcc{} for the
@@ -777,6 +779,7 @@ lowest positions are occupied by the same four quantum kernels on both
 datasets with zero rank shift. This is a property of the methods, not of the
 dataset.
 
+\input{tab_cross_auto}
 Statistically (Table~\ref{tab:cross}), on IV-2a the best classical pipeline beat the
 best quantum kernel by $\BciPrimaryDelta$ ($p\BciPrimaryP$,
 $d_z=\BciPrimaryDz$) in \BciPrimaryBetter{} subjects. CSP+LDA, the classical comparator fixed on
@@ -849,6 +852,7 @@ registers, therefore survives the correction, with one qualification: the
 reference-frame variance is not strictly monotone, three of the four kernels
 dipping by up to \SweepRefDipMax\,\% between five and six qubits.
 
+\input{tab_frame_auto}
 \emph{Second, accuracy improves substantially and consistently}
 (table~\ref{tab:frame}). On PhysioNet every kernel improves, by \PhysFrameMin{} to
 \PhysFrameMax{} ($n=\PhysFrameN$, all $p \le \PhysFrameMaxP$). On IV-2a the
@@ -884,6 +888,7 @@ because everything needed to present it as one (two datasets, a consistent
 direction, a larger margin on the better-powered data) is in hand at this
 point in the analysis.
 
+\input{tab_twin_auto}
 \emph{Third, it is not a quantum advantage, and the control that establishes
 this is the central result of this paper.} A reference-frame quantum kernel
 differs from a classical Riemannian kernel in exactly one respect: the metric.
@@ -905,6 +910,7 @@ of them quantum: expressing the states in the reference frame, and using an
 SPD-manifold kernel in a support vector machine rather than a tangent-space
 projection.
 
+\input{tab_equiv_auto}
 A non-significant difference is only an absence of evidence, and the claim we
 are making deserves better than that, so we test equivalence directly
 (table~\ref{tab:equiv}). Two one-sided tests on the paired differences, with a
@@ -915,6 +921,7 @@ the two better-powered datasets: on IV-2a and on Cho2017 all \EquivBciN{} and
 \EquivChoN{} comparisons are equivalent, with the widest intervals reaching
 only $\EquivBciWorst$ and $\EquivChoWorst$.
 
+\input{tab_seeds_auto}
 Two honest qualifications. First, the \EquivFailQuantum{} comparisons that miss
 the $\pm\EquivMargin$ margin in the quantum kernel's favour are balanced by
 \EquivFailClassical{} that miss it in the twin's, which is the pattern expected
@@ -985,6 +992,7 @@ on PhysioNet, and least on Cho2017, whose sensor-frame kernels start closest
 to the classical baselines.}
 \end{figure}
 
+\input{tab_crosssession_auto}
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{fig8_twin.pdf}
@@ -1044,6 +1052,7 @@ advantage on thirty subjects.
 \subsection{Cross-subject transfer}
 \label{sec:transfer}
 
+\input{tab_transfer_auto}
 Within-subject accuracy is not the field's bottleneck; transfer to a new user
 is. It is also the setting in which a different geometry is most often
 conjectured to help. Table~\ref{tab:transfer} and figure~\ref{S-fig:transfer}(a)

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -259,6 +260,47 @@ def macros(df: pd.DataFrame, summary: pd.DataFrame, tests: pd.DataFrame,
 
 
 
+def split_tables(lines: list[str], header: list[str], dest: Path) -> set[str]:
+    """One file per table, named for its label, so the manuscript can place
+    each one beside the text that discusses it.
+
+    Every table used to be emitted into a single tables_auto.tex inputted at
+    the top of the Results section. LaTeX floats forward, never backward, so
+    all eleven queued up together in the first pages of Results, pages away
+    from the prose that referred to them. A reader met a wall of tables and
+    then an argument that pointed back at it.
+    """
+    text = "\n".join(lines)
+    written, buf, label = set(), [], None
+    for line in text.split("\n"):
+        if line.lstrip().startswith(r"\begin{table}"):
+            buf, label = [line], None
+            continue
+        if buf is not None and not buf:
+            continue
+        if buf:
+            buf.append(line)
+            if label is None:
+                m = re.search(r"\\label\{(tab:\w+)\}", line)
+                if m:
+                    label = m.group(1)
+            if line.lstrip().startswith(r"\end{table}"):
+                if label is None:
+                    raise SystemExit(f"a table has no \\label: {buf[1][:60]}")
+                name = label.split(":", 1)[1]
+                (dest / f"tab_{name}_auto.tex").write_text(
+                    "\n".join(header + buf) + "\n", encoding="utf-8")
+                written.add(name)
+                buf, label = [], None
+    # A table that stops being generated must not leave a stale file behind
+    # for main.tex to input silently.
+    for old in dest.glob("tab_*_auto.tex"):
+        if old.stem[len("tab_"):-len("_auto")] not in written:
+            old.unlink()
+            print(f"  removed stale {old.name}")
+    return written
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--results", default="results")
@@ -359,11 +401,12 @@ def main(argv=None) -> int:
 
     dest = Path(args.out)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text("\n".join(out), encoding="utf-8")
     for name, lines in supp.items():
         (dest.parent / f"supp_table_{name}_auto.tex").write_text(
             "\n".join(lines), encoding="utf-8")
-    print(f"wrote {dest}  ({len(out)} lines)")
+    written = split_tables(out, header, dest.parent)
+    print(f"wrote {len(written)} table files in {dest.parent}: "
+          f"{', '.join(sorted(written))}")
     print(f"  {df.subject.nunique()} subjects, {df.pipeline.nunique()} pipelines")
     print(f"  primary: delta={paired(per, *KEY_COMPARISONS[0][:2])['delta']:+.4f}")
     return 0
