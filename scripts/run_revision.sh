@@ -23,9 +23,9 @@ python scripts/full_cohort_queue.py > results/full_cohort_jobs.txt
 python scripts/phase2_jobs.py > results/phase2_jobs.txt
 
 echo "stage 1 start $(date)" >> "$log"
-xargs -P 10 -I{} bash -c "{}" < results/full_cohort_jobs.txt >> "$log" 2>&1
+xargs -d '\n' -P 10 -I{} bash -c "{}" < results/full_cohort_jobs.txt >> "$log" 2>&1
 echo "STAGE1_DONE $(date)" >> "$log"
 
 echo "stage 2 start $(date)" >> "$log"
-xargs -P 10 -I{} bash -c "{}" < results/phase2_jobs.txt >> "$log" 2>&1
+xargs -d '\n' -P 10 -I{} bash -c "{}" < results/phase2_jobs.txt >> "$log" 2>&1
 echo "STAGE2_DONE $(date)" >> "$log"
