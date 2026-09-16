@@ -248,9 +248,12 @@ def cmd_data(args) -> int:
 def cmd_figures(args) -> int:
     rc = 0
     for mod in ("figures", "figures_eeg", "figures_circuits",
-                "figures_design", "figures_reference"):
+                "figures_reference"):
         rc |= _run(sys.executable, "-m", f"qeeg.{mod}",
                    *(["--paper"] if args.paper else []))
+    # The study-design figure is TikZ, not matplotlib: it carries typeset
+    # mathematics and is a drawn diagram rather than a plot.
+    rc |= _run(sys.executable, "paper/make_design_figure.py", env_src=False)
     return rc
 
 
