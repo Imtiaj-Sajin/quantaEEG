@@ -227,6 +227,19 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
   checkpoints with `--resume` (verified identical to an uninterrupted run).
   Check progress by counting `^  \[` lines in `results/run_*.log`, and check
   for this crash with `grep -l forrtl results/run_*.log`.
+- **Transfer at 104 subjects is memory-bound, not just CPU-bound.** Each
+  process sits at ~1.3 GB steady but peaks far higher while precomputing the
+  five 4680x4680 Gram matrices. Twelve of them do not fit in 24 GB: on
+  2026-09-17 three died with `numpy ArrayMemoryError` before finishing a
+  single subject. **Cap transfer at 8 concurrent processes**, or stagger the
+  launches by four minutes so the precompute peaks never coincide
+  (`scripts/run_resplit_missing.sh`). A snapshot of `WorkingSetSize` taken
+  mid-run shows only the steady state and will mislead you, which is exactly
+  how this was missed.
+- **`Register-ScheduledTask` can be denied while `schtasks.exe` succeeds.**
+  When the PowerShell cmdlet returns `Access is denied`, use
+  `schtasks.exe /create /tn NAME /f /sc once /st HH:MM /tr "..."` then
+  `schtasks.exe /run /tn NAME`.
 - **Check for duplicate runs.** `tasklist`/`ps` under Git Bash have returned
   empty output unreliably here; verify with PowerShell
   `Get-CimInstance Win32_Process` before concluding a process died. Two
