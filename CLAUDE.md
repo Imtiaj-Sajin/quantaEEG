@@ -202,15 +202,31 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
   parallel batch.** Each benchmark process otherwise spawns a full BLAS thread
   pool; five processes on twelve cores ran slower than one until this was set.
   `scripts/run_when_cached.sh` does it for the Cho2017 batches.
-- **Long runs must be launched detached from the Claude Code session.**
-  Background shell tasks die when the session ends; on 2026-09-16 that
-  stopped a 60-job queue at 13 %. Launch through Windows instead, which puts
-  the process outside the session's tree:
-  `Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments
-  @{CommandLine='"C:\Program Files\Git\bin\bash.exe" -lc "cd /g/codes/Ass/quantaEEG && bash scripts/run_revision.sh"'}`.
-  `scripts/run_revision.sh` is safe to relaunch: finished jobs skip, and
-  benchmark batches continue from their `.partial.csv` checkpoints with
-  `--resume` (verified identical to an uninterrupted run).
+- **Long runs must go through the Windows scheduler, not a background shell.**
+  Two failures on 2026-09-16, both silent: a `run_in_background` queue died
+  with the session at 13 %, and a WMI-launched replacement died at 07:50 with
+  `forrtl: error (200): program aborting due to window-CLOSE event`, the Intel
+  Fortran runtime inside SciPy reacting to its console being destroyed. A
+  scheduled task has no console and no session:
+
+  ```powershell
+  $a = New-ScheduledTaskAction -Execute "C:\Program Files\Git\bin\bash.exe" `
+      -Argument '-lc "cd /g/codes/Ass/quantaEEG && bash scripts/run_revision.sh"' `
+      -WorkingDirectory "G:\codes\Ass\quantaEEG"
+  $s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries `
+      -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) `
+      -StartWhenAvailable -MultipleInstances IgnoreNew
+  Register-ScheduledTask -TaskName "quantaEEG_revision" -Action $a -Settings $s -Force
+  Start-ScheduledTask -TaskName "quantaEEG_revision"
+  ```
+
+  Delete it when the work is done:
+  `Unregister-ScheduledTask -TaskName "quantaEEG_revision" -Confirm:$false`.
+  `scripts/run_revision.sh` is safe to relaunch at any point: finished jobs
+  skip themselves, and benchmark batches continue from their `.partial.csv`
+  checkpoints with `--resume` (verified identical to an uninterrupted run).
+  Check progress by counting `^  \[` lines in `results/run_*.log`, and check
+  for this crash with `grep -l forrtl results/run_*.log`.
 - **Check for duplicate runs.** `tasklist`/`ps` under Git Bash have returned
   empty output unreliably here; verify with PowerShell
   `Get-CimInstance Win32_Process` before concluding a process died. Two
