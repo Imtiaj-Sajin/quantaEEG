@@ -17,7 +17,12 @@ BS = "\\"
 
 HERE = Path(__file__).parent
 tex = (HERE / "main.tex").read_text(encoding="utf-8")
-tab = (HERE / "tables_auto.tex").read_text(encoding="utf-8")
+# One generated file per table, so each can be inputted beside the text that
+# discusses it. The checks below want them as one body of text.
+tab = "\n".join(p.read_text(encoding="utf-8")
+                for p in sorted(HERE.glob("tab_*_auto.tex")))
+if not tab.strip():
+    raise SystemExit("no tab_*_auto.tex found: run python paper/make_tables.py")
 mac = (HERE / "macros_auto.tex").read_text(encoding="utf-8")
 bib = (HERE / "refs.bib").read_text(encoding="utf-8")
 

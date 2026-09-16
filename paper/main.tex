@@ -252,6 +252,25 @@ comparing geometries at all, where the Riemannian transfer-learning literature
 negative result is stated with enough control that it can be built on rather
 than merely cited.
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig_design.pdf}
+\caption{\label{fig:design}The study in one view, and where the control sits.
+Three public motor-imagery datasets are reduced to the same eight sensorimotor
+channels, the same band and the same window, so that every difference reported
+here is a property of the method and not of the preprocessing. Each trial
+becomes a spatial covariance, and each covariance is expressed in two frames:
+the sensor frame, in which the density-matrix kernels are invariant only under
+orthogonal congruence, and the reference frame of (\ref{eq:refstate}), in which
+they are exactly invariant under the full congruence group that EEG's nuisances
+generate. Every suite is run in both. The dashed box is the paper's central
+control: the classical Riemannian kernel and the quantum kernels consume the
+same covariances, sit inside the same support vector machine, receive the same
+tuning budget and are expressed in the same frame, so the only thing that
+differs between them is the metric, and any difference in accuracy is
+attributable to the geometry alone.}
+\end{figure}
+
 %% =====================================================================
 \section{Methods}
 %% =====================================================================
