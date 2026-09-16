@@ -29,3 +29,12 @@ echo "STAGE1_DONE $(date)" >> "$log"
 echo "stage 2 start $(date)" >> "$log"
 xargs -d '\n' -P 10 -I{} bash -c "{}" < results/phase2_jobs.txt >> "$log" 2>&1
 echo "STAGE2_DONE $(date)" >> "$log"
+
+# Transfer, re-split across more processes once the rest of the queue drained
+# and left half the machine idle. phase2_jobs.py omits the six chunk jobs while
+# this file exists, so the two never run the same subject twice.
+if [ -s results/resplit_jobs.txt ]; then
+  echo "resplit start $(date)  $(wc -l < results/resplit_jobs.txt) jobs" >> "$log"
+  xargs -d '\n' -P 12 -I{} bash -c "{}" < results/resplit_jobs.txt >> "$log" 2>&1
+  echo "RESPLIT_DONE $(date)" >> "$log"
+fi

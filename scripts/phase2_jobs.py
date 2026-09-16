@@ -35,9 +35,15 @@ def job(tag, done_file, command):
 
 
 def main():
+    import pathlib
     lines = []
     # 1. Transfer, 104 subjects, held-out subjects split over six processes.
-    for i, part in enumerate(chunks(PHYSIONET, 6), 1):
+    # Unless the work has been re-split across more processes, in which case
+    # results/resplit_jobs.txt owns it and re-queueing the chunks here would
+    # recompute everything their part files already hold.
+    resplit = pathlib.Path("results/resplit_jobs.txt")
+    chunk_jobs = not (resplit.exists() and resplit.stat().st_size)
+    for i, part in enumerate(chunks(PHYSIONET, 6) if chunk_jobs else [], 1):
         tag = f"tr104_c{i:02d}"
         held = ",".join(map(str, part))
         lines.append(job(tag, f"{STAGE}/transfer_folds_{tag}.csv",
