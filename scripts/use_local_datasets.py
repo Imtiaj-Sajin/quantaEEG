@@ -138,13 +138,20 @@ def check() -> int:
     print(f"config    MNE_DATASETS_EEGBCI_PATH = "
           f"{mne.get_config('MNE_DATASETS_EEGBCI_PATH')}")
     print(f"project   {DEST}  {'exists' if DEST.exists() else 'not created yet'}")
+    # Once the config points at the project folder, src and DEST are the same
+    # directory; listing it under both labels would double-count it and report
+    # data on the system drive that is not there.
+    moved = DEST.exists() and src.resolve() == DEST.resolve()
+    if moved:
+        print("  the cache IS the project folder: nothing left on the system drive")
     cached = 0
     for name in REAL + (LINKED,):
-        for base, label in ((src, "cache"), (DEST, "project")):
+        for base, label in (((DEST, "project"),) if moved
+                            else ((src, "cache"), (DEST, "project"))):
             p = base / name
             if p.exists():
                 n = _du(p)
-                if base == src and name in REAL:
+                if base == src and name in REAL and not moved:
                     cached += n
                 note = "" if name in REAL else "  (links, shared with the above)"
                 print(f"  {label:8s} {name:18s} {_gb(n):>10s}{note}")
@@ -158,15 +165,23 @@ def check() -> int:
     return 0
 
 
-def move() -> int:
+def move(force: bool = False) -> int:
     import mne
     live = _other_pythons()
-    if live:
+    if live and not force:
         print(f"refusing: {live} other python processes are running. These "
               f"datasets are read at job start, and moving a file out from "
               f"under a running benchmark loses the run. Wait for the queue "
               f"to drain, then rerun.")
+        print("  --force overrides this. Only do that when every running job "
+              "has already finished loading (the runners read the epochs once, "
+              "at startup, and hold them in memory), and no queued job is "
+              "still waiting to start.")
         return 1
+    if live and force:
+        print(f"--force: proceeding with {live} python processes running. "
+              f"This is safe only because the runners load their epochs once "
+              f"at startup and never read the cache again.")
     src = _src()
     if src.resolve() == DEST.resolve():
         print("already pointed at the project folder; nothing to move")
@@ -234,9 +249,11 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--move", action="store_true")
+    ap.add_argument("--force", action="store_true",
+                    help="move even while jobs are running (see move())")
     args = ap.parse_args(argv)
     if args.move:
-        return move()
+        return move(force=args.force)
     return check()
 
 

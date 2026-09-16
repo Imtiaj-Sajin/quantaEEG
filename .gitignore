@@ -14,7 +14,10 @@ results/_*/
 # Staging folder for one-off verification reruns (compared, then deleted).
 results/verify/
 
-# Large cached datasets live in ~/mne_data, never in the repo.
+# Large cached datasets. They now live in datasets/ inside the project, moved
+# there off the system drive by scripts/use_local_datasets.py, so this entry
+# is what stops 12 GB of EEG from reaching the remote.
+datasets/
 mne_data/
 
 # LaTeX build products. The compiled PDF IS tracked: it is the artefact
