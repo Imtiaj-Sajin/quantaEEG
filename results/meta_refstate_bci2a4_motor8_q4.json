@@ -1,0 +1,54 @@
+{
+  "merged_from": [
+    "raw_folds_bci4_b01.csv",
+    "raw_folds_bci4_b02.csv",
+    "raw_folds_bci4_b03.csv",
+    "raw_folds_bci4_b04.csv",
+    "raw_folds_bci4_b05.csv",
+    "raw_folds_bci4_b06.csv",
+    "raw_folds_bci4_b07.csv",
+    "raw_folds_bci4_b08.csv",
+    "raw_folds_bci4_b09.csv"
+  ],
+  "subjects_used": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "n_subjects": 9,
+  "reference": "classical/TS+LR",
+  "n_trials_per_subject": {
+    "1": 576,
+    "2": 576,
+    "3": 576,
+    "4": 576,
+    "5": 576,
+    "6": 576,
+    "7": 576,
+    "8": 576,
+    "9": 576
+  },
+  "dataset": "bci2a",
+  "suite": "extended",
+  "seed": 0,
+  "channels": [
+    "FC3",
+    "FCz",
+    "FC4",
+    "C3",
+    "Cz",
+    "C4",
+    "CP3",
+    "CP4"
+  ],
+  "n_qubits": 4,
+  "outer_cv": "5-fold x 3 repeats",
+  "inner_cv": "4-fold GridSearchCV",
+  "total_seconds": 27878.5
+}

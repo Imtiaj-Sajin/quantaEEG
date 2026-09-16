@@ -1140,6 +1140,49 @@ at this register, or it is not something the Bures, fidelity or
 relative-entropy weightings exploit better than the affine-invariant one.
 
 
+\subsection{Few-trial calibration: the one setting that separates}
+\label{sec:calibration}
+
+\input{tab_calibration_auto}
+Every comparison so far estimates the reference state from a comfortable number
+of trials. Section~\ref{sec:whatwouldchange} names the regime where that stops
+being true as the last place a quantum divergence could plausibly beat the
+affine-invariant metric: if the Fr\'echet mean is noisy, a divergence that
+weights a poorly estimated reference differently might degrade more gracefully.
+We stated that prediction before running the experiment and then ran it. For
+each subject a class-balanced test set is held out once, nested training sets of
+\CalibKMin{} to \CalibKMax{} trials are drawn ten times over, and every pipeline
+is tuned on each training set alone by the same inner search used everywhere
+else, with the reference state estimated from those $k$ trials only.
+
+\emph{The prediction holds, in the direction stated and at a size worth being
+precise about.} On Cho2017 ($n=\CalibChoN$), at the smallest calibration sets
+the five reference-frame kernels lead the twin by \CalibChoSmallDeltaMin{} to
+\CalibChoSmallDeltaMax{} (smallest $p\CalibChoSmallMinP$), \CalibChoSmallTwinAcc{}
+against \CalibChoSmallQuantumAcc{} in accuracy. By \CalibKMax{} trials the
+difference has gone and changed sign, spanning \CalibChoLargeDeltaMin{} to
+\CalibChoLargeDeltaMax. Across the \CalibNDatasets{} datasets and every
+training size, \CalibNSigQuantum{} comparisons separate in the quantum kernel's
+favour and \CalibNSigTwin{} in the twin's, the first asymmetry of that kind
+anywhere in this study.
+
+Four things bound it, and they belong in the same breath as the result. The
+largest difference, \CalibWorstBound{}, is inside the $\pm\EquivMargin$ margin
+at which the two families are equivalent everywhere else. It is a
+metric effect of about one accuracy point, not an advantage of a kind that
+would change practice. The kernels only clear the \emph{best classical
+pipeline} at the smallest training set, and at the middling sizes where they
+beat the twin most clearly they merely match tangent-space logistic regression,
+which beats the twin there too. And the analysis we pre-specified, a per-subject
+slope of the difference against $\log_2 k$, is the weaker of the two: no kernel
+survives correction on it. We report the size-by-size comparison because it is
+better powered, not because it is more favourable, and we say so rather than
+presenting the stronger test as though it had been the plan. What the
+experiment settles is the paper's own open question: the parity reported
+throughout is not universal, and the exception lies exactly where the geometry
+predicted it would.
+
+
 \subsection{Finite-shot estimation}
 \label{sec:shots}
 
@@ -1344,6 +1387,7 @@ and variational or quantum neural-network approaches, are
 outside our scope.
 
 \subsection{What would change the conclusion}
+\label{sec:whatwouldchange}
 
 Our claim is that the quantum geometries match their classical twins once the
 invariance groups agree, so what would overturn it is a setting in which a

@@ -1,4 +1,16 @@
 {
+  "merged_from": [
+    "raw_folds_all_ext_b01.csv",
+    "raw_folds_all_ext_b02.csv",
+    "raw_folds_all_ext_b03.csv",
+    "raw_folds_all_ext_b04.csv",
+    "raw_folds_all_ext_b05.csv",
+    "raw_folds_all_ext_b06.csv",
+    "raw_folds_all_ext_b07.csv",
+    "raw_folds_all_ext_b08.csv",
+    "raw_folds_all_ext_b09.csv",
+    "raw_folds_all_ext_b10.csv"
+  ],
   "subjects_used": [
     1,
     2,
@@ -105,13 +117,8 @@
     108,
     109
   ],
-  "channel_sizes": [
-    4,
-    8,
-    16,
-    32,
-    64
-  ],
+  "n_subjects": 104,
+  "reference": "classical/TS+LR",
   "n_trials_per_subject": {
     "1": 45,
     "2": 45,
@@ -217,5 +224,22 @@
     "107": 45,
     "108": 45,
     "109": 45
-  }
+  },
+  "dataset": "physionet",
+  "suite": "extended",
+  "seed": 0,
+  "channels": [
+    "FC3",
+    "FCz",
+    "FC4",
+    "C3",
+    "Cz",
+    "C4",
+    "CP3",
+    "CP4"
+  ],
+  "n_qubits": 4,
+  "outer_cv": "5-fold x 3 repeats",
+  "inner_cv": "4-fold GridSearchCV",
+  "total_seconds": 22461.1
 }

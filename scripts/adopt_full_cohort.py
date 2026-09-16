@@ -131,12 +131,17 @@ def main(argv=None) -> int:
 
     env_note = "PYTHONPATH=src"
     for prefix, tag in MERGES.items():
-        print(f"merge    raw_folds_{prefix}_b*.csv -> {tag}")
+        # The paired tests need a reference pipeline that exists in the suite.
+        # Every filter-bank pipeline is prefixed FB-, so tangent space there is
+        # classical/FB-TS+LR and the default would raise.
+        reference = ("classical/FB-TS+LR" if "fb" in prefix
+                     else "classical/TS+LR")
+        print(f"merge    raw_folds_{prefix}_b*.csv -> {tag}  (vs {reference})")
         if not args.dry_run:
             r = subprocess.run(
                 [sys.executable, "-m", "qeeg.merge", "--results", str(RESULTS),
                  "--pattern", f"raw_folds_{prefix}_b*.csv", "--tag", tag,
-                 "--reference", "classical/TS+LR"],
+                 "--reference", reference],
                 cwd=ROOT, env={**dict(__import__("os").environ), "PYTHONPATH": "src"},
                 capture_output=True, text=True)
             if r.returncode:

@@ -8,17 +8,17 @@
 size on real EEG. Register size is swept by varying the channel count over
 powers of two (4/8/16/32/64 channels $=$ 2--6 qubits), with no change of method.
 The statistic is the variance of the off-diagonal Gram entries; a factor below
-one means concentration worsens with scale. The entangled circuit kernel concentrates $2.5\times$ faster in log-slope than the same circuit with entanglers removed.}
+one means concentration worsens with scale. The entangled circuit kernel concentrates $2.7\times$ faster in log-slope than the same circuit with entanglers removed.}
 \begin{tabular}{@{}lcccc@{}}
 \hline
 Kernel & Log-slope / qubit & Factor / qubit & Var (2 qubits) & Var (6 qubits) \\
 \hline
-IQP-entangled & $-0.850$ & 0.428 & 0.07824 & 0.00273 \\
-IQP-product & $-0.334$ & 0.716 & 0.09821 & 0.02633 \\
-Bures-RBF & $-0.283$ & 0.753 & 0.09509 & 0.03171 \\
-HS-RBF & $-0.180$ & 0.835 & 0.09318 & 0.04631 \\
-Fidelity & $+0.369$ & 1.447 & 0.00026 & 0.00125 \\
-HS-overlap & $+0.419$ & 1.520 & 0.00051 & 0.00356 \\
+IQP-entangled & $-0.859$ & 0.424 & 0.07476 & 0.00248 \\
+IQP-product & $-0.319$ & 0.727 & 0.09396 & 0.02652 \\
+Bures-RBF & $-0.195$ & 0.823 & 0.07758 & 0.03643 \\
+HS-RBF & $-0.113$ & 0.894 & 0.07682 & 0.05009 \\
+Fidelity & $+0.493$ & 1.638 & 0.00030 & 0.00213 \\
+HS-overlap & $+0.536$ & 1.709 & 0.00043 & 0.00369 \\
 \hline
 \end{tabular}
 \end{table}

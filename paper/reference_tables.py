@@ -117,6 +117,19 @@ def load(res: Path) -> dict:
     return d
 
 
+def _sci(x: float) -> str:
+    """LaTeX scientific notation, for any exponent.
+
+    The previous version did this by string-replacing "e-0", which silently
+    assumed a single-digit exponent. That held while the cohort was 30 subjects
+    (Wilcoxon's floor is 1.9e-09) and broke at 104 (9.9e-32): the replacement
+    did not fire, and the closing brace that was appended unconditionally was
+    then unmatched, leaving a macro file that would not compile.
+    """
+    mantissa, exponent = f"{x:.1e}".split("e")
+    return f"{mantissa}\\times10^{{{int(exponent)}}}"
+
+
 def _best_twin(per: pd.DataFrame, twins: list[str]) -> str | None:
     """The comparator: the Riemannian SPD kernel, always.
 
@@ -920,7 +933,7 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
         defs["TransferBest"] = esc(ref.mean().idxmax())
         defs["TransferBestAcc"] = f"{ref.mean().max():.3f}"
         # Wilcoxon's two-sided floor: the test cannot return a smaller p.
-        defs["TransferFloor"] = f"{2.0 ** (1 - len(ref)):.1e}".replace("e-0", r"\times10^{-") + "}"
+        defs["TransferFloor"] = _sci(2.0 ** (1 - len(ref)))
 
     if d["cs_ref"] is not None:
         ref, sen = d["cs_ref"], d["cs_sen"]
