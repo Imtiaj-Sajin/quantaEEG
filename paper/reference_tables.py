@@ -496,7 +496,11 @@ recording session and tested on the other; the two directions are averaged
 per subject before any statistic is computed, so $n$ is the number of
 subjects. Hyperparameters are chosen by stratified inner cross-validation
 inside the training session alone. In the reference frame each session is
-whitened by its own label-free Fr\'echet mean. $\Delta$ is the gain from the
+whitened by its own Fr\'echet mean, and for the test session that mean is
+computed from all of its trials. This uses test data, so it is stated here as
+well as in the text: it uses no labels, and it is exactly the unsupervised
+adaptation a deployed decoder can perform on the unlabelled data it receives
+before decoding anything. $\Delta$ is the gain from the
 reference frame, paired by subject and tested by Wilcoxon signed-rank.}
 \begin{tabular}{@{}lccccc@{}}
 \hline

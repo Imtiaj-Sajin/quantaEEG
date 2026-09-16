@@ -17,7 +17,7 @@ compute to finish), **decision** (needs the corresponding author).
 | 2 | Publish the hyperparameter grids: C ranges, bandwidth multipliers, PCA dimensions, angle scales, shrinkage, grid-point counts | **done** |
 | 3 | One enumerated definition of the core and extended suites; add QRE-RBF to the core table and figure; one fixed meaning of "best quantum" | **done** |
 | 4 | Holm-correct the frame-effect table (was 20 uncorrected paired Wilcoxon tests) | **done** |
-| 5 | Cut to journal length: move the heavy tables and figures to supplementary, compress the results section that re-argues the discussion | **done**, page count to confirm on the next build |
+| 5 | Cut to journal length: move the heavy tables and figures to supplementary, compress the results section that re-argues the discussion | **partly done**, see below |
 
 Item 1 detail. Stage 1 (every within-subject suite on all 104 eligible
 subjects) is complete. Stage 2 is in flight: leave-one-subject-out transfer in
@@ -36,6 +36,28 @@ drift from what the code actually searches.
 Item 3 detail. Core is now 16 sensor-frame pipelines (QRE-RBF moved in),
 extended is 23 (core plus five reference-frame kernels and two SPD twins).
 "Best quantum" means the best density-matrix kernel everywhere.
+
+Item 5 detail, and an honest accounting. Four tables and three figures moved
+to a separate supplementary document, which took the build from 26 pages to
+24. The referee asked for 15 to 17. The remaining main text is 11 tables, 8
+figures and about 9,900 words of prose, and closing a seven-page gap would
+mean deleting material that answers the other referee items rather than
+padding. The plan, to execute at the final rebuild:
+
+* move `tab:seeds` (the two extra partition seeds, a robustness check by
+  nature) to supplementary, and with it the last figure panel that only it
+  needs;
+* set the panel figures to 0.85 of text width, which costs nothing
+  scientifically and recovers roughly a page and a half;
+* compress the passage that reads the cross-dataset result twice, once where
+  it is measured and again after the frame correction revises it. The second
+  reading is the correct one; the first only needs a sentence, not a
+  paragraph.
+
+That lands near 20 pages. The response letter should say so plainly: the
+document is shorter than the version reviewed despite carrying a cohort three
+and a half times larger and two experiments the referee asked for, and we
+would rather be told which section to cut than cut the cohort.
 
 ## Tier 2: recommended, takes it to 9
 
@@ -60,7 +82,7 @@ calibration jobs free up slots.
 |------|--------|
 | Unify the confidence-interval convention between the twin figure and the equivalence table | **done**: 90 % everywhere, the interval that matches the two one-sided tests, and the count of intervals excluding zero is now a macro in both places |
 | Fix the subtraction in the cross-session paragraph and the accuracy-range mismatch in the transfer paragraph | **done**: both sentences are generated from macros now, so neither number is typed by hand |
-| Flag the all-trials reference state in the caption of the diagnostic table, not only in the text | **blocked**: the table moves to supplementary, do it in the rebuilt caption |
+| Flag the all-trials reference state in the caption of the cross-session table, not only in the text | **done**: the caption now says the test session's mean uses all of its trials, that this uses test data, and why that is legitimate (no labels, and available to a deployed decoder) |
 | Trim the abstract to the journal limit and lead with the methodological contribution | **done**: 296 words, recentring and the twin first, quantum framing second |
 | Replace "reproduce their published values" with a reference to the baseline table | **done** |
 | A less rhetorical title | **decision** |
