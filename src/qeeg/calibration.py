@@ -164,6 +164,7 @@ def main(argv=None) -> int:
     ap.add_argument("--merge", default=None)
     args = ap.parse_args(argv)
     out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
 
     if args.merge:
         return merge(out, args.merge, args.tag or args.dataset)

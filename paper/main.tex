@@ -919,8 +919,8 @@ Two honest qualifications. First, the \EquivFailQuantum{} comparisons that miss
 the $\pm\EquivMargin$ margin in the quantum kernel's favour are balanced by
 \EquivFailClassical{} that miss it in the twin's, which is the pattern expected
 of noise about zero rather than of a suppressed effect. Second,
-\EquivNZeroExcluded{} of the \EquivN{} intervals exclude zero, all of them on
-the quantum side: \EquivZeroExclList. The first is one comparison of
+\EquivNZeroExcluded{} of the \EquivN{} intervals \EquivZeroExclVerb{} zero,
+\EquivZeroExclSide: \EquivZeroExclList. The first is one comparison of
 \EquivN{} that does not survive its family. The second deserves more than a
 mention, because it comes from the best-powered dataset in the study. On
 Cho2017, with \ChoNSubjects{} subjects, the parameter-free fidelity kernel
@@ -993,11 +993,11 @@ against a classical SPD-manifold kernel \cite{barachant2013} used in the
 same support vector
 machine, on the same covariances, with the same tuning budget, in the same
 reference frame; only the metric differs. Points are mean paired differences
-with 95\% confidence intervals for the difference; table~\ref{tab:equiv}
-gives the 90\% intervals that correspond to the equivalence test, which are
-narrower. Every interval crosses zero except the fidelity kernel on Cho2017,
-drawn as an orange diamond, which lies inside the $\pm\EquivMargin$ margin (see
-text);
+with 90\% confidence intervals, the interval that corresponds to the two
+one-sided tests at $\alpha=0.05$, so this figure and table~\ref{tab:equiv}
+count the same intervals as excluding zero. \EquivNZeroExcluded{} of them
+\EquivZeroExclVerb{} zero, drawn as \EquivZeroExclMarker{}, and every one lies
+inside the $\pm\EquivMargin$ margin (see text);
 table~\ref{tab:seeds} repeats the PhysioNet block under two more partitions.
 Note the axis
 range: the entire plot spans eight accuracy points, against a frame effect

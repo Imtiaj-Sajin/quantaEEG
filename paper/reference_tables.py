@@ -392,6 +392,13 @@ def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
         defs[f"Equiv{prefix}Pass"] = f"{int(sub.equivalent.sum())}"
         defs[f"Equiv{prefix}N"] = f"{len(sub)}"
         defs[f"Equiv{prefix}Worst"] = f"{sub['bound'].max():.4f}"
+    # Grammar that follows the count, so a caption written once stays correct
+    # whether the new cohort leaves zero, one or several intervals off zero.
+    n_ze = len(zero_excl)
+    defs["EquivZeroExclWord"] = "interval" if n_ze == 1 else "intervals"
+    defs["EquivZeroExclVerb"] = "excludes" if n_ze == 1 else "exclude"
+    defs["EquivZeroExclMarker"] = ("an orange diamond" if n_ze == 1
+                                   else "orange diamonds")
     if len(zero_excl):
         r = zero_excl.iloc[0]
         defs["EquivZeroExclName"] = f"{r['kernel']} ({r['setting']})"
@@ -404,6 +411,19 @@ def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
                                      else ", ".join(items[:-1]) + " and " + items[-1])
         defs["EquivZeroExclAllQuantum"] = (
             "yes" if (zero_excl["mean"] > 0).all() else "no")
+        # The sign pattern, as a clause: the manuscript's claim that every
+        # off-zero interval favours the quantum kernel must not survive a
+        # cohort in which one of them does not.
+        defs["EquivZeroExclSide"] = (
+            "all of them on the quantum side" if (zero_excl["mean"] > 0).all()
+            else "all of them on the twin's side" if (zero_excl["mean"] < 0).all()
+            else "mixed in sign")
+    else:
+        defs["EquivZeroExclList"] = "none"
+        defs["EquivZeroExclName"] = "none"
+        defs["EquivZeroExclDelta"] = "n/a"
+        defs["EquivZeroExclAllQuantum"] = "n/a"
+        defs["EquivZeroExclSide"] = "none"
     out.append("\n%% ------------------------------ equivalence macros\n")
     for k, v in defs.items():
         out.append(f"\\newcommand{{\\{k}}}{{{v}}}")

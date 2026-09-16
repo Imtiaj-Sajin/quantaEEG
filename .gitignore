@@ -9,8 +9,10 @@ venv/
 # Final result CSV/JSON and figures ARE committed: they are the scientific
 # record and should travel with the code.
 results/*.log
-results/*.partial.csv
+results/**/*.partial.csv
 results/_*/
+# Staging folder for one-off verification reruns (compared, then deleted).
+results/verify/
 
 # Large cached datasets live in ~/mne_data, never in the repo.
 mne_data/
