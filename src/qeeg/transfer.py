@@ -238,7 +238,8 @@ def _fit_eval_classical(proto, grid, X, y, groups, tr, te, inner_splits=3):
 # Runner
 # --------------------------------------------------------------------------
 
-def run_loso(epochs_list, recenter: bool, heldout=None) -> list[dict]:
+def run_loso(epochs_list, recenter: bool, heldout=None, checkpoint=None,
+             done=None, prior=None) -> list[dict]:
     """Leave-one-subject-out over the pooled subjects.
 
     ``heldout`` restricts which subjects are held out in this process; the
@@ -256,6 +257,8 @@ def run_loso(epochs_list, recenter: bool, heldout=None) -> list[dict]:
     rows = []
     for held in np.unique(groups):
         if heldout is not None and int(held) not in heldout:
+            continue
+        if done and (frame, int(held)) in done:
             continue
         te = np.flatnonzero(groups == held)
         tr = np.flatnonzero(groups != held)
@@ -275,6 +278,10 @@ def run_loso(epochs_list, recenter: bool, heldout=None) -> list[dict]:
                   key=lambda r: r["accuracy"])
         print(f"  S{held:03d} ({time.perf_counter() - t0:5.1f}s) "
               f"best: {top['pipeline']} {top['accuracy']:.4f}")
+        # Checkpoint after every held-out subject: a power cut must not cost
+        # more than the subject in progress.
+        if checkpoint is not None:
+            pd.DataFrame((prior or []) + rows).to_csv(checkpoint, index=False)
     return rows
 
 
@@ -367,16 +374,24 @@ def main(argv=None) -> int:
     frames = (["sensor", "reference"] if args.frames == "both"
               else [args.frames])
     t0 = time.perf_counter()
-    rows = []
-    for f in frames:
-        rows += run_loso(eps, recenter=(f == "reference"), heldout=heldout)
-    df = pd.DataFrame(rows)
-
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     prefix = "" if args.dataset == "physionet" else f"{args.dataset}_"
     tag = args.tag or f"{prefix}{args.channels}"
+    partial = out / f"transfer_folds_{tag}.partial.csv"
+    rows, done = [], set()
+    if partial.exists():
+        prev = pd.read_csv(partial)
+        rows = prev.to_dict("records")
+        done = {(str(r["frame"]), int(r["subject"])) for _, r in prev.iterrows()}
+        print(f"  resuming from {partial.name}: "
+              f"{len(done)} subject-frame pairs already done")
+    for f in frames:
+        rows += run_loso(eps, recenter=(f == "reference"), heldout=heldout,
+                         checkpoint=partial, done=done, prior=list(rows))
+    df = pd.DataFrame(rows)
     df.to_csv(out / f"transfer_folds_{tag}.csv", index=False)
+    partial.unlink(missing_ok=True)
     summ = summarise(df)
     summ.to_csv(out / f"transfer_summary_{tag}.csv", index=False)
 

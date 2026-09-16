@@ -179,7 +179,15 @@ def main(argv=None) -> int:
     tag = args.tag or f"calib_{args.dataset}"
     partial = out / f"calib_folds_{tag}.partial.csv"
     rows, t0 = [], time.perf_counter()
+    done: set[int] = set()
+    if partial.exists():
+        prev = pd.read_csv(partial)
+        rows = prev.to_dict("records")
+        done = {int(s) for s in prev["subject"].unique()}
+        print(f"  resuming from {partial.name}: {len(done)} subjects already done")
     for i, ep in enumerate(eps, 1):
+        if ep.subject in done:
+            continue
         ts = time.perf_counter()
         rows += run_subject(ep, sizes, args.draws, args.test_size, args.seed)
         pd.DataFrame(rows).to_csv(partial, index=False)
