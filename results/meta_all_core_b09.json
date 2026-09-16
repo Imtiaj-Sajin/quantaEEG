@@ -1,0 +1,59 @@
+{
+  "dataset": "physionet",
+  "subjects_requested": [
+    91,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    101,
+    102,
+    103
+  ],
+  "subjects_used": [
+    91,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    101,
+    102,
+    103
+  ],
+  "n_trials_per_subject": {
+    "91": 45,
+    "93": 45,
+    "94": 45,
+    "95": 45,
+    "96": 45,
+    "97": 45,
+    "98": 45,
+    "99": 45,
+    "101": 45,
+    "102": 45,
+    "103": 45
+  },
+  "channels": [
+    "FC3",
+    "FCz",
+    "FC4",
+    "C3",
+    "Cz",
+    "C4",
+    "CP3",
+    "CP4"
+  ],
+  "suite": "core",
+  "n_qubits": 4,
+  "outer_cv": "5-fold x 3 repeats",
+  "inner_cv": "4-fold GridSearchCV",
+  "seed": 0,
+  "reference": "classical/TS+LR",
+  "total_seconds": 1629.1
+}
