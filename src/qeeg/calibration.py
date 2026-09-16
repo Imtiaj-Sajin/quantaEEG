@@ -131,7 +131,12 @@ def per_subject(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def merge(out: Path, pattern: str, tag: str) -> int:
-    files = sorted(out.glob(pattern))
+    # Checkpoints match the same wildcards as finished files
+    # ("calib_folds_calib_cho_b01.partial.csv" matches
+    # "calib_folds_calib_cho_b*.csv"), and merging one in would either
+    # duplicate a subject or, worse, quietly contribute a half-finished one.
+    files = [f for f in sorted(out.glob(pattern))
+             if not f.name.endswith(".partial.csv")]
     if not files:
         print(f"no files match {pattern!r}")
         return 1

@@ -72,6 +72,35 @@ own discussion named as the last place a quantum kernel could win, so the
 result is worth having whichever way it goes. IV-2a is complete (9 subjects,
 750 rows each); Cho2017 is running in eight batches.
 
+**Early result, and it points the way the paper predicted.** The
+quantum-minus-twin difference is largest at the smallest calibration set and
+decays towards zero as training trials are added. On IV-2a at 10 training
+trials the best reference-frame kernel leads the twin by +0.014 (8 of 9
+subjects, p = 0.035 uncorrected) and the best classical pipeline by +0.024
+(p = 0.027); by 40 trials and beyond the difference is within ±0.007 with
+mixed signs.
+
+Reporting this correctly matters more than the result itself, because a
+"best kernel at the best training size" comparison is precisely the selection
+effect the twin control was built to prevent. So the pre-specified quantity is
+the *trend*: per subject and per kernel, the slope of (quantum minus twin)
+against log2(training size), which is one test per kernel, Holm corrected over
+the five. All five slopes are negative on both datasets:
+
+| Dataset | slope per doubling | subjects negative | p (uncorrected) | Holm |
+|---|---|---|---|---|
+| IV-2a, n=9 | -0.0028 to -0.0044 | 6 to 8 of 9 | 0.039 to 0.164 | 0.20 to 0.39 |
+| Cho2017, first 14 of 52 | -0.0058 to -0.0081 | 10 to 11 of 14 | 0.049 to 0.135 | 0.25 |
+
+Nothing here survives correction yet, and the effect at its largest is inside
+the ±0.02 equivalence margin. The negative control is what makes it worth
+taking seriously: the twin's own advantage over the best classical pipeline
+shows no such trend (IV-2a slope -0.002, p = 0.20; Cho2017 +0.0001, p = 0.86),
+so this is not the generic convergence of every method as data grows. The
+decisive test is the full 52-subject Cho2017 run now in flight. Write it up as
+a size-dependent trend with the sign the paper predicted in advance, not as an
+advantage, and quote the Holm-corrected numbers.
+
 Item 7 detail. Nine queued jobs, `bci4_b01` to `bci4_b09`, extended suite,
 four-class IV-2a, one subject per process. They start as the transfer and
 calibration jobs free up slots.

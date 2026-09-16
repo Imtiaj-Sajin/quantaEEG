@@ -317,7 +317,10 @@ def paired_frame_test(df: pd.DataFrame) -> pd.DataFrame:
 
 def merge_batches(out: Path, pattern: str, tag: str) -> int:
     """Combine --heldout batch files into the canonical outputs."""
-    files = sorted(out.glob(pattern))
+    # Checkpoints match the same wildcard as finished files; merging one in
+    # would contribute a half-finished chunk.
+    files = [f for f in sorted(out.glob(pattern))
+             if not f.name.endswith(".partial.csv")]
     if not files:
         print(f"no files match {pattern!r} in {out}")
         return 1

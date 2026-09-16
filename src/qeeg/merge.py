@@ -21,7 +21,12 @@ from .benchmark import paired_tests, summarise
 
 
 def merge(results: Path, pattern: str, tag: str, reference: str) -> pd.DataFrame:
-    files = sorted(glob.glob(str(results / pattern)))
+    # Exclude checkpoints: "raw_folds_b01.partial.csv" matches the same
+    # wildcard as "raw_folds_b01.csv", sorts after it, and the drop_duplicates
+    # below keeps the last, so a stale checkpoint from an abandoned run could
+    # silently replace finished rows.
+    files = [f for f in sorted(glob.glob(str(results / pattern)))
+             if not f.endswith(".partial.csv")]
     if not files:
         raise SystemExit(f"no files matched {results / pattern}")
     frames = [pd.read_csv(f) for f in files]
