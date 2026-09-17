@@ -41,7 +41,7 @@ fi
 blue "stage 1: full-cohort benchmark batches"
 python - <<'PY'
 import pathlib, subprocess
-jobs = subprocess.run(["python", "scripts/full_cohort_queue.py"],
+jobs = subprocess.run(["python", "scripts/archive/full_cohort_queue.py"],
                       capture_output=True, text=True).stdout.splitlines()
 done, todo = [], []
 for line in jobs:
@@ -64,7 +64,7 @@ PY
 blue "stage 2: transfer, diagnostics, calibration, four-class"
 python - <<'PY'
 import pathlib, re, subprocess
-jobs = subprocess.run(["python", "scripts/phase2_jobs.py"],
+jobs = subprocess.run(["python", "scripts/archive/phase2_jobs.py"],
                       capture_output=True, text=True).stdout.splitlines()
 done, todo = [], []
 for line in jobs:

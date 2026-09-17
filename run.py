@@ -55,11 +55,11 @@ def cmd_status(args) -> int:
         ("within-subject, IV-2a", "raw_folds_bci2a_motor8_q4.csv"),
         ("  same, reference frame", "raw_folds_refstate_bci2a_motor8_q4.csv"),
         ("within-subject, Cho2017", "raw_folds_refstate_cho2017_motor8_q4.csv"),
-        ("four-class IV-2a", "raw_folds_bci4_b0?.csv"),
+        ("four-class IV-2a", "raw_folds_refstate_bci2a4_motor8_q4.csv"),
         ("cross-subject transfer", "transfer_folds_motor8.csv"),
         ("cross-session transfer", "crosssession_folds_bci2a_motor8.csv"),
-        ("few-trial calibration, IV-2a", "calib_folds_calib_bci_b0?.csv"),
-        ("few-trial calibration, Cho2017", "calib_folds_calib_cho_b0?.csv"),
+        ("few-trial calibration, IV-2a", "calib_folds_bci2a.csv"),
+        ("few-trial calibration, Cho2017", "calib_folds_cho2017.csv"),
         ("kernel concentration", "concentration_decay.csv"),
         ("Gram diagnostics", "reference_gram*.csv"),
         ("finite-shot estimation", "shots_folds*.csv"),
@@ -101,7 +101,7 @@ def cmd_verify(args) -> int:
     import pandas as pd
     from scipy.stats import wilcoxon
 
-    failures = 0
+    failures, skipped = 0, []
 
     _rule("1. the invariance proposition, checked numerically")
     sys.path.insert(0, str(SRC))
@@ -148,6 +148,7 @@ def cmd_verify(args) -> int:
                    "all positive", min(gains) > 0)
             failures += min(gains) <= 0
     else:
+        skipped.append("frame effect (PhysioNet suites)")
         print("  (absent: run the PhysioNet suites first)")
 
     _rule("3. the twin control: the gain is the frame, not the quantum metric")
@@ -165,10 +166,11 @@ def cmd_verify(args) -> int:
               + (f": {', '.join(excl.kernel + ' (' + excl.setting + ')')}"
                  if len(excl) else ""))
     else:
+        skipped.append("twin equivalence (equivalence_twin.csv)")
         print("  (absent: run python -m qeeg.equivalence)")
 
     _rule("4. few-trial calibration: the one regime that favours the quantum side")
-    hits = sorted(RES.glob("calib_folds_calib_cho_b0?.csv"))
+    hits = sorted(RES.glob("calib_folds_cho2017.csv"))
     if hits:
         df = pd.concat([pd.read_csv(h) for h in hits], ignore_index=True)
         ps = (df.groupby(["n_train", "pipeline", "subject"]).accuracy
@@ -195,6 +197,7 @@ def cmd_verify(args) -> int:
                    np.mean([r[1] for r in small]) >
                    np.mean([r[1] for r in large]))
     else:
+        skipped.append("few-trial calibration")
         print("  (absent: run the calibration batches)")
 
     _rule("5. cost: the quantum kernels are slower for no gain")
@@ -211,13 +214,25 @@ def cmd_verify(args) -> int:
                    "slower, and the paper reports it rather than hiding it",
                    q > c)
     else:
+        skipped.append("wall-clock cost")
         print("  (absent)")
     print()
+    if skipped:
+        # Silence is not success. A check that finds no data used to print a
+        # note and let the summary say everything passed, which is how a stale
+        # file path went unnoticed after the batch inputs were merged away.
+        print(f"{len(skipped)} check(s) found no data and were SKIPPED:")
+        for s_ in skipped:
+            print(f"  - {s_}")
+        print("Fix the paths or regenerate the data; a skipped check is not a "
+              "passed one.")
     if failures:
         print(f"{failures} claim(s) did not check out. That is a real problem: "
               f"either the data changed or the manuscript is stale.")
         return 1
-    print("Every claim that this checkout has data for checks out.")
+    if skipped:
+        return 1
+    print("Every claim checks out, and none was skipped.")
     print("The numbers quoted in the manuscript are generated from these same "
           "files by paper/make_tables.py, so they cannot disagree.")
     return 0
@@ -251,9 +266,8 @@ def cmd_figures(args) -> int:
                 "figures_reference"):
         rc |= _run(sys.executable, "-m", f"qeeg.{mod}",
                    *(["--paper"] if args.paper else []))
-    # The study-design figure is TikZ, not matplotlib: it carries typeset
-    # mathematics and is a drawn diagram rather than a plot.
-    rc |= _run(sys.executable, "paper/make_design_figure.py", env_src=False)
+    # The architecture figure is not built here. It is authored in
+    # diagrams.net and lives in figures/; see figures/README.md.
     return rc
 
 

@@ -211,7 +211,7 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
 
   ```powershell
   $a = New-ScheduledTaskAction -Execute "C:\Program Files\Git\bin\bash.exe" `
-      -Argument '-lc "cd /g/codes/Ass/quantaEEG && bash scripts/run_revision.sh"' `
+      -Argument '-lc "cd /g/codes/Ass/quantaEEG && bash scripts/archive/run_revision.sh"' `
       -WorkingDirectory "G:\codes\Ass\quantaEEG"
   $s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries `
       -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) `
@@ -222,7 +222,7 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
 
   Delete it when the work is done:
   `Unregister-ScheduledTask -TaskName "quantaEEG_revision" -Confirm:$false`.
-  `scripts/run_revision.sh` is safe to relaunch at any point: finished jobs
+  `scripts/archive/run_revision.sh` is safe to relaunch at any point: finished jobs
   skip themselves, and benchmark batches continue from their `.partial.csv`
   checkpoints with `--resume` (verified identical to an uninterrupted run).
   Check progress by counting `^  \[` lines in `results/run_*.log`, and check

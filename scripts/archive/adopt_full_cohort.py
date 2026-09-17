@@ -122,6 +122,20 @@ def main(argv=None) -> int:
         return 1
 
     ARCHIVE.mkdir(exist_ok=True)
+    # This script is not idempotent and must not pretend to be. A second run
+    # would move the already-adopted 104-subject files on top of the 30-subject
+    # archive and then regenerate them identically, so n30/ would silently hold
+    # a copy of the current cohort under the name of the old one. That happened
+    # on 2026-09-17 and the real archive had to be restored from the commit
+    # before adoption.
+    existing = [p.name for p in ARCHIVE.iterdir() if p.is_file()]
+    if existing and not args.force:
+        print(f"refusing: {ARCHIVE.relative_to(ROOT)} already holds "
+              f"{len(existing)} files, so the archiving step has run before. "
+              f"Re-running would overwrite the archive with the current "
+              f"cohort. Use --force only if you are certain that is what you "
+              f"want, and check the subject counts afterwards.")
+        return 1
     for name in archived_names():
         src = RESULTS / name
         if src.exists():

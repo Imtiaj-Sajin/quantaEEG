@@ -5,7 +5,7 @@ binary contrast. It is not, and four classes make the case more sharply than
 two: chance is 0.25, the sensor-frame kernels sit barely above it, and
 recentring moves them by a quarter of the accuracy range.
 
-Every number here is computed from results/raw_folds_bci4_b0?.csv. No figure in
+Every number here is computed from the merged four-class result file. No figure in
 the manuscript is typed by hand.
 """
 from __future__ import annotations
@@ -29,10 +29,22 @@ CHANCE = 0.25
 
 
 def load(res: Path):
-    files = sorted(res.glob("raw_folds_bci4_b0?.csv"))
-    if not files:
-        return None
-    d = pd.concat([pd.read_csv(f) for f in files], ignore_index=True)
+    """Read the merged four-class run.
+
+    This used to glob the per-subject batch files. Those are build
+    intermediates, losslessly absorbed into the merged file, and deleting them
+    silently dropped this whole table and its section's macros from the
+    manuscript. Read the canonical file, and fall back to the batches only if
+    the merge has not been done yet.
+    """
+    merged = res / "raw_folds_refstate_bci2a4_motor8_q4.csv"
+    if merged.exists():
+        d = pd.read_csv(merged)
+    else:
+        files = sorted(res.glob("raw_folds_bci4_b0?.csv"))
+        if not files:
+            return None
+        d = pd.concat([pd.read_csv(f) for f in files], ignore_index=True)
     return d.groupby(["pipeline", "subject"]).accuracy.mean().unstack("pipeline")
 
 

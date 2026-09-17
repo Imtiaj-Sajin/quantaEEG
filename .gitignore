@@ -33,6 +33,13 @@ paper/build/*
 *.out
 *.log
 *.xdv
+# latexmk's own bookkeeping, and the PDFs it writes next to the source. The
+# tracked PDFs are the ones run.py publishes into paper/build/, so these are
+# duplicates that change on every rebuild.
+*.fdb_latexmk
+*.fls
+paper/main.pdf
+paper/supplementary.pdf
 
 # Third-party IOP files, fetched by paper/get_iop_class.sh from IOP's own
 # package and not redistributed here.

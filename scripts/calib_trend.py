@@ -72,10 +72,10 @@ def report(name, wide):
               f"slope {s.mean():+.5f}, p={wilcoxon(s).pvalue:.3f}")
 
 
-bci = load("results/calib_folds_calib_bci_b*.csv")
+bci = load("results/calib_folds_bci2a.csv")
 if bci is not None:
     report("IV-2a", bci)
-cho = load("results/calib_folds_calib_cho_b*.csv")
+cho = load("results/calib_folds_cho2017.csv")
 if cho is not None:
     report("Cho2017 (partial, batches still running)", cho)
 else:

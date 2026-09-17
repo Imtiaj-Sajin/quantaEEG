@@ -29,7 +29,7 @@ def holm(p):
 
 
 df = pd.concat([pd.read_csv(f) for f in
-                sorted(glob.glob("results/calib_folds_calib_cho_b0?.csv"))],
+                sorted(glob.glob("results/calib_folds_cho2017.csv"))],
                ignore_index=True)
 ps = df.groupby(["n_train", "pipeline", "subject"]).accuracy.mean().reset_index()
 w = ps.pivot_table(index=["n_train", "subject"], columns="pipeline",

@@ -21,8 +21,8 @@ def wide(pattern):
                           values="accuracy")
 
 
-for name, pat in (("IV-2a", "results/calib_folds_calib_bci_b*.csv"),
-                  ("Cho2017", "results/calib_folds_calib_cho_b*.csv")):
+for name, pat in (("IV-2a", "results/calib_folds_bci2a.csv"),
+                  ("Cho2017", "results/calib_folds_cho2017.csv")):
     w = wide(pat)
     if w is None:
         continue

@@ -23,7 +23,7 @@ Item 1 detail. Stage 1 (every within-subject suite on all 104 eligible
 subjects) is complete. Stage 2 is in flight: leave-one-subject-out transfer in
 six chunks, plus the Gram diagnostics at four register sizes, the concentration
 sweep and the finite-shot run, which are already done and skip themselves.
-`scripts/adopt_full_cohort.py` archives the 30-subject files and promotes the
+`scripts/archive/adopt_full_cohort.py` archives the 30-subject files and promotes the
 104-subject ones to the canonical names once every input exists; it refuses to
 run while anything is missing. The Gram-variance analyses then all read the one
 104-subject file, which also settles the n=14 versus n=10 inconsistency the
@@ -142,7 +142,7 @@ are what change a reader's mind.
 ## After the compute finishes
 
 ```bash
-python scripts/adopt_full_cohort.py          # promote the 104-subject results
+python scripts/archive/adopt_full_cohort.py          # promote the 104-subject results
 PYTHONPATH=src python -m qeeg.equivalence    # TOST against the new numbers
 python paper/make_tables.py                  # tables and macros
 PYTHONPATH=src python -m qeeg.figures_reference --paper
