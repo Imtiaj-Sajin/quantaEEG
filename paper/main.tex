@@ -109,8 +109,7 @@ $\HeadRefDelta$ against it. The twin shows this is not quantum. Across
 \EquivNSettings{} settings, including cross-session transfer, equivalence
 tests place the two families within $\pm\EquivWorstBound$ accuracy in all
 \EquivN{} comparisons.
-Of these, \EquivNZeroExcluded{} exclude zero, \EquivNZeroExclQuantum{}
-favouring a quantum kernel and \EquivNZeroExclTwin{} the twin, all inside the
+Of these, \EquivNZeroExcludedWord{} exclude zero, \EquivNZeroExclQuantumWord{} favouring a quantum kernel and \EquivNZeroExclTwinWord{} the twin, all inside the
 margin, and no quantum kernel significantly beats the best classical pipeline.
 Only with very few calibration trials do the reference-frame kernels lead the
 twin, and at the smallest training sets the best classical pipeline, by about
@@ -138,8 +137,7 @@ classifiers built on the Riemannian geometry of spatial covariance matrices
 \cite{barachant2012,congedo2017}. Large-scale benchmarking finds that
 covariance tangent-space projection and CSP consistently define the strongest
 methodological families across public motor-imagery datasets; Lotte \textit{et al}
-\cite{lotte2018} and Yger \textit{et al} \cite{yger2017} review the field and the
-Riemannian branch of it respectively.
+\cite{lotte2018} and Yger \textit{et al} \cite{yger2017} review the field and its Riemannian branch, respectively.
 
 In parallel, a fast-growing literature applies quantum machine learning (QML)
 to EEG, typically reporting improvements over a classical comparator. It now
@@ -227,8 +225,7 @@ multiple-comparison correction, replicated on IV-2a and extended to
 filter-bank baselines, cross-subject and cross-session transfer, and a
 register sweep to six qubits in both frames.
 
-Third, and centrally, we show that the comparison such benchmarks perform, 
-ours included, in its first form, is confounded by the coordinate frame. The
+Third, and centrally, we show that the comparison such benchmarks make, including ours in its first form, is confounded by the coordinate frame. The
 quantum quantities above are invariant under orthogonal congruence only, while
 EEG's nuisance transformations (electrode gain, reference choice, source
 mixing, and the change from one subject to the next) generate the full
@@ -243,8 +240,7 @@ Fourth, we show that the reversal is nonetheless \emph{not} evidence of quantum
 advantage, using a control we believe should be standard in this literature: a
 classical SPD-manifold kernel placed in the same classifier, on the same data,
 in the same frame, differing from the quantum kernels only in the metric. No
-quantum kernel separates from that twin by more than \EquivWorstBound{} in any
-of \EquivNSettings{} settings, including cross-session transfer, the regime in
+quantum kernel separates from that twin by more than \EquivWorstBound{} in any of the \EquivNSettings{} settings, including cross-session transfer, the regime in
 which the shift our invariance argument does not cover is proportionally
 largest, and none significantly beats the best classical pipeline in any of
 them. Only when the reference state is estimated from very few calibration
@@ -279,8 +275,7 @@ comparison throughout is maximally generous to it and a negative result here
 is not weakened by the idealisation.
 
 The contribution we intend for neural engineering is practical rather than
-quantum. Covariance decoders are the field's working standard, and the two
-devices this paper turns on the quantum kernels, recentring to a label-free
+quantum. Covariance decoders are the field's working standard, and the two tools this paper applies to the quantum kernels, recentring to a label-free
 reference state and a comparator that differs in metric alone, apply to any
 new covariance kernel a practitioner might be offered, quantum or otherwise.
 The invariance proposition says \emph{why} recentring is a precondition for
@@ -382,7 +377,7 @@ number of subjects. PhysioNet and IV-2a together give \NSubjects{} and
 dataset \cite{cho2017}, accessed through MOABB, adds \ChoNSubjects{}
 subjects recorded on a 64-channel Biosemi ActiveTwo system at 512 Hz, with
 \ChoNTrialsMin{} imagined left- and right-hand movements per subject
-(\ChoNTrialsMax{} for \ChoNTrialsMaxCount{} of them) in a single session. It
+(\ChoNTrialsMax{} for \ChoNTrialsMaxCountWord{} of them) in a single session. It
 is the largest public left-versus-right motor-imagery
 corpus and was chosen for that reason alone: it tightens the equivalence
 bounds of section~\ref{sec:refresults}, and it supplies a third estimate of
@@ -494,9 +489,7 @@ Here $d_B$ is the Bures distance \cite{bhatia2019}, the geodesic distance
 of the Bures metric on
 state space, which for unit-trace matrices coincides with the
 Bures--Wasserstein distance occasionally used in the Riemannian EEG literature
-as a distance but, to our knowledge, never as a kernel. The bandwidth
-$\gamma$ is a bandwidth, and bandwidth is known to control quantum-kernel
-expressivity and to be decisive for whether such kernels generalise at all
+as a distance but, to our knowledge, never as a kernel. The bandwidth $\gamma$ matters: it is known to control quantum-kernel expressivity and to decide whether such kernels generalise at all
 \cite{shaydulin2022}. It is set by the median heuristic computed
 \emph{on the training split
 only}, with a multiplier selected in the inner cross-validation loop.
@@ -749,10 +742,10 @@ the paired effect size $d_z$. Per-subject optimality varies substantially in
 motor-imagery decoding, so paired non-parametric testing (rather than
 comparison of grand means) is the appropriate inference.
 
-Two points about the correction structure, since several families appear
-below. Holm correction is applied \emph{within} each family. The families
-are the suite-wide comparison against the reference pipeline, the contrasts
-of table~\ref{tab:cross}, the rows of table~\ref{tab:frame}, and, for the
+Two points about the correction structure need stating, since several families appear below. Holm correction is applied \emph{within} each family. The families
+are the suite-wide comparison against the reference pipeline, the three
+contrasts repeated on both datasets (section~\ref{sec:crossdataset}), the
+frame-effect comparisons (section~\ref{sec:refresults}), and, for the
 metric-matched twin comparisons, the five quantum kernels of each setting.
 These were fixed by the design of the study,
 one family per question asked, and not selected after inspecting
@@ -765,7 +758,7 @@ harder to obtain.
 The outer partition is itself a source of variation, so the PhysioNet
 three-qubit suite, on which the decisive comparison is first made, is
 repeated in full under two further outer-partition seeds
-(table~\ref{tab:seeds}); nothing else changes between repetitions.
+(section~\ref{sec:refresults}); nothing else changes between repetitions.
 
 Where the claim is that two methods are the \emph{same}, a non-significant
 difference is not sufficient evidence, so we additionally report two one-sided
@@ -773,11 +766,10 @@ tests (TOST) on the paired differences against a margin of $\pm\EquivMargin$
 accuracy. The margin was not pre-registered: it was chosen after the first
 within-subject PhysioNet and IV-2a analyses, the filter-bank analysis and
 the cross-subject analysis, and before every other analysis, and it was not
-moved afterwards. Because of that, table~\ref{tab:equiv} also reports the
-smallest margin at which each equivalence would hold, so the result can be
-read at any margin
-(table~\ref{tab:equiv}). The margin, its justification and the achieved
-equivalence bounds are given there.
+moved afterwards. Because of that, we also report the smallest margin at
+which each equivalence would hold, so the result can be read at any margin;
+the margin, its justification and the achieved bounds are given with the
+equivalence results in section~\ref{sec:refresults}.
 
 \subsection{Implementation}
 
@@ -794,7 +786,7 @@ Analyses use MNE-Python \cite{mne2013}, pyRiemann, scikit-learn and PennyLane
 
 \input{tab_main_auto}
 Table~\ref{tab:main} reports within-subject performance for all \NPipelines{}
-pipelines; Figure~\ref{fig:benchmark} shows the same data with per-subject spread.
+pipelines; figure~\ref{fig:benchmark} shows the same data with per-subject spread.
 Quantum kernels occupy \PhysBottomSixQuantum{} of the bottom six positions. Absolute accuracies
 are modest because EEGMMIDB contains many near-chance subjects, which is
 precisely why paired testing is required. They are also in line with the
@@ -807,13 +799,13 @@ a mistuned baseline.
 The primary pre-specified comparison, best classical versus best quantum, is
 significant: \BestClassicalName{} exceeded \BestQuantumName{} by
 $\Delta=\PrimaryDelta$ ($p\PrimaryP$, $d_z=\PrimaryDz$), and was superior in
-\PrimaryBetter{} subjects (Table~\ref{tab:cross}).
+\PrimaryBetter{} subjects (table~\ref{tab:cross}).
 
+\input{tab_cross_auto}
 \input{tab_tests_auto}
-Against the Riemannian tangent-space reference (Table~\ref{tab:tests},
-Figure~\ref{S-fig:paired}), \NSurviveHolm{} of \NFamilyTests{} comparisons survived
-Holm correction. \NUncorrectedSig{} reached $p<0.05$ uncorrected, and
-\NUncorrectedSigAgainst{} of those favour the reference rather than the
+Against the Riemannian tangent-space reference (table~\ref{tab:tests},
+figure~\ref{S-fig:paired}), \NSurviveHolmWord{} of \NFamilyTests{} comparisons survived
+Holm correction. \NUncorrectedSigWordCap{} reached $p<0.05$ uncorrected, and \NUncorrectedSigAgainstWord{} of those favour the reference rather than the
 pipeline tested against it. No quantum kernel exceeded the reference at any
 significance level; the best of them sits \QuantumBestAbs{} below it.
 
@@ -830,8 +822,8 @@ hyperparameter search.}
 
 \subsection{The controls: entanglement and dimension matching}
 
-Both control ablations point in the direction predicted by \cite{bowles2024},
-\ControlsVerdict{} (Table~\ref{tab:cross}). Removing entanglement improved
+Both control ablations point in the direction predicted by Bowles \textit{et al} \cite{bowles2024},
+\ControlsVerdict{} (table~\ref{tab:cross}). Removing entanglement improved
 accuracy by $\AblationDelta$ ($p\AblationP$, superior in \AblationBetter{}
 subjects), and the dimension-matched linear SVM exceeded the IQP circuit kernel
 by $\DimDelta$ ($p\DimP$).
@@ -854,7 +846,7 @@ real biological data rather than synthetic constructions.
 
 Exploiting (\ref{eq:density}), we swept register size by varying the channel
 count over powers of two ($4/8/16/32/64$ channels $=2$--$6$ qubits) with no
-change of method (Table~\ref{S-tab:concentration}, Figure~\ref{fig:concentration}). Two
+change of method (table~\ref{S-tab:concentration}, figure~\ref{fig:concentration}). Two
 findings emerge.
 
 First, \textbf{entanglement accelerates the collapse}. The entangled IQP kernel
@@ -891,7 +883,7 @@ kernel (orange, dashed) decays fastest.}
 
 \input{tab_bci_auto}
 Repeating the entire benchmark on BCI Competition IV-2a reproduces the
-ordering and sharpens it (Table~\ref{tab:bci}, Figure~\ref{fig:cross}). The best classical
+ordering and sharpens it (table~\ref{tab:bci}, figure~\ref{fig:cross}). The best classical
 pipeline reached \BciBestClassicalAcc{} against \BciBestQuantumAcc{} for the
 best quantum kernel and \BciWorstQuantumAcc{} for the worst, a
 classical-versus-quantum gap of \GapBci{} where PhysioNet gave \GapPhysio{},
@@ -914,8 +906,7 @@ orderings is \SpearmanRho{} across all \NPipelines{} pipelines, and the
 \BottomQuantumN{} quantum kernels on both datasets, \BottomQuantumShift. This is a property of the methods, not of the
 dataset.
 
-\input{tab_cross_auto}
-Statistically (Table~\ref{tab:cross}), on IV-2a the best classical pipeline beat the
+Statistically (table~\ref{tab:cross}), on IV-2a the best classical pipeline beat the
 best quantum kernel by $\BciPrimaryDelta$ ($p\BciPrimaryP$,
 $d_z=\BciPrimaryDz$) in \BciPrimaryBetter{} subjects. CSP+LDA, the classical comparator fixed on
 PhysioNet, beat the sensor-frame fidelity kernel by $\BciDensDelta$ ($d_z=\BciDensDz$) in
@@ -929,7 +920,7 @@ the \BciNFamilyTests{} IV-2a family comparisons cannot fall below
 \BciHolmFloor{} whatever the effect size. \BciNAtFloor{} of them sit exactly
 at that floor. Reporting them as ``not significant after correction'' would misdescribe
 a saturated test as a null result, which is why the pre-specified comparisons
-in Table~\ref{tab:cross}, which require no family correction, carry the inference.
+in table~\ref{tab:cross}, which require no family correction, carry the inference.
 
 \begin{figure}[htbp]
 \centering
@@ -986,11 +977,11 @@ section~\ref{sec:concentration}, that the density-matrix route tolerates wider
 registers, therefore survives the correction, with one qualification: the
 reference-frame variance is not strictly monotone, \SweepRefDipKernels{} of
 the \SweepRefDipKernelsTotal{} kernels dipping by up to \SweepRefDipMax\,\%
-between \SweepRefDipFrom{} and \SweepRefDipTo{} qubits before rising again.
+between \SweepRefDipFromWord{} and \SweepRefDipToWord{} qubits before rising again.
 
 \input{tab_frame_auto}
 \emph{Second, accuracy improves substantially and consistently}
-(table~\ref{tab:frame}). On PhysioNet every kernel improves, by \PhysFrameMin{} to
+(table~\ref{tab:frame} and figure~\ref{fig:frame}). On PhysioNet every kernel improves, by \PhysFrameMin{} to
 \PhysFrameMax{} ($n=\PhysFrameN$, all $p\PhysFrameMaxP$). On IV-2a the
 same corrections are worth \BciFrameMin{} to \BciFrameMax{}, and every kernel
 improves in \emph{every} subject. That the effect is two to three times larger
@@ -1053,14 +1044,12 @@ are making deserves better than that, so we test equivalence directly
 margin of $\pm\EquivMargin$ accuracy, establish equivalence in
 \EquivPass{} of \EquivN{} comparisons; across all \EquivN{} the agreement is
 within $\pm\EquivWorstBound$. The evidence is strongest where it should be, on
-the two better-powered datasets: on IV-2a and on Cho2017 all \EquivBciN{} and
-\EquivChoN{} comparisons are equivalent, with the widest intervals reaching
-only $\EquivBciWorst$ and $\EquivChoWorst$.
+the two better-powered datasets: all \EquivBciNWord{} comparisons on IV-2a and all \EquivChoNWord{} on Cho2017 are equivalent, with the widest intervals reaching only $\EquivBciWorst$ and $\EquivChoWorst$ respectively.
 
 \input{tab_seeds_auto}
 Two qualifications. \EquivFailSentence{}
 
-Second, \EquivNZeroExcluded{} of the \EquivN{} intervals \EquivZeroExclVerb{}
+Second, \EquivNZeroExcludedWord{} of the \EquivN{} intervals \EquivZeroExclVerb{}
 zero. We correct each one with Holm over the five kernels of its own setting,
 the family defined for the twin comparisons in section~\ref{sec:stats}.
 \EquivZeroFallList{} \EquivZeroFallVerb{} survive that correction. The other
@@ -1092,19 +1081,16 @@ is not evidence that quantum structure improves decoding.
 \emph{Robustness to the partition.} Every number above comes from one outer
 cross-validation partition. Table~\ref{tab:seeds} repeats the PhysioNet
 three-qubit suite under two more. The frame effect reproduces
-(\SeedFrameMin{} to \SeedFrameMax{} over all \SeedN{} partitions), and so
+(\SeedFrameMin{} to \SeedFrameMax{} over all \SeedNWord{} partitions), and so
 does the uncontrolled reversal: the best reference-frame kernel leads the
-best classical baseline by \SeedHeadRefMin{} to \SeedHeadRefMax{} in
-\SeedHeadReversals{} of \SeedN{} partitions. The twin comparison, however,
+best classical baseline by \SeedHeadRefMin{} to \SeedHeadRefMax{} in \SeedHeadReversalsWord{} of \SeedNWord{} partitions. The twin comparison, however,
 separates by kernel family rather than by partition, and it moves in both
 directions. The parameter-free kernels run \SeedOverlapDeltaMin{} to
 \SeedOverlapDeltaMax{} against the twin (smallest $p\SeedOverlapMinP$),
 while the three bandwidth-parameterised kernels, which carry an extra
 hyperparameter to be tuned on \NTrials{} trials, fall behind by up to
 \SeedRbfWorst{} (smallest $p\SeedRbfMinP$). Of the \SeedSigN{} comparisons
-across the \SeedNWord{} partitions, \SeedSigCount{} reach uncorrected
-$p<0.05$, \SeedSigFavourQuantum{} in the quantum kernel's favour and
-\SeedSigFavourTwin{} in the twin's. With Holm correction over the five kernels
+across the \SeedNWord{} partitions, \SeedSigCountWord{} reach uncorrected $p<0.05$, \SeedSigFavourQuantumWord{} in the quantum kernel's favour and \SeedSigFavourTwinWord{} in the twin's. With Holm correction over the five kernels
 of each partition, \SeedHolmSentence. The equivalence bound for this
 dataset \SeedBoundMove{} from \SeedPrimaryBound{} at the primary partition to
 \SeedWorstBound{} over all \SeedNWord.
@@ -1129,7 +1115,6 @@ on PhysioNet, and least on Cho2017, whose sensor-frame kernels start closest
 to the classical baselines.}
 \end{figure}
 
-\input{tab_crosssession_auto}
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{fig8_twin.pdf}
@@ -1138,9 +1123,9 @@ against a classical SPD-manifold kernel \cite{barachant2013} used in the
 same support vector
 machine, on the same covariances, with the same tuning budget, in the same
 reference frame; only the metric differs. Points are mean paired differences
-with 90\% confidence intervals, the interval that corresponds to the two
+with 90\,\% confidence intervals, the interval that corresponds to the two
 one-sided tests at $\alpha=0.05$, so this figure and table~\ref{tab:equiv}
-count the same intervals as excluding zero. \EquivNZeroExcluded{} of them
+count the same intervals as excluding zero. \EquivNZeroExcludedWordCap{} of them
 \EquivZeroExclVerb{} zero, drawn as \EquivZeroExclMarker{}, and every one lies
 inside the $\pm\EquivMargin$ margin (see text);
 table~\ref{tab:seeds} repeats the PhysioNet block under two more partitions.
@@ -1215,6 +1200,7 @@ as small as $\TransferFloor$.
 \subsection{Cross-session transfer}
 \label{sec:crosssession}
 
+\input{tab_crosssession_auto}
 Cross-subject shift is dominated by congruence, so the parity just reported is
 what the algebra predicts. The complementary case is transfer across sessions
 within a subject: same head, same cap, similar impedances, so the congruence
@@ -1269,15 +1255,16 @@ Everything above decodes a single binary contrast, left hand against right,
 and a reader is entitled to ask whether the invariance argument is a property
 of that contrast rather than of the representation. We therefore repeated the
 extended suite on the four-class IV-2a task (left hand, right hand, feet,
-tongue; chance $=\FourClassChance$), changing nothing but the label set.
+tongue; chance $=\FourClassChance$), changing nothing but the label set
+(table~\ref{tab:fourclass}).
 
-The argument does not weaken with four classes, it sharpens. In the sensor
+The argument does not weaken with four classes; it sharpens. In the sensor
 frame the density-matrix kernels reach \FourClassSensorMin{} to
 \FourClassSensorMax, which is a few points above chance and far below every
 tuned classical baseline: a kernel invariant only to rotations is close to
 useless on this task. Recentring is then worth \FourClassFrameMin{} to
 \FourClassFrameMax{} accuracy (all $p\FourClassFrameMaxP$, every kernel
-improving in every one of the \FourClassN{} subjects), against
+improving in every one of the \FourClassNWord{} subjects), against
 \PhysFrameMin{} to \PhysFrameMax{} for the same correction on the binary
 PhysioNet task. The frame is not a small correction here; it is most of the
 decoder.
@@ -1310,21 +1297,18 @@ is tuned on each training set alone by the same inner search used everywhere
 else, with the reference state estimated from those $k$ trials only.
 
 \emph{The prediction holds, in the direction stated and at a size worth being
-precise about.} On Cho2017 ($n=\CalibChoN$), at the smallest calibration sets
+precise about.} Table~\ref{tab:calibration} gives every training size. On
+Cho2017 ($n=\CalibChoN$), at the smallest calibration sets
 the five reference-frame kernels lead the twin by \CalibChoSmallDeltaMin{} to
 \CalibChoSmallDeltaMax{} (smallest $p\CalibChoSmallMinP$),
 \CalibChoSmallQuantumAcc{} in accuracy against the twin's
 \CalibChoSmallTwinAcc. By \CalibKMax{} trials the
 difference has gone and changed sign, spanning \CalibChoLargeDeltaMin{} to
 \CalibChoLargeDeltaMax. Across the \CalibNDatasets{} datasets and all
-training sizes there are \CalibNComparisons{} kernel-versus-twin comparisons.
-\CalibNSigQuantum{} reach uncorrected $p<0.05$ in the quantum kernel's favour
-and \CalibNSigTwin{} in the twin's. With Holm correction over the five kernels
+training sizes there are \CalibNComparisons{} kernel-versus-twin comparisons. Of these, \CalibNSigQuantum{} reach uncorrected $p<0.05$ in the quantum kernel's favour and \CalibNSigTwinWord{} in the twin's. With Holm correction over the five kernels
 at each dataset and size, the family every other twin comparison in this paper
-uses, \CalibNSigQuantumHolm{} still favour the quantum kernels and
-\CalibNSigTwinHolm{} the twin. Pooling all \CalibNComparisons{} into a single
-family, the strictest reading, leaves \CalibNSigQuantumPooled{} and
-\CalibNSigTwinPooled{}. However it is counted, this is the first asymmetry of
+uses, \CalibNSigQuantumHolmWord{} still favour the quantum kernels and \CalibNSigTwinHolmWord{} the twin. Pooling all \CalibNComparisons{} into a single
+family, the strictest reading, leaves \CalibNSigQuantumPooledWord{} in the quantum kernels' favour and \CalibNSigTwinPooledWord{} in the twin's. However it is counted, this is the first asymmetry of
 its kind anywhere in the study.
 
 Four things bound it, and they belong in the same breath as the result.
@@ -1496,7 +1480,7 @@ on an SPD manifold has a classical counterpart on the same manifold, and
 comparing it with anything else conflates the metric with the representation.
 
 The third is Riemannian BCI decoding \cite{congedo2017,yger2017}. The
-reference-state correction is, algebraically, the re-centring of Zanini
+reference-state correction is, algebraically, the recentring of Zanini
 \textit{et al} \cite{zanini2018} and the alignment step of Riemannian
 Procrustes analysis \cite{rodrigues2019}, developed there as a
 transfer-learning heuristic. What we add is the reason it is not optional: for
@@ -1541,8 +1525,7 @@ classical twins within $\pm\EquivWorstBound$ accuracy of one another across all
 \EquivN{} comparisons (table~\ref{tab:equiv}), so we can exclude differences
 larger than that, but not smaller ones; under two further partitions of
 PhysioNet the bound widens to $\pm\SeedWorstBound$, with departures in both
-directions: \SeedSigFavourTwin{} significant in the twin's favour and
-\SeedSigFavourQuantum{} in the quantum kernel's (table~\ref{tab:seeds}). The TOST implementation is the paired
+directions: \SeedSigFavourTwinWord{} significant in the twin's favour and \SeedSigFavourQuantumWord{} in the quantum kernel's (table~\ref{tab:seeds}). The TOST implementation is the paired
 $t$ form and assumes the per-subject differences are approximately normal; at
 $n=\NSubjects$ that is mild, at $n=\BciNSubjects$ it is a real limitation and
 the IV-2a bounds should be read as indicative.
@@ -1551,8 +1534,7 @@ inter-session shift is dominated by, but not exhausted by, that group;
 differences in conditioning, effective rank and spectral shape survive
 recentring. Cross-session transfer, where that residual is proportionally
 largest, showed no quantum kernel separating from its twin
-(section~\ref{sec:crosssession}), but it did so on one dataset of \CsN{}
-subjects, which bounds the possibility rather than excluding it.
+(section~\ref{sec:crosssession}), but it did so on one dataset of \CsNWord{} subjects, which bounds the possibility rather than excluding it.
 (iv) The reference state is a Fr\'echet mean estimated from training data, so
 the correction is only as good as that estimate; its larger benefit on IV-2a
 (\BciFrameMin{} to \BciFrameMax) than on PhysioNet (\PhysFrameMin{} to
@@ -1640,8 +1622,7 @@ It would be straightforward to stop there and report a quantum advantage. The
 control that prevents this, a classical SPD kernel identical in every respect
 but the metric, shows that across \EquivNSettings{} settings the quantum
 kernels stay within \EquivWorstBound{} of their classical twins in both
-directions: the bandwidth-tuned kernels behind under other partitions of
-PhysioNet, the parameter-free fidelity kernel about one accuracy point ahead
+directions: the bandwidth-tuned kernels behind the twin under other partitions of PhysioNet, the parameter-free fidelity kernel about one accuracy point ahead
 on PhysioNet and again on Cho2017, and none of them significantly ahead of
 the best classical pipeline in these settings. Parity holds against filter-bank CSP, in
 cross-subject transfer, where all nine geometries fall within

@@ -130,7 +130,7 @@ cd paper && latexmk -pdf main.tex
 cross-references, unbalanced environments and missing figures, the things that
 would otherwise only surface on first compile.
 
-**Compiles.** 27 pages, 0 undefined references, 0 overfull boxes, 12 tables,
+**Compiles.** 28 pages, 0 undefined references, 0 overfull boxes, 12 tables,
 10 figures, 47 references, plus a 4-page supplement (tectonic, 2026-09-17).
 The study design is two figures since version 5 (`figures/architecture_v5_*`):
 Figure 2, a one-line overview with a Kernel families block, then Figure 3,

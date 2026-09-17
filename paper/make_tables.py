@@ -503,8 +503,30 @@ def main(argv=None) -> int:
         return re.sub(r"^(\\newcommand\{\\[A-Za-z]+\}\{)-(?=\d)",
                       r"\1\\ensuremath{-}", line)
 
-    mdest.write_text("\n".join(_tidy(x) for x in mac), encoding="utf-8")
-    print(f"wrote {mdest}  ({len(mac)} lines)")
+    lines = [_tidy(x) for x in mac]
+    # Word forms of small counts for running prose, where "three of the 35
+    # intervals" reads better than "3 of the 35", and a sentence may not open
+    # with a digit. Every macro whose value is a single digit gets \NameWord
+    # ("three") and \NameWordCap ("Three"), unless that name is already taken.
+    # A count that later grows past nine keeps its digits, so the prose stays
+    # correct either way.
+    words = ["none", "one", "two", "three", "four", "five", "six", "seven",
+             "eight", "nine"]
+    defined = set(re.findall(r"\\newcommand\{\\([A-Za-z]+)\}", "\n".join(lines)))
+    extra = []
+    for line in lines:
+        m = re.match(r"^\\newcommand\{\\([A-Za-z]+)\}\{(\d)\}$", line)
+        if not m:
+            continue
+        name, word = m.group(1), words[int(m.group(2))]
+        for suffix, text in (("Word", word), ("WordCap", word.capitalize())):
+            if name + suffix not in defined:
+                extra.append(f"\\newcommand{{\\{name}{suffix}}}{{{text}}}")
+                defined.add(name + suffix)
+    if extra:
+        lines += ["", "%% ------------------------------ word forms of small counts", *extra]
+    mdest.write_text("\n".join(lines), encoding="utf-8")
+    print(f"wrote {mdest}  ({len(lines)} lines)")
 
     dest = Path(args.out)
     dest.parent.mkdir(parents=True, exist_ok=True)
