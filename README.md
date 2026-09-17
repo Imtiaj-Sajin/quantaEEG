@@ -170,6 +170,8 @@ src/qeeg/
   figures*.py       every figure, including the study-design overview
 results/            per-fold CSVs, summaries and figures: the scientific record
 paper/              the manuscript (IOP, Journal of Neural Engineering)
+figures/            the architecture figure, its editable .drawio source, and
+                    alternative layouts under figures/versions/
 scripts/            job queues, dataset management, analysis helpers
 RESEARCH.md         the full research document: literature, gap, findings
 REVISION.md         referee items and their status
