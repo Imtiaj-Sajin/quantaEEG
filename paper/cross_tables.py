@@ -60,11 +60,13 @@ def table_bci(summary_b, summary_p, out, esc, group_label) -> None:
         "identical; only the data differs. Quantum kernels occupy the four\n"
         "lowest positions on both datasets.}\n"
         r"" "\n"
-        # The Group column is dropped: every pipeline name already carries its
-        # group as a prefix, and keeping it overflowed the text block.
-        r"\begin{tabular}{@{}lccc@{}}" "\n"
+        # Group is its own column rather than a prefix on every name. It was
+        # dropped once because the prefixed names overflowed the text block;
+        # without the prefix they fit, and the table stops repeating the word
+        # "quantum" sixteen times down its first column.
+        r"\begin{tabular}{@{}llccc@{}}" "\n"
         r"\hline" "\n"
-        r"Pipeline & Acc (IV-2a) & AUC (IV-2a) & Acc (Phys.) \\" "\n"
+        r"Pipeline & Group & Acc (IV-2a) & AUC (IV-2a) & Acc (Phys.) \\" "\n"
         r"\hline"
     )
     top = summary_b["acc_mean"].max()
@@ -74,7 +76,7 @@ def table_bci(summary_b, summary_p, out, esc, group_label) -> None:
                if r["acc_mean"] == top else f"{r['acc_mean']:.3f}")
         ref = pa.get(name, float("nan"))
         out.append(
-            f"{esc(name)} & {acc} & "
+            f"{esc(name)} & {group_label.get(r['group'], r['group'])} & {acc} & "
             f"{r['auc_mean']:.3f} & {ref:.3f} " + r"\\"
         )
     out.append(r"\hline" "\n" r"\end{tabular}" "\n"        r"\end{table}" "\n")

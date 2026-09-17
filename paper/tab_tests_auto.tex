@@ -2,7 +2,7 @@
 %% Regenerate after every benchmark run:  python paper/make_tables.py
 
 \begin{table}[htbp]
-\caption{\label{tab:tests}Paired comparisons against the classical/TS+LR
+\caption{\label{tab:tests}Paired comparisons against the TS\,+\,LR
 reference across subjects (Wilcoxon signed-rank, two-sided). $\Delta$ is the
 mean per-subject accuracy difference; $d_z$ is the paired effect size;
 $p_{\mathrm{Holm}}$ is corrected across the whole family of comparisons. 8 of 15 comparisons survive correction.}
@@ -10,21 +10,21 @@ $p_{\mathrm{Holm}}$ is corrected across the whole family of comparisons. 8 of 15
 \hline
 Pipeline & $\Delta$ accuracy & $p$ & $p_{\mathrm{Holm}}$ & $d_z$ & Better in \\
 \hline
-classical/CSP+LDA & $+0.0116$ & 0.048 & 0.334 & $+0.168$ & 53/104 \\
-classical/TS+RBF-SVM & $-0.0006$ & 0.520 & 0.814 & $-0.011$ & 47/104 \\
-control/PCA-matched-linear & $-0.0122$ & 0.407 & 0.814 & $-0.144$ & 50/104 \\
-classical/MDM & $-0.0144$ & 0.192 & 0.767 & $-0.189$ & 46/104 \\
-quantum/CNOT-kernel-SVM & $-0.0153$ & 0.140 & 0.698 & $-0.182$ & 44/104 \\
-control/PCA-matched-RBF & $-0.0168$ & 0.116 & 0.696 & $-0.196$ & 39/104 \\
-control/IQP-no-entangle & $-0.0168$ & 0.194 & 0.767 & $-0.192$ & 45/104 \\
-control/logeuclid-TS+LR & $-0.0229$ & 0.005 & 0.040 & $-0.271$ & 40/104 \\
-quantum/IQP-kernel-SVM & $-0.0368$ & \ensuremath{<}0.001 & 0.003 & $-0.381$ & 33/104 \\
-classical/logvar+LDA & $-0.0443$ & \ensuremath{<}0.001 & 0.007 & $-0.362$ & 40/104 \\
-quantum/Bures-RBF-SVM & $-0.0519$ & \ensuremath{<}0.001 & 0.005 & $-0.390$ & 36/104 \\
-quantum/QRE-RBF-SVM & $-0.0530$ & \ensuremath{<}0.001 & 0.003 & $-0.394$ & 36/104 \\
-quantum/HS-RBF-SVM & $-0.0650$ & \ensuremath{<}0.001 & \ensuremath{<}0.001 & $-0.457$ & 34/104 \\
-quantum/Fidelity-SVM & $-0.0755$ & \ensuremath{<}0.001 & \ensuremath{<}0.001 & $-0.518$ & 34/104 \\
-quantum/HS-overlap-SVM & $-0.0870$ & \ensuremath{<}0.001 & \ensuremath{<}0.001 & $-0.578$ & 29/104 \\
+CSP\,+\,LDA & $+0.0116$ & 0.048 & 0.334 & $+0.168$ & 53/104 \\
+TS\,+\,RBF-SVM & $-0.0006$ & 0.520 & 0.814 & $-0.011$ & 47/104 \\
+PCA-matched-linear & $-0.0122$ & 0.407 & 0.814 & $-0.144$ & 50/104 \\
+MDM & $-0.0144$ & 0.192 & 0.767 & $-0.189$ & 46/104 \\
+CNOT-kernel-SVM & $-0.0153$ & 0.140 & 0.698 & $-0.182$ & 44/104 \\
+PCA-matched-RBF & $-0.0168$ & 0.116 & 0.696 & $-0.196$ & 39/104 \\
+IQP-no-entangle & $-0.0168$ & 0.194 & 0.767 & $-0.192$ & 45/104 \\
+logeuclid-TS\,+\,LR & $-0.0229$ & 0.005 & 0.040 & $-0.271$ & 40/104 \\
+IQP-kernel-SVM & $-0.0368$ & \ensuremath{<}0.001 & 0.003 & $-0.381$ & 33/104 \\
+logvar\,+\,LDA & $-0.0443$ & \ensuremath{<}0.001 & 0.007 & $-0.362$ & 40/104 \\
+Bures-RBF-SVM & $-0.0519$ & \ensuremath{<}0.001 & 0.005 & $-0.390$ & 36/104 \\
+QRE-RBF-SVM & $-0.0530$ & \ensuremath{<}0.001 & 0.003 & $-0.394$ & 36/104 \\
+HS-RBF-SVM & $-0.0650$ & \ensuremath{<}0.001 & \ensuremath{<}0.001 & $-0.457$ & 34/104 \\
+Fidelity-SVM & $-0.0755$ & \ensuremath{<}0.001 & \ensuremath{<}0.001 & $-0.518$ & 34/104 \\
+HS-overlap-SVM & $-0.0870$ & \ensuremath{<}0.001 & \ensuremath{<}0.001 & $-0.578$ & 29/104 \\
 \hline
 \end{tabular}
 \end{table}

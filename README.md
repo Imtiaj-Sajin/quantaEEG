@@ -37,8 +37,8 @@ reference-frame ones move by 1e-15.
 **2. Fixing the frame produces a large, real gain, and it is not quantum.**
 Referring every state to a label-free reference state makes the quantum kernels
 exactly congruence-invariant (proposition and machine-precision check in
-`src/qeeg/reference.py`). Accuracy rises by 0.06 to 0.11 on PhysioNet and the
-headline comparison reverses: the quantum kernels now appear to beat the
+`src/qeeg/reference.py`). Accuracy rises by 0.064 to 0.102 on PhysioNet (all five kernels, n = 104)
+and the headline comparison reverses: the quantum kernels now appear to beat the
 classical baselines. Published as-is, that would be a quantum-advantage paper.
 
 **3. The control kills it.** `control/riemann-kernel-SVM` is a classical
@@ -52,7 +52,8 @@ is quantum.
 
 **4. Entanglement makes things worse, measurably.** Deleting the entanglers
 from the circuit kernels *slows* the concentration collapse: entangled IQP
-kernels lose Gram variance 2.5 times faster per qubit than the product version.
+kernels lose Gram variance 2.7 times faster per qubit than the product version
+(slopes -0.86 against -0.32 per qubit, n = 104).
 This supplies a mechanism for a result other groups have reported empirically.
 
 **5. One regime does favour the quantum side.** With few calibration trials,

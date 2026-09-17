@@ -49,6 +49,19 @@ def esc(s: str) -> str:
              .replace("#", r"\#"))
 
 
+def pretty(s: str) -> str:
+    """Typeset a pipeline name for a table.
+
+    The internal identifiers carry their suite as a prefix, "classical/TS+LR".
+    That prefix is what the Group column already says, so printing both made
+    every table read like a dump of the registry rather than a table. The name
+    also needs thin spaces around "+", which LaTeX sets far too tightly in an
+    upright run of capitals.
+    """
+    s = s.split("/", 1)[-1]
+    return esc(s).replace("+", r"\,+\,")
+
+
 def paired(per: pd.DataFrame, a: str, b: str) -> dict:
     x, y = per[a], per[b]
     m = x.notna() & y.notna()
@@ -104,7 +117,7 @@ hyperparameter search. Rows are ordered by accuracy.}
 Pipeline & Group & Accuracy & SD & AUC & Runtime (s) \\
 \hline""")
     for _, r in summary.sort_values("acc_mean", ascending=False).iterrows():
-        name = esc(r["pipeline"])
+        name = pretty(r["pipeline"])
         best = r["acc_mean"] == summary["acc_mean"].max()
         acc = f"\\textbf{{{r['acc_mean']:.3f}}}" if best else f"{r['acc_mean']:.3f}"
         out.append(
@@ -125,7 +138,7 @@ def table_tests(tests: pd.DataFrame, out: list[str]) -> None:
     out.append(r"""
 %% ---------------------------------------------------------------- Table 2
 \begin{table}[htbp]
-\caption{\label{tab:tests}Paired comparisons against the """ + esc(REFERENCE) + r"""
+\caption{\label{tab:tests}Paired comparisons against the """ + pretty(REFERENCE) + r"""
 reference across subjects (Wilcoxon signed-rank, two-sided). $\Delta$ is the
 mean per-subject accuracy difference; $d_z$ is the paired effect size;
 $p_{\mathrm{Holm}}$ is corrected across the whole family of comparisons. """ + survive + r"""}
@@ -135,7 +148,7 @@ Pipeline & $\Delta$ accuracy & $p$ & $p_{\mathrm{Holm}}$ & $d_z$ & Better in \\
 \hline""")
     for _, r in tests.sort_values("delta_acc", ascending=False).iterrows():
         out.append(
-            f"{esc(r['pipeline'])} & ${r['delta_acc']:+.4f}$ & {fmt_p(r['p_value'])} & "
+            f"{pretty(r['pipeline'])} & ${r['delta_acc']:+.4f}$ & {fmt_p(r['p_value'])} & "
             f"{fmt_p(r['p_holm'])} & ${r['cohens_d']:+.3f}$ & "
             f"{int(r['n_better'])}/{int(r['n_subjects'])} \\\\"
         )
@@ -150,12 +163,21 @@ def table_key(per: pd.DataFrame, out: list[str]) -> None:
              if a in per.columns and b in per.columns]
     sig = [label for label, s in stats if s["p"] < 0.05]
     n = stats[0][1]["n"] if stats else 0
+    # The verdict has to read correctly at every count, including the two ends.
+    # It previously appended "the others are not" unconditionally, so with all
+    # three contrasts significant the caption named all three and then referred
+    # to others that did not exist.
     if not sig:
         verdict = f"No contrast is statistically significant at $n={n}$."
+    elif len(sig) == len(stats):
+        verdict = (f"All {len(stats)} contrasts are significant at $p<0.05$ "
+                   f"with $n={n}$.")
     else:
         names = ", ".join(x.replace("vs.\\ ", "versus ") for x in sig)
-        verdict = (f"Significant at $p<0.05$ with $n={n}$: {names}; the others "
-                   "are not.")
+        rest = len(stats) - len(sig)
+        verdict = (f"Significant at $p<0.05$ with $n={n}$: {names}. The "
+                   f"remaining {'contrast is' if rest == 1 else f'{rest} are'} "
+                   f"not.")
     out.append(r"""
 %% ---------------------------------------------------------------- Table 3
 \begin{table}[htbp]
@@ -354,7 +376,7 @@ def main(argv=None) -> int:
         summary_b = pd.read_csv(bci_sum)
         per_b = (df_b.groupby(["pipeline", "subject"])["accuracy"]
                  .mean().unstack("pipeline"))
-        ct.table_bci(summary_b, summary, out, esc, GROUP_LABEL)
+        ct.table_bci(summary_b, summary, out, pretty, GROUP_LABEL)
         ct.table_cross(per, per_b, KEY_COMPARISONS, paired, fmt_p, out)
         ct.cross_macros(summary, summary_b, per, per_b, df_b,
                         KEY_COMPARISONS, paired, fmt_p, mac)

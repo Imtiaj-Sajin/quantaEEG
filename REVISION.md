@@ -13,7 +13,7 @@ compute to finish), **decision** (needs the corresponding author).
 
 | # | Item | Status |
 |---|------|--------|
-| 1 | Run the full PhysioNet cohort (~104 subjects, not the first 30) at 3 and 4 qubits, and use one fixed subject set for every Gram-variance analysis | **running** |
+| 1 | Run the full PhysioNet cohort (~104 subjects, not the first 30) at 3 and 4 qubits, and use one fixed subject set for every Gram-variance analysis | **done** |
 | 2 | Publish the hyperparameter grids: C ranges, bandwidth multipliers, PCA dimensions, angle scales, shrinkage, grid-point counts | **done** |
 | 3 | One enumerated definition of the core and extended suites; add QRE-RBF to the core table and figure; one fixed meaning of "best quantum" | **done** |
 | 4 | Holm-correct the frame-effect table (was 20 uncorrected paired Wilcoxon tests) | **done** |
@@ -63,8 +63,8 @@ would rather be told which section to cut than cut the cohort.
 
 | # | Item | Status |
 |---|------|--------|
-| 6 | Few-trial calibration sweep (10, 20, 40, 80, 160 training trials), quantum kernel versus twin, on the dataset where the reference state is worst estimated | **running** |
-| 7 | One more paradigm or class pair, e.g. four-class IV-2a, to show the invariance argument is not specific to left versus right | **queued** |
+| 6 | Few-trial calibration sweep (10, 20, 40, 80, 160 training trials), quantum kernel versus twin, on the dataset where the reference state is worst estimated | **done** |
+| 7 | One more paradigm or class pair, e.g. four-class IV-2a, to show the invariance argument is not specific to left versus right | **done**, 9 of 9 subjects; not yet written into the manuscript |
 | 8 | State the proposition's scope: per-subject and per-session whitening extends it to subject- and session-specific congruence, and the residual is what the transfer sections test empirically | **done** |
 
 Item 6 detail. `src/qeeg/calibration.py`. This is the experiment the paper's
@@ -157,3 +157,45 @@ they belong to; the macros keep the figures right, but the sentence structure
 ("the first ... the second ...") assumes the count and has to be reread by a
 human. Then read the rendered PDF end to end, which `check_tex.py` cannot do
 for you.
+
+
+## Added 2026-09-17, after the corresponding author read the rebuilt draft
+
+Three criticisms, all fair, all acted on:
+
+* **Recent literature was thin.** The submitted draft engaged with two
+  quantum-EEG papers. The bibliography now carries seven more, and the
+  introduction argues against two of them specifically rather than citing a
+  list: QEEGNet (IEEE SiPS 2024), whose reported gain is 0.381 against EEGNet's
+  0.377 on four-class IV-2a, over one classical architecture and far below what
+  filter-bank and Riemannian pipelines reach; and Carter et al (Mayo Clinic
+  Proceedings 2026), who reach 0.898 on binary motor imagery with digitised
+  counterdiabatic quantum features and report, to their credit, that those
+  features change only 244 of 30,590 classifications and do not reach
+  significance over their own classical model overall. Both were read in full;
+  the other five are cited as evidence of the literature's extent, which is all
+  the text claims of them. The QEEGNet entry also cited the preprint rather
+  than the published version, which is now fixed.
+
+* **Tables read like a dump of the code.** Every pipeline name printed its
+  registry prefix, so the first column of every table repeated the word that
+  the Group column already carried. Names are now typeset (`CSP + LDA`, not
+  `classical/CSP+LDA`), and the IV-2a table gets its Group column back, which
+  had been dropped only because the prefixed names overflowed the text block.
+
+* **A caption stated something false.** The pre-specified comparison table
+  appended "the others are not" unconditionally, so with all three contrasts
+  significant it named all three and then referred to others that do not exist.
+
+### Still open from that review
+
+* **Table 3 duplicates Table 5.** The three pre-specified comparisons on
+  PhysioNet appear in full in the both-datasets table two pages later. One of
+  them should go, and the early one is the candidate: its three numbers are
+  already macros and can be stated in the prose. This removes a table, removes
+  the duplication and shortens the paper, but it changes the structure of the
+  results section, so it waits for the corresponding author.
+* **The four-class IV-2a result is computed but not written up.** Nine subjects,
+  extended suite, sitting in `results/raw_folds_bci4_b0?.csv`.
+* **A full read of the rendered PDF.** The static checker cannot see rendering
+  problems, and this draft has not yet been read end to end at its new length.

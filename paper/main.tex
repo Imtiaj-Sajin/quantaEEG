@@ -139,18 +139,43 @@ methodological families across public motor-imagery datasets; Lotte \textit{et a
 \cite{lotte2018} and Yger \textit{et al} \cite{yger2017} review the field and the
 Riemannian branch of it respectively.
 
-In parallel, a growing literature applies quantum machine learning (QML) to
-EEG, typically reporting improvements over a classical comparator
-\cite{qeegnet2024,eswa2024}. These reports share a recurring methodological
-pattern that makes them difficult to interpret. Classical baselines are often
-weak or untuned: plain support vector machines on band power rather than the
+In parallel, a fast-growing literature applies quantum machine learning (QML)
+to EEG, typically reporting improvements over a classical comparator. It now
+spans motor imagery \cite{qeegnet2024,eswa2024,lalawat2025,kaur2026},
+biosignal encoding \cite{koikeakino2022}, drowsiness detection
+\cite{lins2024}, clinical classification \cite{aksoy2024} and, most recently,
+a hybrid quantum-classical decoder evaluated on real quantum hardware in a
+clinical journal \cite{carter2026}; a systematic review of QML across digital
+health appeared in 2025 \cite{gupta2025}.
+
+These reports share a methodological pattern that makes them difficult to
+interpret, and two recent examples show it is not a matter of care but of
+missing controls. QEEGNet \cite{qeegnet2024} appends a variational circuit to
+EEGNet and reports a mean test accuracy of $0.381$ against EEGNet's $0.377$ on
+four-class IV-2a: an improvement, but over one classical architecture, at an
+absolute level far below what filter-bank and Riemannian pipelines reach on
+that dataset, so the comparison cannot establish that the quantum layer helps
+relative to the state of the art. Carter \textit{et al} \cite{carter2026}
+combine a spatial-temporal deep network with digitised counterdiabatic quantum
+features and reach $0.898$ accuracy on binary motor imagery across
+51~participants, which is genuinely strong; and they report, to their credit,
+that the quantum features change the classification of only 244 of 30{,}590
+trials and that the improvement over their own classical model does not reach
+significance overall ($p=0.073$ by McNemar's test), reaching it only in a
+younger subgroup. Both results are consistent with a quantum component that is
+doing little, and neither study is designed to tell the difference.
+
+The pattern behind this is threefold. Classical baselines are often weak or
+untuned: plain support vector machines on band power rather than the
 Riemannian or filter-bank CSP methods that define the state of the art.
 Hyperparameters are frequently optimised for the quantum model alone. Most
 critically, two controls are almost universally absent: an \emph{entanglement
 ablation}, which tests whether the quantum resource contributes anything at
 all, and a \emph{dimension-matched classical comparator}, without which an
 apparent quantum effect is confounded with the dimensionality reduction applied
-before encoding.
+before encoding. This paper adds a third control, a comparator that differs
+from the quantum kernel in metric alone, and it is that one that turns out to
+be decisive.
 
 Quantum kernels are the natural object of study here. Supervised quantum
 models with fixed encodings are kernel methods \cite{schuld2019,

@@ -478,7 +478,7 @@ Pipeline & Sensor & Reference & $\Delta$ & $p$ & Better \\
         from scipy.stats import wilcoxon
         p = float(wilcoxon(diff).pvalue)
         out.append(
-            f"{esc(pipe)} & {y.mean():.3f} & {x.mean():.3f} & "
+            f"{esc(pipe.split(chr(47), 1)[-1])} & {y.mean():.3f} & {x.mean():.3f} & "
             f"${diff.mean():+.4f}$ & {fmt_p(p)} & "
             f"{int((diff > 0).sum())}/{len(diff)} \\\\"
         )
@@ -530,7 +530,7 @@ Pipeline & Sensor & Reference & $\Delta$ & $p$ & Better \\
         if (diff > 0).all():
             better = f"\\textbf{{{better}}}"
         out.append(
-            f"{esc(pipe)} & {y.mean():.3f} & {x.mean():.3f} & "
+            f"{esc(pipe.split(chr(47), 1)[-1])} & {y.mean():.3f} & {x.mean():.3f} & "
             f"${diff.mean():+.4f}$ & {fmt_p(p)} & {better} \\\\"
         )
     out.append(r"""\hline
