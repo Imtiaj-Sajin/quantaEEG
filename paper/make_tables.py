@@ -399,7 +399,10 @@ def main(argv=None) -> int:
     out: list[str] = list(header)
     table_main(summary, out)
     table_tests(tests, out)
-    table_key(per, out)
+    # table_key is deliberately not emitted: its three rows are the
+    # PhysioNet column of the both-datasets table two pages later, and
+    # printing them twice is duplication a referee would notice. The
+    # prose states all three from macros and points at that table.
 
     # Supplementary tables, each in its own file so supplementary.tex decides
     # their order. The main text refers to them through xr as table S<n>.

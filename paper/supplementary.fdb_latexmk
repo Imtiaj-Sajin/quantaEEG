@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1789604421.15756 "supplementary.tex" "supplementary.pdf" "supplementary" 1789604422.06708 0
+["pdflatex"] 1789605432.1271 "supplementary.tex" "supplementary.pdf" "supplementary" 1789605432.94842 0
   "../results/figures_paper/fig10_crosssession_sweep.pdf" 1789604417.54738 27849 5862b03cd8e2ded694c6b284abab0017 ""
   "../results/figures_paper/fig11_calibration.pdf" 1789604418.17945 37538 a29a7b3af8f0f4749b84e98edaab047a ""
   "../results/figures_paper/fig3_paired_differences.pdf" 1788367094.02663 36948 baca03aadf5cc990582bc23d1f7c200b ""
@@ -105,14 +105,14 @@
   "C:/Users/User/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/Users/User/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "iopjournal.cls" 1788618885.27239 5945 a926ce0cbf85e8cf61e19f761ed71d40 ""
-  "macros_auto.tex" 1789604335.83841 13603 730f03a45d31901e524faada85ffbb71 ""
+  "macros_auto.tex" 1789605430.97886 13680 571cd0353f8c9a54481d9aca71f97b33 ""
   "orcid.pdf" 1788618885.27388 6631 67163638139187d60c4195750365b265 ""
-  "supp_table_concentration_auto.tex" 1789604335.83841 1210 7607d39b1c0e4ee3111b4f7ffd242195 ""
-  "supp_table_grids_auto.tex" 1789604335.83841 2421 93120536f112c32aeb69928dac4353b9 ""
-  "supp_table_shots_auto.tex" 1789604335.83841 1550 75b249f71b2dbf24eb2650c6308bcd28 ""
-  "supp_table_sweep_auto.tex" 1789604335.83841 1845 f9b76e5495c5d9c61d5fa1e0e3102d80 ""
-  "supplementary.aux" 1789604421.77601 9896 7fec77857da9a27500794cc12dee85a5 "pdflatex"
-  "supplementary.out" 1789604421.78407 1463 96835302bd9cb38f99320ef824a18dd4 "pdflatex"
+  "supp_table_concentration_auto.tex" 1789605430.97987 1210 7607d39b1c0e4ee3111b4f7ffd242195 ""
+  "supp_table_grids_auto.tex" 1789605430.97987 2421 93120536f112c32aeb69928dac4353b9 ""
+  "supp_table_shots_auto.tex" 1789605430.97987 1550 75b249f71b2dbf24eb2650c6308bcd28 ""
+  "supp_table_sweep_auto.tex" 1789605430.97987 1845 f9b76e5495c5d9c61d5fa1e0e3102d80 ""
+  "supplementary.aux" 1789605432.67584 9896 7fec77857da9a27500794cc12dee85a5 "pdflatex"
+  "supplementary.out" 1789605432.68394 1463 96835302bd9cb38f99320ef824a18dd4 "pdflatex"
   "supplementary.tex" 1789590192.27278 4590 a31ddda4ddb942760db36ee2c09bfbba ""
   (generated)
   "supplementary.aux"

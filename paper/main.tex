@@ -108,10 +108,10 @@ $\HeadRefDelta$ against it. The twin shows this is not quantum. Across
 \EquivNSettings{} settings (\EquivNDatasets{} datasets, \EquivNRegisters{}
 register sizes, within-subject, cross-subject and cross-session evaluation)
 two one-sided tests place the two families within $\pm\EquivWorstBound$
-accuracy in all \EquivN{} comparisons. Under two further partitions the
-bandwidth-tuned kernels fall behind the twin; the one comparison favouring a
-quantum kernel, fidelity on the \ChoNSubjects-subject Cho2017 by one point,
-stays inside the margin and does not beat the best classical pipeline.
+accuracy in all \EquivN{} comparisons. \EquivNZeroExcluded{} of those
+intervals exclude zero, \EquivNZeroExclQuantum{} favouring a quantum kernel and
+\EquivNZeroExclTwin{} the twin; every one stays inside the margin, and no
+quantum kernel beats the best classical pipeline in any setting.
 
 \textit{Significance.}
 We find no quantum advantage and trace the apparent one to an invariance
@@ -164,6 +164,14 @@ trials and that the improvement over their own classical model does not reach
 significance overall ($p=0.073$ by McNemar's test), reaching it only in a
 younger subgroup. Both results are consistent with a quantum component that is
 doing little, and neither study is designed to tell the difference.
+
+This is not a complaint that the field is careless; it is a structural problem
+with the question. Schuld and Killoran \cite{schuld2022advantage} argue that
+chasing quantum advantage as a headline is the wrong goal for quantum machine
+learning precisely because it licenses comparisons the experiment cannot
+support, and the recommendation this paper ends with is the constructive form
+of that argument: report what the quantum structure contributes against a
+comparator that differs from it in one respect only.
 
 The pattern behind this is threefold. Classical baselines are often weak or
 untuned: plain support vector machines on band power rather than the
@@ -665,7 +673,7 @@ comparison of grand means) is the appropriate inference.
 Two points about the correction structure, since several families appear
 below. Holm correction is applied \emph{within} each family, and the families
 are the pre-specified ones: the suite-wide comparison against the reference
-pipeline, the pre-specified contrasts of table~\ref{tab:key}, and the
+pipeline, the pre-specified contrasts of table~\ref{tab:cross}, and the
 metric-matched twin comparisons. These were fixed by the design of the study,
 one family per question asked, and not selected after inspecting
 results; no comparison reported here was chosen because it was significant. We
@@ -716,11 +724,10 @@ paradigm using the full 64-channel montage, against which our
 \BestClassicalAcc{} on eight channels is the expected reduction, not a sign of
 a mistuned baseline.
 
-\input{tab_key_auto}
 The primary pre-specified comparison, best classical versus best quantum, is
 significant: \BestClassicalName{} exceeded \BestQuantumName{} by
 $\Delta=\PrimaryDelta$ ($p\PrimaryP$, $d_z=\PrimaryDz$), and was superior in
-\PrimaryBetter{} subjects (Table~\ref{tab:key}).
+\PrimaryBetter{} subjects (Table~\ref{tab:cross}).
 
 \input{tab_tests_auto}
 Against the Riemannian tangent-space reference (Table~\ref{tab:tests},
@@ -744,7 +751,7 @@ hyperparameter search.}
 \subsection{The controls: entanglement and dimension matching}
 
 Both control ablations point in the direction predicted by \cite{bowles2024},
-but neither reaches significance on accuracy (Table~\ref{tab:key}). Removing
+but neither reaches significance on accuracy (Table~\ref{tab:cross}). Removing
 entanglement changed accuracy by $\AblationDelta$ ($p\AblationP$, superior in
 \AblationBetter{} subjects); the dimension-matched linear SVM exceeded the IQP
 circuit kernel by $\DimDelta$ ($p\DimP$).
@@ -1002,22 +1009,31 @@ three-qubit suite under two more. The frame effect reproduces
 (\SeedFrameMin{} to \SeedFrameMax{} over all \SeedN{} partitions), and so
 does the uncontrolled reversal: the best reference-frame kernel leads the
 best classical baseline by \SeedHeadRefMin{} to \SeedHeadRefMax{} in
-\SeedHeadReversals{} of \SeedN{} partitions. The twin comparison is less
-forgiving than the primary partition suggests, and in one direction only.
-The parameter-free fidelity and Hilbert--Schmidt kernels stay tied to the
-twin under every partition (\SeedOverlapDeltaMin{} to
-\SeedOverlapDeltaMax, smallest $p\SeedOverlapMinP$), but the three
-bandwidth-parameterised kernels, which carry an extra hyperparameter to be
-tuned on \NTrials{} trials, fall behind it by up to \SeedRbfWorst{} with a
-smallest $p\SeedRbfMinP$; \SeedSigCount{} of the \SeedSigN{} comparisons
-across the three partitions are significant at $0.05$, \SeedSigFavourTwin{}
-in the twin's favour and \SeedSigFavourQuantum{} in the quantum kernel's.
-The equivalence bound for this dataset widens accordingly, from
-\EquivWorstBound{} at the primary partition to \SeedWorstBound{} over all
-three. We therefore state the PhysioNet result as an inequality rather than
-an equivalence: the quantum kernels match the classical twin at best, and a
-bandwidth to tune on \NTrials{} trials costs them a few points against it.
-Nothing in the repetitions moves in the quantum direction.
+\SeedHeadReversals{} of \SeedN{} partitions. The twin comparison, however,
+separates by kernel family rather than by partition, and it moves in both
+directions. The parameter-free kernels run \SeedOverlapDeltaMin{} to
+\SeedOverlapDeltaMax{} against the twin, the fidelity kernel leading it
+significantly in two of the \SeedN{} partitions (smallest
+$p\SeedOverlapMinP$), while the three bandwidth-parameterised kernels, which
+carry an extra hyperparameter to be tuned on \NTrials{} trials, fall behind by
+up to \SeedRbfWorst{} (smallest $p\SeedRbfMinP$). Of the \SeedSigN{}
+comparisons across the three partitions, \SeedSigCount{} are significant at
+$0.05$: \SeedSigFavourQuantum{} in the quantum kernel's favour and
+\SeedSigFavourTwin{} in the twin's. The equivalence bound for this dataset
+widens from \EquivWorstBound{} at the primary partition to \SeedWorstBound{}
+over all three.
+
+We therefore state the PhysioNet result as a two-sided inequality rather than
+an equivalence, and the sign depends on which kernel is asked. A
+parameter-free quantum divergence is slightly ahead of the affine-invariant
+metric here, by about one accuracy point, and the same kernel is ahead by
+about the same amount on Cho2017, reported below; a bandwidth that
+must be tuned on \NTrials{} trials costs a kernel rather more than that
+against the same twin. Both effects are inside the $\pm\EquivMargin$ margin,
+neither changes which pipeline a practitioner should reach for, and we draw no
+conclusion about quantum structure from either: what separates fidelity from
+the Bures and relative-entropy kernels here is a hyperparameter, not a
+quantum resource.
 
 We stress the counterfactual. Without this control, the same experiments
 support the claim that quantum kernels outperform tuned classical baselines at
@@ -1108,9 +1124,11 @@ the pooled trials of all others.
 
 The invariance argument makes a sharp prediction here. Inter-subject shift is
 dominated by congruence, so in the sensor frame the quantum distances must be
-worse than the affine-invariant Riemannian one, and in the reference frame they
-can at best equal it: parity is the ceiling the algebra permits, and no
-experiment can exceed it. Both halves hold. Every method gains from
+worse than the affine-invariant Riemannian one, and in the reference frame the
+congruence part of the shift can no longer separate them: parity is what the
+algebra predicts once the invariance is shared, and any residual difference
+must come from the part of the shift that is not a congruence, which the
+proposition does not cover. Both halves hold. Every method gains from
 recentring, the non-invariant quantum kernels gaining most; and in the
 reference frame the best method, \TransferBest{} at \TransferBestAcc{}, is not
 distinguishable from any other. All nine geometries fall within
@@ -1243,6 +1261,16 @@ presenting the stronger test as though it had been the plan. What the
 experiment settles is the paper's own open question: the parity reported
 throughout is not universal, and the exception lies exactly where the geometry
 predicted it would.
+
+It is worth noting that the same shape of result has just been reported in a
+domain with no connection to EEG. Benchmarking quantum and classical models for
+compound potency prediction across ten targets, Garg and Garg \cite{garg2026}
+find no overall separation between the best quantum and the best classical
+model (Wilcoxon $p=0.189$), with quantum kernels holding a marginal edge
+confined to the sparse, data-poor targets. Two independent studies, different
+data, different quantum models, converging on parity overall and a small
+quantum edge only where training data is scarce, is a more useful signal about
+where these methods stand than either result alone.
 
 
 \subsection{Finite-shot estimation}
@@ -1502,9 +1530,10 @@ It would be straightforward to stop there and report a quantum advantage. The
 control that prevents this, a classical SPD kernel identical in every respect
 but the metric, shows that across \EquivNSettings{} settings the quantum
 kernels stay within \EquivWorstBound{} of their classical twins in both
-directions: behind under other partitions of PhysioNet, one point ahead for
-the fidelity kernel on the largest dataset, and never ahead of the best
-classical pipeline. Parity holds against filter-bank CSP, in
+directions: the bandwidth-tuned kernels behind under other partitions of
+PhysioNet, the parameter-free fidelity kernel about one accuracy point ahead
+on PhysioNet and again on the largest dataset, and none of them ever ahead of
+the best classical pipeline. Parity holds against filter-bank CSP, in
 cross-subject transfer, where all nine geometries fall within
 \TransferSpread, and in cross-session transfer, the setting we had named in
 advance as the most likely to show a real quantum effect. The improvement is

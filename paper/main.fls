@@ -224,11 +224,6 @@ INPUT .\tab_main_auto.tex
 INPUT .\tab_main_auto.tex
 INPUT .\tab_main_auto.tex
 INPUT tab_main_auto.tex
-INPUT .\tab_key_auto.tex
-INPUT .\tab_key_auto.tex
-INPUT .\tab_key_auto.tex
-INPUT .\tab_key_auto.tex
-INPUT tab_key_auto.tex
 INPUT .\tab_tests_auto.tex
 INPUT .\tab_tests_auto.tex
 INPUT .\tab_tests_auto.tex

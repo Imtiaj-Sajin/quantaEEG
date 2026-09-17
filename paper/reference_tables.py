@@ -376,6 +376,12 @@ def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
         "EquivFailQuantum": f"{int((d[~d.equivalent]['mean'] > 0).sum())}",
         "EquivFailClassical": f"{int((d[~d.equivalent]['mean'] < 0).sum())}",
         "EquivNZeroExcluded": f"{len(zero_excl)}",
+        # Split by direction. The abstract used to assert that exactly one
+        # interval excluded zero and that it favoured a quantum kernel. At 104
+        # subjects three do, and one of them favours the twin, so the claim had
+        # become false in the most read paragraph of the paper.
+        "EquivNZeroExclQuantum": f"{int((zero_excl['mean'] > 0).sum())}",
+        "EquivNZeroExclTwin": f"{int((zero_excl['mean'] < 0).sum())}",
     }
     # The number of settings, as a word, so that "five settings" in the prose
     # cannot go stale when a setting is added.

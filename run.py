@@ -263,10 +263,25 @@ def cmd_paper(args) -> int:
     if args.pdf:
         import os
         env = dict(os.environ, BIBINPUTS=".", BSTINPUTS=".", TEXINPUTS=".")
+        import shutil
         for target in ("supplementary.tex", "main.tex"):
             print(f"  $ latexmk -pdf {target}")
             rc |= subprocess.run(["latexmk", "-pdf", "-interaction=nonstopmode",
                                   target], cwd=ROOT / "paper", env=env).returncode
+        # latexmk is run in paper/ rather than with -outdir, because -outdir
+        # hits the BibTeX path trap documented in paper/README.md and silently
+        # produces an empty bibliography. But build/main.pdf is the file that
+        # is tracked in git and therefore the one anyone actually opens, so it
+        # must be updated here. It went stale for a day without this: readers
+        # were looking at a 24-page, 38-reference build while the real one had
+        # moved on to 27 and 45.
+        built = ROOT / "paper" / "build"
+        built.mkdir(parents=True, exist_ok=True)
+        for name in ("main.pdf", "supplementary.pdf"):
+            src = ROOT / "paper" / name
+            if src.exists():
+                shutil.copy2(src, built / name)
+                print(f"  copied {name} -> paper/build/{name}")
     return rc
 
 
