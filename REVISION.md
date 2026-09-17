@@ -64,7 +64,7 @@ would rather be told which section to cut than cut the cohort.
 | # | Item | Status |
 |---|------|--------|
 | 6 | Few-trial calibration sweep (10, 20, 40, 80, 160 training trials), quantum kernel versus twin, on the dataset where the reference state is worst estimated | **done** |
-| 7 | One more paradigm or class pair, e.g. four-class IV-2a, to show the invariance argument is not specific to left versus right | **done**, 9 of 9 subjects; not yet written into the manuscript |
+| 7 | One more paradigm or class pair, e.g. four-class IV-2a, to show the invariance argument is not specific to left versus right | **done**, and written up as section 3.9 |
 | 8 | State the proposition's scope: per-subject and per-session whitening extends it to subject- and session-specific congruence, and the residual is what the transfer sections test empirically | **done** |
 
 Item 6 detail. `src/qeeg/calibration.py`. This is the experiment the paper's
@@ -199,3 +199,45 @@ Three criticisms, all fair, all acted on:
   extended suite, sitting in `results/raw_folds_bci4_b0?.csv`.
 * **A full read of the rendered PDF.** The static checker cannot see rendering
   problems, and this draft has not yet been read end to end at its new length.
+
+
+## Status as of 2026-09-17, after the full reviewer pass
+
+Every Tier 1 and Tier 2 item is done and written into the manuscript. The
+compute is finished; no job is queued or running and the scheduled tasks have
+been removed.
+
+Two items still need the corresponding author, and nothing else does.
+
+1. **The title.** The referee suggested, without requiring, something less
+   rhetorical than "An Invariance Mismatch Masquerading as Advantage". Three
+   alternatives are listed above. Only the corresponding author decides this.
+2. **`unding{}`** states that no specific grant was received. Correct it if
+   that is wrong; IOP parse that section.
+
+Item 5, length, is the one place we deliberately did not do what the referee
+asked. The manuscript is 28 pages against a request for 15 to 17, and it is
+longer than the reviewed version despite four tables and three figures moving
+to supplementary, because the cohort grew three and a half times and two
+requested experiments were added. The response letter should say so plainly and
+invite the editor to name a section to cut rather than cutting the cohort.
+
+### What the reviewer pass found and fixed
+
+Recorded because these are the failure modes to check for again after any
+future change:
+
+* Four statements in the discussion and limitations still described the study
+  as it stood before the four-class and calibration experiments existed,
+  including one that called the calibration regime "untried".
+* The abstract asserted that exactly one equivalence interval excluded zero and
+  that it favoured a quantum kernel; three do, and one favours the twin.
+* Methods said "the first 104 eligible subjects" when 104 is every eligible
+  subject, which reads like the arbitrary selection the referee objected to.
+* Figures 1 to 4 had never been regenerated for the 104-subject cohort, so the
+  tables were at n=104 while the figures plotted n=30 from the same files.
+* `submission.zip` shipped a zero-byte bibliography, and `--check` could not
+  see it because latexmk reran BibTeX in the temp directory.
+* Six numbers in the concentration section were typed by hand and had gone
+  stale; they are macros now.
+* `results/n30/` held the current cohort under the old cohort's name.
