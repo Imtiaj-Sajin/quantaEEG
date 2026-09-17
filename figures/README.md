@@ -51,6 +51,13 @@ them.
 | `src/scene.py` | drawing primitives and the SVG exporter that both paths share |
 | `src/make_architecture.py` | builds the two-row alternative in `versions/` |
 | `src/drawio_to_pdf.py` | fallback: renders any `.drawio` to a single-page PDF |
+| `src/make_architecture_parts.py` | **experiment, not used by the paper yet:** the five small graphics inside `architecture.drawio` (EEG traces, covariance, density matrix, kernel matrix, SVM view), computed from PhysioNet subject 1 with no text, into `experiments/architecture_parts/` as PNG, SVG and PDF, plus two text-free colour bars, and the IQP and SWAP-test circuits (both checked numerically before drawing). Its docstring says exactly what each panel is |
+| `src/make_pipeline_diagram.py` | **experiment:** builds `experiments/architecture_parts/quantum_kernel_eeg_pipeline_final.drawio` from those panels: one front end, three lanes (density-matrix kernels, circuit kernels, classical twin) merging into one kernel matrix and SVM. Export with diagrams.net or `draw.io --export --format pdf --crop` |
+| `src/make_pipeline_v2_diagram.py` | superseded by the above; patched the author's first draft |
+| `src/make_pipeline_figures.py` | **experiment, the current proposal:** two figures in place of the single diagram. `fig_pipeline_overview` is one line from EEG to the predicted class with a "Kernel families" block; `fig_kernel_families` opens that block into its numbered lanes (1 density-matrix, 2 circuit, 3 classical twin), from C in to K out |
+
+`experiments/` holds work in progress that the manuscript does not read. Move
+a result out of it only when the paper starts using it.
 
 The fallback exists because an earlier export declared a 1560 by 400 page while
 the drawing spanned about 840 by 750 at an offset, so diagrams.net produced four

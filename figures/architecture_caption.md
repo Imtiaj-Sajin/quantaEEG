@@ -7,8 +7,9 @@ The figure carries the structure; everything quantitative lives here.
 **(a) EEG.** Three public motor-imagery datasets are reduced to one common
 representation: PhysioNet EEGMMIDB (104 subjects, 45 trials each), BCI
 Competition IV 2a (9 subjects, 288 trials, two sessions) and Cho2017 (52
-subjects, 200 trials). Each is band-pass filtered to 8 to 30 Hz and cut into
-one-second epochs over the same eight sensorimotor electrodes (FC3, FCz, FC4,
+subjects, 200 trials). Each is band-pass filtered to 8 to 30 Hz and cut to its
+dataset's standard motor-imagery window (0.5 to 3.5 s after the cue on
+PhysioNet) over the same eight sensorimotor electrodes (FC3, FCz, FC4,
 C3, Cz, C4, CP3, CP4, filled in the montage), so the register size is identical
 across datasets and the comparisons are like for like.
 
