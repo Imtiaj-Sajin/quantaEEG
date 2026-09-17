@@ -56,7 +56,8 @@ transfer, few-trial calibration, and registers from 3 to 6 qubits.
 | `figures/architecture.pdf` | vector, the version the manuscript includes |
 | `figures/architecture.svg` | intermediate, also usable directly |
 | `figures/architecture_preview.png` | raster, for checking the output |
-| `figures/src/drawio_to_pdf.py` | renders the .drawio to a single-page PDF |
+| `figures/architecture.pdf` | exported from diagrams.net; what the manuscript includes |
+| `figures/src/drawio_to_pdf.py` | fallback renderer, for when the export paginates |
 | `figures/src/scene.py` | the drawing primitives and the SVG exporter both paths share |
 | `figures/versions/architecture_tworow.*` | an alternative layout, kept in case it is wanted back |
 | `figures/src/make_architecture.py` | builds that alternative |
@@ -72,13 +73,31 @@ The editable source also ships inside `paper/build/submission.zip` as
 figure rather than being stuck with a flat PDF. IOP's upload rules allow only
 letters, digits and underscore in file names, which is why it is renamed.
 
-## Why draw.io's own PDF export is not used
+## How the PDF is produced
 
-The file declares a 1560 by 400 page while the drawing spans about 840 by 750
-at an offset of (1513, 831), so exporting from diagrams.net produced four page
-fragments with the figure cut across them. `drawio_to_pdf.py` reads the XML
-directly, crops to the drawing's bounding box and emits one page, which also
-keeps the PDF and the editable file from drifting apart.
+From diagrams.net's own export, which for v4 is correct: one page, 590 by
+523 pt, 276 vector drawings, no raster images, and Liberation Sans and DejaVu
+Sans both subset and embedded. That is publication-grade, so it is used as it
+comes.
+
+`figures/src/drawio_to_pdf.py` remains as a fallback. It reads a `.drawio`
+directly, resolves group offsets, crops to the drawing's bounding box and emits
+one page. It was written because the v3 file declared a 1560 by 400 page while
+the drawing spanned about 840 by 750 at an offset, so that export came out as
+four page fragments with the figure cut across them. If a future edit
+reintroduces that, run:
+
+```bash
+python figures/src/drawio_to_pdf.py figures/architecture.drawio     --out figures/architecture
+```
+
+Note that the fallback substitutes a superscript italic *T* for U+22A4 and a
+plain arrow for U+21A6, because Arial carries neither; diagrams.net's own
+export renders both correctly through Liberation Sans, which is one reason to
+prefer it.
+
+**After editing the figure, re-export the PDF.** The `.drawio` and the `.pdf`
+are two files, and nothing in the build checks that they agree.
 
 ## Why two rows
 
