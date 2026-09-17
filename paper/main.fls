@@ -205,13 +205,14 @@ INPUT ..\results\figures\architecture.pdf
 INPUT ..\results\figures\architecture.pdf
 INPUT ..\results\figures\architecture.pdf
 INPUT ..\results\figures\architecture.pdf
+INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmss8.tfm
+INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmtt8.tfm
 INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmss10.tfm
 INPUT ..\results\figures_paper\fig6_reference.pdf
 INPUT ..\results\figures_paper\fig6_reference.pdf
 INPUT ..\results\figures_paper\fig6_reference.pdf
 INPUT ..\results\figures_paper\fig6_reference.pdf
 INPUT ..\results\figures_paper\fig6_reference.pdf
-INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmss8.tfm
 INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmss8.tfm
 INPUT ..\results\figures_paper\fig5_circuits.pdf
 INPUT ..\results\figures_paper\fig5_circuits.pdf
@@ -364,6 +365,8 @@ INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm
 INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmti8.pfb
 INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmtt10.pfb
 INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmtt10.pfb
+INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmtt8.pfb
+INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmtt8.pfb
 INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\symbols\msam10.pfb
 INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\symbols\msam10.pfb
 INPUT C:\Users\User\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\symbols\msbm10.pfb

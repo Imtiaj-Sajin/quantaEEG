@@ -288,32 +288,35 @@ than merely cited.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{architecture.pdf}
-\caption{\label{fig:design}Study design, and where the control sits.
-\textbf{(a)}~Three public motor-imagery datasets, PhysioNet EEGMMIDB
+\caption{\label{fig:design}Study design, and where the control sits. Arrows
+give the order of processing: \textsf{EEG} to \textsf{State} to
+\textsf{Frame} to \textsf{Kernels} to \textsf{Evaluation}.
+\textsf{EEG}: three public motor-imagery datasets, PhysioNet EEGMMIDB
 (\NSubjects{} subjects, \NTrials{} trials), BCI Competition IV-2a
 (\BciNSubjects{} subjects, \BciNTrials{} trials, two sessions) and Cho2017
-(\ChoNSubjects{} subjects), reduced to the same eight sensorimotor electrodes,
-the same $8$--$30$\,Hz band and the same one-second window, so every
+(\ChoNSubjects{} subjects), reduced to the same eight sensorimotor electrodes
+(filled), the same $8$--$30$\,Hz band and the same one-second window, so every
 difference reported here is a property of the method and not of the
-preprocessing. \textbf{(b)}~Each trial becomes an $8\times8$ spatial
+preprocessing. \textsf{State}: each trial becomes an $8\times8$ spatial
 covariance $C$; divided by its trace it is a density matrix $\rho$ on
 $\log_2 8=3$ qubits, with no dimensionality reduction and no angle embedding.
-\textbf{(c)}~EEG's nuisances (electrode gain, head geometry, skull
+\textsf{Frame}: EEG's nuisances (electrode gain, head geometry, skull
 conductivity, source mixing) act by congruence $C\mapsto ACA^{\top}$. The
 density-matrix kernels are invariant only under the orthogonal subgroup in the
 sensor frame, and exactly invariant under the full group in the reference
 frame of (\ref{eq:refstate}), where $W=M^{-1/2}$ and the Fr\'echet mean $M$ is
 estimated label-free from training trials alone. Every suite is run in both
-frames. \textbf{(d)}~Four pipeline families under one protocol. The bracket
-marks the paper's central control: the classical Riemannian twin and the
-quantum kernels consume the same covariances, sit in the same support vector
-machine, receive the same tuning budget and are expressed in the same frame,
-so the only thing that differs between them is the metric.
-\textbf{(e)}~Nested cross-validation ($5$ folds $\times\,3$ repeats outer,
-$4$-fold inner, identical budget for every pipeline), paired per-subject
-Wilcoxon signed-rank with Holm correction inside each pre-specified family,
-and two one-sided tests for equivalence against the twin, across the five
-evaluation settings.}
+frames. \textsf{Kernels}: four pipeline families under one protocol. The
+bracket marks the paper's central control: the classical Riemannian twin and
+the quantum kernels consume the same covariances, sit in the same support
+vector machine, receive the same tuning budget and are expressed in the same
+frame, so the only thing that differs between them is the metric.
+\textsf{Evaluation}: nested cross-validation ($5$ folds $\times\,3$ repeats
+outer, $4$-fold inner, identical budget for every pipeline), paired
+per-subject Wilcoxon signed-rank with Holm correction inside each
+pre-specified family, and two one-sided tests for equivalence against the
+twin, across the five evaluation settings. The editable source of this figure
+is distributed with the manuscript as \texttt{architecture.drawio}.}
 \end{figure}
 
 %% =====================================================================

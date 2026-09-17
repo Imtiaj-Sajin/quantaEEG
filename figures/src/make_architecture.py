@@ -34,7 +34,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from scene import Scene  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-OUT = ROOT / "figures"
+OUT = ROOT / "figures" / "versions"
 OUT.mkdir(parents=True, exist_ok=True)
 
 W, H = 880, 752
@@ -342,9 +342,9 @@ L([(dx + dwid + 2, R2 + 120), (ex - 6, R2 + 120)], INK, 1.5, arrow=True)
 
 
 # ------------------------------------------------------------------ write
-(OUT / "architecture.drawio").write_text(S.drawio(), encoding="utf-8")
+(OUT / "architecture_tworow.drawio").write_text(S.drawio(), encoding="utf-8")
 svg = S.svg()
-(OUT / "architecture.svg").write_text(svg, encoding="utf-8")
+(OUT / "architecture_tworow.svg").write_text(svg, encoding="utf-8")
 
 # svglib resolves font-family by name against reportlab's registry, so the
 # DejaVu fallback the scene graph asks for has to be registered.
@@ -366,19 +366,20 @@ pdfmetrics.registerFontFamily("DejaVu Sans", normal="DejaVu Sans",
 from svglib.svglib import svg2rlg  # noqa: E402
 from reportlab.graphics import renderPDF  # noqa: E402
 
-drawing = svg2rlg(str(OUT / "architecture.svg"))
-renderPDF.drawToFile(drawing, str(OUT / "architecture.pdf"))
+drawing = svg2rlg(str(OUT / "architecture_tworow.svg"))
+renderPDF.drawToFile(drawing, str(OUT / "architecture_tworow.pdf"))
 
 import fitz  # noqa: E402
 
-_doc = fitz.open(str(OUT / "architecture.pdf"))
+_doc = fitz.open(str(OUT / "architecture_tworow.pdf"))
 _doc[0].get_pixmap(matrix=fitz.Matrix(1.6, 1.6)).save(
-    str(OUT / "architecture_preview.png"))
+    str(OUT / "architecture_tworow_preview.png"))
 
-dest = ROOT / "results" / "figures"
-dest.mkdir(parents=True, exist_ok=True)
-shutil.copy2(OUT / "architecture.pdf", dest / "architecture.pdf")
+# This is the alternative layout, kept so the corresponding author can switch
+# back to it. It is deliberately NOT copied into results/figures: the figure
+# the manuscript uses is built from figures/architecture.drawio by
+# figures/src/drawio_to_pdf.py.
 
 _pt = F_BODY * (160.0 / W) / (25.4 / 72)
-print(f"wrote figures/architecture.{{drawio,svg,pdf}} and the preview; "
+print(f"wrote figures/versions/architecture_tworow.* (alternative layout); "
       f"body labels render at {_pt:.1f} pt at 160 mm")

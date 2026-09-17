@@ -31,8 +31,12 @@ from pathlib import Path
 PAPER = Path(__file__).resolve().parent
 ROOT = PAPER.parent
 
-CORE = ["main.tex", "macros_auto.tex", "tables_auto.tex", "refs.bib",
+CORE = ["main.tex", "macros_auto.tex", "refs.bib",
         "iopjournal.cls", "orcid.pdf", "iopart_num.bst"]
+# Tables are one generated file each, so that every table can be inputted
+# beside the text that discusses it rather than queued at the top of Results.
+# They are collected by glob because their number changes with the analysis.
+TABLE_GLOB = "tab_*_auto.tex"
 FIGURE_DIRS = [ROOT / "results" / "figures_paper", ROOT / "results" / "figures",
                PAPER / "figures"]
 BBL = PAPER / "build" / "main.bbl"
@@ -63,6 +67,12 @@ def build_zip(dest: Path) -> list[str]:
             raise FileNotFoundError(
                 f"{src} missing; run get_iop_class.sh and make_tables.py first")
         sources.append((src, name))
+    tables = sorted(PAPER.glob(TABLE_GLOB))
+    if not tables:
+        raise FileNotFoundError(
+            f"no {TABLE_GLOB} in {PAPER}; run python paper/make_tables.py first")
+    for t in tables:
+        sources.append((t, t.name))
     if BBL.exists():
         sources.append((BBL, "main.bbl"))
     # main.tex cites supplementary tables and figures through xr, which reads
@@ -74,6 +84,13 @@ def build_zip(dest: Path) -> list[str]:
     sources.append((supp_aux, "supplementary.aux"))
     for fig in referenced_figures():
         sources.append((find_figure(fig), Path(fig).name))
+    # The architecture figure's editable source travels with the manuscript, so
+    # a co-author or a later reader can change it rather than being stuck with
+    # a flat PDF. IOP's file names allow only letters, digits and underscore,
+    # and .drawio is XML, so it ships as architecture_drawio.xml.
+    drawio = ROOT / "figures" / "architecture.drawio"
+    if drawio.exists():
+        sources.append((drawio, "architecture_drawio.xml"))
 
     arcs = [arc for _, arc in sources]
     bad = [a for a in arcs if not SAFE_NAME.match(a)]

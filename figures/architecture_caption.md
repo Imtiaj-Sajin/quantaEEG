@@ -52,14 +52,33 @@ transfer, few-trial calibration, and registers from 3 to 6 qubits.
 
 | File | What it is |
 |---|---|
-| `figures/architecture.drawio` | editable source, 263 native shapes and 71 edges, no embedded images |
+| `figures/architecture.drawio` | **the source**, authored in diagrams.net by the corresponding author; edit this |
 | `figures/architecture.pdf` | vector, the version the manuscript includes |
 | `figures/architecture.svg` | intermediate, also usable directly |
-| `figures/architecture_preview.png` | 1.6x raster, for checking the output |
-| `figures/src/scene.py` | the scene graph and its two exporters |
-| `figures/src/make_architecture.py` | builds the figure and writes all outputs |
+| `figures/architecture_preview.png` | raster, for checking the output |
+| `figures/src/drawio_to_pdf.py` | renders the .drawio to a single-page PDF |
+| `figures/src/scene.py` | the drawing primitives and the SVG exporter both paths share |
+| `figures/versions/architecture_tworow.*` | an alternative layout, kept in case it is wanted back |
+| `figures/src/make_architecture.py` | builds that alternative |
 
-Regenerate with `python figures/src/make_architecture.py`.
+After editing the figure in diagrams.net, regenerate the PDF with
+
+```bash
+python figures/src/drawio_to_pdf.py paper/eeg_quantum_architecture_v3.drawio.xml     --out figures/architecture
+```
+
+The editable source also ships inside `paper/build/submission.zip` as
+`architecture_drawio.xml`, so a co-author or a later reader can change the
+figure rather than being stuck with a flat PDF. IOP's upload rules allow only
+letters, digits and underscore in file names, which is why it is renamed.
+
+## Why draw.io's own PDF export is not used
+
+The file declares a 1560 by 400 page while the drawing spans about 840 by 750
+at an offset of (1513, 831), so exporting from diagrams.net produced four page
+fragments with the figure cut across them. `drawio_to_pdf.py` reads the XML
+directly, crops to the drawing's bounding box and emits one page, which also
+keeps the PDF and the editable file from drifting apart.
 
 ## Why two rows
 
