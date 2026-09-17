@@ -22,6 +22,10 @@
 \newcommand{\DimDelta}{+0.0246}
 \newcommand{\DimP}{\ensuremath{{}<{}}0.001}
 \newcommand{\NSurviveHolm}{8}
+\newcommand{\NUncorrectedSig}{9}
+\newcommand{\NUncorrectedSigAgainst}{8}
+\newcommand{\NQuantumAheadSig}{0}
+\newcommand{\QuantumBestDelta}{-0.0153}
 \newcommand{\NFamilyTests}{15}
 \newcommand{\FastestName}{classical/logvar+LDA}
 \newcommand{\FastestSec}{0.089}
@@ -30,6 +34,17 @@
 \newcommand{\SpeedRatio}{240}
 
 \newcommand{\ConcNSubjects}{104}
+\newcommand{\ConcEntFactor}{0.424}
+\newcommand{\ConcProdFactor}{0.727}
+\newcommand{\ConcEntSlope}{-0.859}
+\newcommand{\ConcProdSlope}{-0.319}
+\newcommand{\ConcSlopeRatio}{2.7}
+\newcommand{\ConcEntLoss}{30}
+\newcommand{\ConcProdLoss}{3.5}
+\newcommand{\ConcOffDiagHS}{0.982}
+\newcommand{\ConcOffDiagHSSD}{0.018}
+\newcommand{\ConcOffDiagFid}{0.981}
+\newcommand{\ConcOffDiagFidSD}{0.016}
 
 %% -------------------------------- cross-dataset macros
 
@@ -56,6 +71,27 @@
 \newcommand{\FisherAblationP}{\ensuremath{{}<{}}0.001}
 \newcommand{\BciWilcoxonFloor}{0.0039}
 \newcommand{\BciHolmFloor}{0.0547}
+
+
+%% ------------------------------ four-class macros
+
+\newcommand{\FourClassN}{9}
+\newcommand{\FourClassChance}{0.25}
+\newcommand{\FourClassSensorMin}{0.346}
+\newcommand{\FourClassSensorMax}{0.382}
+\newcommand{\FourClassFrameMin}{+0.2455}
+\newcommand{\FourClassFrameMax}{+0.2875}
+\newcommand{\FourClassFrameMaxP}{\ensuremath{{}={}}0.004}
+\newcommand{\FourClassFrameAllBetter}{yes}
+\newcommand{\FourClassTwinDeltaMin}{-0.0123}
+\newcommand{\FourClassTwinDeltaMax}{-0.0022}
+\newcommand{\FourClassTwinMinP}{\ensuremath{{}={}}0.098}
+\newcommand{\FourClassTwinAhead}{yes}
+\newcommand{\FourClassTwinAcc}{0.636}
+\newcommand{\FourClassBestQuantum}{Fidelity}
+\newcommand{\FourClassBestQuantumAcc}{0.633}
+\newcommand{\FourClassBestClassical}{TS\,+\,LR}
+\newcommand{\FourClassBestClassicalAcc}{0.628}
 
 
 %% ------------------------------ calibration macros

@@ -303,6 +303,11 @@ INPUT .\tab_transfer_auto.tex
 INPUT .\tab_transfer_auto.tex
 INPUT .\tab_transfer_auto.tex
 INPUT tab_transfer_auto.tex
+INPUT .\tab_fourclass_auto.tex
+INPUT .\tab_fourclass_auto.tex
+INPUT .\tab_fourclass_auto.tex
+INPUT .\tab_fourclass_auto.tex
+INPUT tab_fourclass_auto.tex
 INPUT .\tab_calibration_auto.tex
 INPUT .\tab_calibration_auto.tex
 INPUT .\tab_calibration_auto.tex

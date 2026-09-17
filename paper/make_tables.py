@@ -21,6 +21,7 @@ from scipy.stats import wilcoxon
 
 import calibration_tables as cal
 import cross_tables as ct
+import fourclass_table as fc
 import grids_table as gt
 import reference_tables as rt
 
@@ -268,6 +269,16 @@ def macros(df: pd.DataFrame, summary: pd.DataFrame, tests: pd.DataFrame,
         "DimDelta": f"{dim['delta']:+.4f}",
         "DimP": fmt_p_eq(dim["p"]),
         "NSurviveHolm": f"{int((tests.p_holm < 0.05).sum())}",
+        # How many reach significance before correction, and whether any of
+        # them favours a quantum kernel. The manuscript stated "only two, and
+        # in both the quantum model was worse", typed by hand; at n=104 it is
+        # nine, and one of them is a classical pipeline ahead of the
+        # reference, so both halves of the sentence had gone wrong.
+        "NUncorrectedSig": f"{int((tests.p_value < 0.05).sum())}",
+        "NUncorrectedSigAgainst":
+            f"{int(((tests.p_value < 0.05) & (tests.delta_acc < 0)).sum())}",
+        "NQuantumAheadSig": f"{int(((tests.p_value < 0.05) & (tests.delta_acc > 0) & (tests.pipeline.str.startswith('quantum/'))).sum())}",
+        "QuantumBestDelta": f"{tests[tests.pipeline.str.startswith('quantum/')].delta_acc.max():+.4f}",
         "NFamilyTests": f"{len(tests)}",
         "FastestName": esc(fastest["pipeline"]),
         "FastestSec": f"{fastest['sec_per_subject']:.3f}",
@@ -355,6 +366,35 @@ def main(argv=None) -> int:
     macros(df, summary, tests, per, meta, mac)
     if conc_n:
         mac.append(f"\\newcommand{{\\ConcNSubjects}}{{{conc_n}}}")
+    # The concentration paragraph quoted six figures that were typed by hand
+    # and went stale the moment the cohort changed: at n=30 the entangled
+    # kernel decayed at 0.428 per qubit, at n=104 it is 0.424, and the
+    # log-slope ratio moved from 2.5 to 2.7. They are macros now.
+    dec = decay.set_index("kernel") if decay is not None else None
+    if dec is not None and {"IQP-entangled", "IQP-product"} <= set(dec.index):
+        e, q = dec.loc["IQP-entangled"], dec.loc["IQP-product"]
+        cm = {
+            "ConcEntFactor": f"{e.variance_factor_per_qubit:.3f}",
+            "ConcProdFactor": f"{q.variance_factor_per_qubit:.3f}",
+            "ConcEntSlope": f"{e.log_variance_slope_per_qubit:.3f}",
+            "ConcProdSlope": f"{q.log_variance_slope_per_qubit:.3f}",
+            "ConcSlopeRatio":
+                f"{e.log_variance_slope_per_qubit / q.log_variance_slope_per_qubit:.1f}",
+            "ConcEntLoss": f"{e.variance_first / e.variance_last:.0f}",
+            "ConcProdLoss": f"{q.variance_first / q.variance_last:.1f}",
+        }
+        for k, v in cm.items():
+            mac.append(f"\\newcommand{{\\{k}}}{{{v}}}")
+    gram_p = res / "reference_gram_motor8.csv"
+    if gram_p.exists():
+        g = pd.read_csv(gram_p)
+        g = g[g.frame == "sensor"].groupby("kernel")[["mean", "std"]].mean()
+        for key, kern in (("HS", "HS-overlap"), ("Fid", "Fidelity")):
+            if kern in g.index:
+                mac.append(f"\\newcommand{{\\ConcOffDiag{key}}}"
+                           f"{{{g.loc[kern, 'mean']:.3f}}}")
+                mac.append(f"\\newcommand{{\\ConcOffDiag{key}SD}}"
+                           f"{{{g.loc[kern, 'std']:.3f}}}")
 
     out: list[str] = list(header)
     table_main(summary, out)
@@ -408,6 +448,10 @@ def main(argv=None) -> int:
         built.append("shots (supplementary)")
     if gt.table_grids(supp["grids"]):
         built.append("hyperparameter grids (supplementary)")
+    four = fc.load(res)
+    if fc.table_fourclass(four, fmt_p, out):
+        built.append("four-class IV-2a")
+    fc.macros(four, fmt_p_eq, mac)
     calib = cal.load(res)
     if cal.table_calibration(calib, fmt_p, out):
         built.append("few-trial calibration")

@@ -725,9 +725,10 @@ $\Delta=\PrimaryDelta$ ($p\PrimaryP$, $d_z=\PrimaryDz$), and was superior in
 \input{tab_tests_auto}
 Against the Riemannian tangent-space reference (Table~\ref{tab:tests},
 Figure~\ref{S-fig:paired}), \NSurviveHolm{} of \NFamilyTests{} comparisons survived
-Holm correction. Only two reached $p<0.05$ uncorrected, and in both the quantum
-model was \emph{worse}. No quantum kernel exceeded the reference at any
-significance level.
+Holm correction. \NUncorrectedSig{} reached $p<0.05$ uncorrected, and
+\NUncorrectedSigAgainst{} of those favour the reference rather than the
+pipeline tested against it. No quantum kernel exceeded the reference at any
+significance level: the best of them falls short by \QuantumBestDelta.
 
 \begin{figure}[htbp]
 \centering
@@ -758,8 +759,9 @@ kernel itself.
 \label{sec:concentration}
 
 Raw overlap kernels are severely concentrated on EEG. Off-diagonal Gram entries
-had mean $0.991\pm0.010$ (Hilbert--Schmidt) and $0.988\pm0.010$ (fidelity):
-every pair of trials appears $\approx99\%$ identical, the Gram matrix is
+had mean $\ConcOffDiagHS\pm\ConcOffDiagHSSD$ (Hilbert--Schmidt) and
+$\ConcOffDiagFid\pm\ConcOffDiagFidSD$ (fidelity):
+every pair of trials appears almost identical, the Gram matrix is
 effectively rank-one, and the classifier has nothing to separate. This is the
 pathology proved by Thanasilp \textit{et al} \cite{thanasilp2024}, here reproduced on
 real biological data rather than synthetic constructions.
@@ -770,10 +772,11 @@ change of method (Table~\ref{S-tab:concentration}, Figure~\ref{fig:concentration
 findings emerge.
 
 First, \textbf{entanglement accelerates the collapse}. The entangled IQP kernel
-loses variance by a factor of $0.428$ per qubit, more than halving with each
-added qubit, while the identical circuit with entanglers deleted decays at
-$0.716$. In log-slope the entangled kernel concentrates $2.5\times$ faster
-($-0.850$ versus $-0.334$ per qubit), a $29\times$ versus $3.7\times$ loss
+loses variance by a factor of $\ConcEntFactor$ per qubit, more than halving
+with each added qubit, while the identical circuit with entanglers deleted
+decays at $\ConcProdFactor$. In log-slope the entangled kernel concentrates
+$\ConcSlopeRatio\times$ faster ($\ConcEntSlope$ versus $\ConcProdSlope$ per
+qubit), a $\ConcEntLoss\times$ versus $\ConcProdLoss\times$ loss
 across the range. This supplies a mechanism for the observation of
 \cite{bowles2024} that removing entanglement often improves QML models:
 entanglement drives embedded states toward mutual orthogonality, pushing the
@@ -1165,6 +1168,39 @@ at this register, or it is not something the Bures, fidelity or
 relative-entropy weightings exploit better than the affine-invariant one.
 
 
+\subsection{Four classes, not one binary contrast}
+\label{sec:fourclass}
+
+\input{tab_fourclass_auto}
+Everything above decodes a single binary contrast, left hand against right,
+and a reader is entitled to ask whether the invariance argument is a property
+of that contrast rather than of the representation. We therefore repeated the
+extended suite on the four-class IV-2a task (left hand, right hand, feet,
+tongue; chance $=\FourClassChance$), changing nothing but the label set.
+
+The argument does not weaken with four classes, it sharpens. In the sensor
+frame the density-matrix kernels reach \FourClassSensorMin{} to
+\FourClassSensorMax, which is a few points above chance and far below every
+tuned classical baseline: a kernel invariant only to rotations is close to
+useless on this task. Recentring is then worth \FourClassFrameMin{} to
+\FourClassFrameMax{} accuracy (all $p\FourClassFrameMaxP$, every kernel
+improving in every one of the \FourClassN{} subjects), against
+\PhysFrameMin{} to \PhysFrameMax{} for the same correction on the binary
+PhysioNet task. The frame is not a small correction here; it is most of the
+decoder.
+
+And the control survives the change of paradigm. After recentring, the
+Riemannian twin reaches \FourClassTwinAcc{} and no quantum kernel passes it:
+the differences run \FourClassTwinDeltaMin{} to \FourClassTwinDeltaMax, every
+one of them in the twin's favour, none significant (smallest
+$p\FourClassTwinMinP$). The twin also edges the best classical pipeline,
+\FourClassBestClassical{} at \FourClassBestClassicalAcc. So a four-fold
+increase in the number of classes multiplies the value of the frame and leaves
+the quantum-versus-classical comparison exactly where the binary task left it.
+Neither of this paper's two conclusions depends on the task having been a
+single binary contrast.
+
+
 \subsection{Few-trial calibration: the one setting that separates}
 \label{sec:calibration}
 
@@ -1183,8 +1219,9 @@ else, with the reference state estimated from those $k$ trials only.
 \emph{The prediction holds, in the direction stated and at a size worth being
 precise about.} On Cho2017 ($n=\CalibChoN$), at the smallest calibration sets
 the five reference-frame kernels lead the twin by \CalibChoSmallDeltaMin{} to
-\CalibChoSmallDeltaMax{} (smallest $p\CalibChoSmallMinP$), \CalibChoSmallTwinAcc{}
-against \CalibChoSmallQuantumAcc{} in accuracy. By \CalibKMax{} trials the
+\CalibChoSmallDeltaMax{} (smallest $p\CalibChoSmallMinP$),
+\CalibChoSmallQuantumAcc{} in accuracy against the twin's
+\CalibChoSmallTwinAcc. By \CalibKMax{} trials the
 difference has gone and changed sign, spanning \CalibChoLargeDeltaMin{} to
 \CalibChoLargeDeltaMax. Across the \CalibNDatasets{} datasets and every
 training size, \CalibNSigQuantum{} comparisons separate in the quantum kernel's
@@ -1428,8 +1465,8 @@ does not cover, and cross-session transfer is where it is proportionally
 largest: the congruence component is milder, so residual differences in
 conditioning and spectral shape, on which the quantum relative entropy and the
 Bures distance weight differently from the affine-invariant metric, carry more
-of the shift. Section~\ref{sec:crosssession} reports the outcome: parity, with
-no quantum-versus-twin comparison reaching even $p<0.5$. Larger registers
+of the shift. Section~\ref{sec:crosssession} reports the outcome: parity, the closest
+quantum-versus-twin comparison reaching only $p\CsTwinMinP$. Larger registers
 were the third candidate, and the sweep of table~\ref{S-tab:sweep} shows that
 the reference-frame kernels do not concentrate with qubit count. That removes
 a concern rather than the parity, since the metric-matched comparison at five
