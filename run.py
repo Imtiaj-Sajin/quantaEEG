@@ -6,7 +6,7 @@
     python run.py data        download the three datasets into datasets/
     python run.py figures     regenerate every figure
     python run.py paper       regenerate tables and macros, check, build the PDF
-    python run.py reproduce   print the full compute queue, or run it
+    python run.py reproduce   run the whole study end to end, data to PDF
 
 `verify` is the one to start with. It recomputes the paper's headline claims
 from the result files in this repository, in a few seconds, with no GPU and no
@@ -253,11 +253,10 @@ def cmd_setup(args) -> int:
 
 def cmd_data(args) -> int:
     print("Datasets are cached by MNE and MOABB. To keep them inside the "
-          "project rather than on the system drive:")
-    print("  python scripts/use_local_datasets.py --check")
+          "project rather than on the system drive, do this first:")
     print("  python scripts/use_local_datasets.py --move")
-    print("\nprefetching (first run downloads several GB and takes a while)")
-    return _run(sys.executable, "scripts/prefetch.py")
+    print("\nfetching (the first run downloads about 12 GB and takes a while)")
+    return _run(sys.executable, "scripts/fetch_data.py", *args.rest)
 
 
 def cmd_figures(args) -> int:
@@ -300,16 +299,19 @@ def cmd_paper(args) -> int:
 
 
 def cmd_reproduce(args) -> int:
-    queue = ROOT / "scripts" / "run_revision.sh"
-    print("The full compute is a queue of jobs, each of which skips itself if "
-          "its output exists and resumes from a checkpoint if interrupted:")
-    print(f"  {queue.relative_to(ROOT)}")
-    print("\nOn this machine it is started as a Windows scheduled task, "
-          "because a background shell dies with its session. See CLAUDE.md.")
-    if args.run:
-        return _run("bash", str(queue), env_src=False)
-    print("\nRerun it with:  python run.py reproduce --run")
-    return 0
+    """Download the data, then run every stage of the study in order."""
+    script = str(ROOT / "scripts" / "reproduce.py")
+    rest = list(args.rest)
+    if rest and rest[0] == "--":
+        rest = rest[1:]
+    if not args.run:
+        # The default prints the plan and runs nothing. This command can spend
+        # days of CPU and overwrite results/, so it does not start on a bare
+        # invocation or a typo.
+        rc = _run(sys.executable, script, "--plan", *rest, env_src=False)
+        print("\nNothing has been run. To start:  python run.py reproduce --run")
+        return rc
+    return _run(sys.executable, script, *rest, env_src=False)
 
 
 def main(argv=None) -> int:
@@ -329,9 +331,17 @@ def main(argv=None) -> int:
     p.add_argument("--no-pdf", dest="pdf", action="store_false", default=True)
     p.set_defaults(fn=cmd_paper)
     p = sub.add_parser("reproduce")
-    p.add_argument("--run", action="store_true")
+    p.add_argument("--run", action="store_true",
+                   help="actually run it; without this the plan is printed")
     p.set_defaults(fn=cmd_reproduce)
-    args = ap.parse_args(argv)
+    # reproduce forwards its remaining flags (--from, --only, --workers,
+    # --force) to scripts/reproduce.py. argparse.REMAINDER cannot do this:
+    # it only starts collecting at the first positional, so a leading --only
+    # is rejected before it ever reaches us.
+    args, extra = ap.parse_known_args(argv)
+    if extra and args.fn not in (cmd_reproduce, cmd_data):
+        ap.error(f"unrecognized arguments: {' '.join(extra)}")
+    args.rest = extra
     return args.fn(args)
 
 

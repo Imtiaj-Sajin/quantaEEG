@@ -88,15 +88,20 @@ libraries import the same either way.
 Nothing in `~/mne_data` travels, and it is not in the repo by design.
 
 ```bash
-python -u prefetch.py 1 30      # PhysioNet EEGMMIDB, ~40 min for 30 subjects
+python run.py data              # all three datasets, ~12 GB, parallel, resumable
+python run.py data --check      # what is already cached, downloads nothing
 ```
 
-BCI IV-2a comes down through MOABB the first time any `--dataset bci2a` run
-touches it: 9 subjects, ~82 MB each, ~750 MB total. Warm it deliberately
-rather than discovering it mid-benchmark:
+That is `scripts/fetch_data.py`. It covers all three datasets: PhysioNet
+EEGMMIDB through MNE (104 subjects, 3 files each, ~50 s per file sequentially,
+which is why it uses a thread pool), and BCI IV-2a (~82 MB per subject) and
+Cho2017 (~190 MB per subject) through MOABB. Warm the cache deliberately
+rather than discovering the download mid-benchmark.
+
+To keep the cache inside the project instead of on the system drive:
 
 ```bash
-PYTHONPATH=src python -u -c "import moabb.datasets as m; d=m.BNCI2014_001(); [d.get_data(subjects=[s]) for s in d.subject_list]"
+python scripts/use_local_datasets.py --move
 ```
 
 ### 3. LaTeX

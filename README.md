@@ -118,6 +118,71 @@ it tries.
 
 ## Reproduce
 
+### The whole study, one command
+
+```bash
+git clone https://github.com/<user>/quantaEEG && cd quantaEEG
+python run.py setup                      # dependencies + the IOP class files
+python scripts/use_local_datasets.py --move   # optional: keep 12 GB off C:
+python run.py reproduce --run --force    # download, then every stage in order
+```
+
+That last command is the whole project: it downloads the three datasets, runs
+all 124 jobs in the order they were originally run, and ends by rebuilding the
+tables, the figures, the PDF and re-verifying every claim. Nothing else needs
+to be invoked by hand.
+
+Look before you leap:
+
+```bash
+python run.py reproduce                  # print the plan, run nothing
+```
+
+```text
+stage                 jobs  todo  what it does
+data                     1     1  Download the three datasets
+physionet               60    60  PhysioNet within-subject, 6 suites x 104 subjects
+merge-physionet          6     6  Merge the PhysioNet batches
+other-datasets           8     8  IV-2a and Cho2017, within subject
+merge-cho                1     1  Merge the Cho2017 batches
+fourclass                9     9  Four-class IV-2a, extended suite
+merge-fourclass          1     1  Merge the four-class batches
+transfer                 6     6  Cross-subject transfer, leave one out
+merge-transfer           1     1  Merge the transfer chunks
+crosssession             1     1  Cross-session transfer on IV-2a
+calibration             17    17  Few-trial calibration sweep
+merge-calibration        2     2  Merge the calibration batches
+diagnostics              6     6  Gram, concentration and finite shots
+equivalence              1     1  Two one-sided tests against the twin
+paper                    4     4  Tables, macros, figures and the PDF
+```
+
+**Why `--force`.** `results/` is committed, so a fresh clone already satisfies
+every stage and the pipeline would correctly do nothing. `--force` recomputes
+from the raw recordings instead. Without it the command is a resume: it runs
+only what is missing, which is what you want after an interruption.
+
+**Cost.** A few days of wall clock on a 6-core desktop, almost all of it in
+`physionet` and `transfer`, plus about 12 GB of downloads on the first run. No
+GPU: the quantum kernels are exact state-vector simulations of 3 to 6 qubits,
+which is linear algebra on 8x8 to 64x64 matrices.
+
+**It is safe to stop.** Every job declares the file it produces and skips
+itself if that file is there; benchmark batches also resume from a per-subject
+checkpoint. Kill it, rerun it, and it continues:
+
+```bash
+python run.py reproduce --run --from transfer   # resume at one stage
+python run.py reproduce --run --only calibration  # rerun one stage
+python run.py reproduce --run --workers 4       # cap the parallelism
+```
+
+A failing stage stops the pipeline, names the jobs that failed and points at
+`results/run_<job>.log`. Transfer is memory-bound as well as CPU-bound, about
+1.3 GB per process, so it is capped at 6 concurrent jobs by default.
+
+### Shorter paths
+
 **Check the claims without running anything** (seconds):
 
 ```bash
@@ -128,27 +193,13 @@ python run.py status      # what results this checkout contains
 **Rebuild the manuscript from the committed results** (about a minute, needs LaTeX):
 
 ```bash
-python run.py setup       # dependencies, plus the IOP class files (not on CTAN)
 python run.py figures     # regenerate every figure from results/
 python run.py paper       # tables, macros, static checks, then the PDF
 ```
 
-**Rerun the science from raw data** (days of CPU; downloads several GB once):
-
-```bash
-python run.py data                             # fetch the three datasets
-python scripts/use_local_datasets.py --move    # keep them inside the project
-PYTHONPATH=src python -m qeeg.benchmark --subjects 109 --start 1 --suite extended
-PYTHONPATH=src python -m qeeg.transfer    --subjects 109 --start 1
-PYTHONPATH=src python -m qeeg.calibration --dataset cho2017
-PYTHONPATH=src python -m qeeg.equivalence
-python paper/make_tables.py && python run.py paper
-```
-
-Long runs are resumable: every job skips itself if its output exists and
-continues from a per-subject checkpoint if it was interrupted. On this project
-that mattered more than once. `scripts/archive/` holds the exact job queues
-that produced the committed results.
+`scripts/archive/` holds the original job queues that produced the committed
+results, kept as the historical record; `scripts/reproduce.py` is the same work
+in one declarative file.
 
 ---
 
@@ -197,7 +248,8 @@ turns 12 GB into 22 GB.
 ## Layout
 
 ```
-run.py              one entry point: verify, status, setup, data, figures, paper
+run.py              one entry point: verify, status, setup, data, figures,
+                    paper, reproduce
 src/qeeg/
   data.py           loaders, epoching, channel sets
   quantum.py        density matrices, HS/fidelity/Bures/QRE kernels, whitening
@@ -215,7 +267,11 @@ src/qeeg/
 results/            per-fold CSVs, summaries and figures: the scientific record
 figures/            the architecture figure and its editable .drawio source
 paper/              the manuscript (IOP, Journal of Neural Engineering)
-scripts/            live tooling; scripts/archive/ holds the finished job queues
+scripts/
+  reproduce.py      every stage of the study, declared once and run in order
+  fetch_data.py     download all three datasets in parallel, resumable
+  use_local_datasets.py  move the 12 GB cache inside the project
+  archive/          the original job queues, kept as the historical record
 RESEARCH.md         the full research document: literature, gap, every finding
 REVISION.md         referee items and their status
 ```

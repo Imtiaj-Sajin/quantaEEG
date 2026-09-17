@@ -165,6 +165,23 @@ a manual eyeball.
 
 ## How to run
 
+The whole study is one command, `scripts/reproduce.py`, which declares every
+stage and the files it produces, runs them in dependency order, parallelises
+within a stage and skips anything already done:
+
+```bash
+python run.py reproduce                  # print the plan, run nothing
+python run.py reproduce --run --force    # data, then all 124 jobs, then the PDF
+python run.py reproduce --run --from transfer    # resume at a stage
+```
+
+`--force` matters: `results/` is committed, so on a fresh clone every stage is
+already satisfied and the pipeline correctly does nothing. Without `--force` it
+behaves as a resume. Prefer adding a stage there over writing a new queue
+script; `scripts/archive/` holds the shell queues this replaced.
+
+The individual pieces, for development:
+
 ```bash
 pip install -r requirements.txt
 
@@ -196,8 +213,14 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
   without `-u` a multi-hour run shows zero progress and its output is lost if
   the process is killed. The runners also force `flush=True`.
 - **PhysioNet downloads are slow** (~50 s/file, 3 files/subject). First run of
-  30 subjects spends ~40 min downloading. `prefetch.py` warms the cache with a
-  thread pool; data caches to `~/mne_data` and is reused thereafter.
+  30 subjects spends ~40 min downloading. `python run.py data`
+  (`scripts/fetch_data.py`) warms the cache for all three datasets with a
+  thread pool, and `--check` reports what is cached without downloading. Data
+  caches to MNE's directory and is reused thereafter;
+  `scripts/use_local_datasets.py --move` points that inside the project so 12 GB
+  does not land on the system drive. The old PhysioNet-only `prefetch.py` was
+  removed on 2026-09-17: it did not cover the MOABB datasets, and `run.py data`
+  had been pointing at a path it never lived at.
 - **Set `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1` for any
   parallel batch.** Each benchmark process otherwise spawns a full BLAS thread
   pool; five processes on twelve cores ran slower than one until this was set.
