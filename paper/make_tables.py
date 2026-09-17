@@ -279,6 +279,9 @@ def macros(df: pd.DataFrame, summary: pd.DataFrame, tests: pd.DataFrame,
             f"{int(((tests.p_value < 0.05) & (tests.delta_acc < 0)).sum())}",
         "NQuantumAheadSig": f"{int(((tests.p_value < 0.05) & (tests.delta_acc > 0) & (tests.pipeline.str.startswith('quantum/'))).sum())}",
         "QuantumBestDelta": f"{tests[tests.pipeline.str.startswith('quantum/')].delta_acc.max():+.4f}",
+        # The magnitude, for prose that already carries the direction in words:
+        # "falls short by -0.0153" was a double negative.
+        "QuantumBestAbs": f"{abs(tests[tests.pipeline.str.startswith('quantum/')].delta_acc.max()):.4f}",
         "NFamilyTests": f"{len(tests)}",
         "FastestName": esc(fastest["pipeline"]),
         "FastestSec": f"{fastest['sec_per_subject']:.3f}",
@@ -465,7 +468,17 @@ def main(argv=None) -> int:
 
     mdest = Path(args.macros_out)
     mdest.parent.mkdir(parents=True, exist_ok=True)
-    mdest.write_text("\n".join(mac), encoding="utf-8")
+    # The tables stopped printing the registry prefix on pipeline names, but
+    # the macros the prose uses still carried it, so a reader met "CSP + LDA"
+    # in table 1 and "classical/CSP+LDA" in the sentence describing it. Strip
+    # it here, at the one point every macro passes through, rather than in each
+    # of the dozen builders that construct these names.
+    def _tidy(line: str) -> str:
+        m = re.match(r"(\\newcommand\{\\[A-Za-z]+\}\{)"
+                     r"((?:classical|quantum|control)/[^}]*)(\})$", line)
+        return f"{m.group(1)}{pretty(m.group(2))}{m.group(3)}" if m else line
+
+    mdest.write_text("\n".join(_tidy(x) for x in mac), encoding="utf-8")
     print(f"wrote {mdest}  ({len(mac)} lines)")
 
     dest = Path(args.out)
