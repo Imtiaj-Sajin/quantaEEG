@@ -1,20 +1,31 @@
 # figures/
 
-The architecture figure, its editable source, and the alternatives.
+The pipeline figures, their editable sources, and the earlier versions.
 
-## What the paper uses
+## What the paper uses (version 5)
+
+Since version 5 the design is two figures, discussed in that order: an
+overview of the pipeline, then its kernel stage opened up.
 
 | File | What it is |
 |---|---|
-| **`architecture.drawio`** | **the source.** Open this in diagrams.net to change the figure |
-| **`architecture.pdf`** | the vector the manuscript includes, exported from diagrams.net |
-| `architecture_preview.png` | raster, for a quick look without opening a PDF |
-| `architecture_caption.md` | the caption, and every number kept out of the drawing |
+| **`architecture_v5_overview.drawio`** | **source** of Figure 2: EEG to predicted class in one line, with the Kernel families block |
+| **`architecture_v5_overview.pdf`** | the vector the manuscript includes, exported from diagrams.net |
+| **`architecture_v5_kernel_families.drawio`** | **source** of Figure 3: the block's three lanes, (1) density-matrix kernels, (2) circuit kernels, (3) classical twin |
+| **`architecture_v5_kernel_families.pdf`** | the vector the manuscript includes |
+| `architecture_v5_*_preview.png` | rasters, for a quick look |
 
-`paper/main.tex` includes `architecture.pdf`, found through its graphicspath via
-`results/figures/`. The same PDF is copied there, and the `.drawio` travels
-inside `paper/build/submission.zip` as `architecture_drawio.xml` so anyone who
-receives the submission can edit the figure.
+`paper/main.tex` includes both PDFs through its graphicspath via
+`results/figures/`, where copies sit. Both `.drawio` files travel inside
+`paper/build/submission.zip` as `<name>_drawio.xml`. The captions, which
+explain every box and symbol the drawings leave unlabelled, live in
+`paper/main.tex`. The graphics inside the drawings are computed from real data
+by `src/make_architecture_parts.py`; the corresponding author laid out the
+drawings in diagrams.net from `src/make_pipeline_figures.py`'s starting point.
+
+**Version 4**, the single design figure, is kept but no longer included:
+`architecture.drawio`, `architecture.pdf`, `architecture_preview.png` and
+`architecture_caption.md` (its caption).
 
 > **After editing the figure, re-export the PDF.** The `.drawio` and the `.pdf`
 > are two separate files and nothing in the build checks that they agree, so an

@@ -291,42 +291,46 @@ than merely cited.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{architecture.pdf}
-\caption{\label{fig:design}Study design, and where the control sits. Arrows
-give the order of processing: \textsf{EEG} to \textsf{State} to
-\textsf{Frame} to \textsf{Kernels} to \textsf{Evaluation}.
-\textsf{EEG}: three public motor-imagery datasets, PhysioNet EEGMMIDB
-(\NSubjects{} subjects, \NTrials{} trials), BCI Competition IV-2a
-(\BciNSubjects{} subjects, \BciNTrials{} trials, two sessions) and Cho2017
-(\ChoNSubjects{} subjects), reduced to the same eight sensorimotor electrodes
-(filled), the same $8$--$30$\,Hz band and the same 128\,Hz sampling rate,
-each cut to its dataset's standard motor-imagery window, so every difference
-reported within a dataset is a property of the method and not of the
-preprocessing. \textsf{State}: each trial becomes an $8\times8$ spatial
-covariance $C$; divided by its trace it is a density matrix $\rho$ on
-$\log_2 8=3$ qubits, with no dimensionality reduction and no angle embedding.
-\textsf{Frame}: EEG's nuisances (electrode gain, head geometry, skull
-conductivity, source mixing) act by congruence $C\mapsto ACA^{\top}$. The
-density-matrix kernels are invariant only under the orthogonal subgroup in the
-sensor frame, and exactly invariant under the full group in the reference
-frame of (\ref{eq:refstate}), where $W=M^{-1/2}$ and the Fr\'echet mean $M$ is
-estimated label-free from training trials alone. Every suite is run in both
-frames. \textsf{Kernels}: four pipeline families under one protocol. The
-bracket marks the paper's central control: the classical Riemannian twin and
-the quantum kernels consume the same covariances, sit in the same support
-vector machine, receive the same tuning budget and are expressed in the same
-frame, so the only thing that differs between them is the metric.
-\textsf{Evaluation}: nested cross-validation ($5$ folds $\times\,3$ repeats
-outer, $4$-fold inner, identical budget for every pipeline), paired
-per-subject Wilcoxon signed-rank with Holm correction inside each family,
-and two one-sided tests for equivalence against the twin, across the
-\EquivNSettings{} evaluation settings. The editable source of this figure
-is distributed with the manuscript as \texttt{architecture.drawio}.}
+\includegraphics[width=\textwidth]{architecture_v5_overview.pdf}
+\caption{\label{fig:overview}The decoding pipeline shared by every kernel
+experiment, read from left to right. Each trial of PhysioNet EEGMMIDB
+(\NSubjects{} subjects), BCI Competition IV-2a (\BciNSubjects{} subjects) or
+Cho2017 (\ChoNSubjects{} subjects) is restricted to the same eight
+sensorimotor electrodes, band-pass filtered to $8$--$30$\,Hz and cut to its
+dataset's motor-imagery window, giving $X\in\mathbb{R}^{8\times T}$ for $T$
+samples. Its spatial covariance $C$, estimated with oracle approximating
+shrinkage, is symmetric positive definite, $C\in\mathbb{S}^{8}_{++}$. The
+\textsf{Kernel families} block is the only stage at which the kernel
+pipelines differ: it compares two trials with a quantum density-matrix
+kernel~(1), a quantum circuit kernel on reduced features~(2) or the classical
+twin~(3), each expanded in figure~\ref{fig:families}. The chosen kernel fills
+the Gram matrix $K$, with $K_{ij}=k(\cdot_i,\cdot_j)$ over pairs of trials, and
+a support vector machine is trained on $K$ as a precomputed kernel with the
+same tuning budget for every kernel. The traces and matrices are computed from
+a real recording (PhysioNet subject~1): the kernel matrix is the
+reference-frame Bures-RBF kernel, and the decision plane is a two-dimensional
+kernel principal-component view for illustration, whereas the classifier
+itself uses the full kernel matrix. The editable sources of this figure and of
+figure~\ref{fig:families} are distributed with the manuscript.}
 \end{figure}
 
 %% =====================================================================
 \section{Methods}
 %% =====================================================================
+
+Figure~\ref{fig:overview} summarises the pipeline. Every kernel pipeline in
+this study shares its front end, from the raw EEG to the covariance matrix,
+and its back end, from the Gram matrix to the predicted class. The pipelines
+differ only in the kernel that turns two covariance matrices into a
+similarity, and that is what makes their comparison fair: a difference in
+accuracy between two such pipelines can be traced to the kernel and to
+nothing else. The kernel stage holds three families, which
+figure~\ref{fig:families} expands and the sections below define: quantum
+density-matrix kernels, quantum circuit kernels, and a classical twin that
+differs from the density-matrix kernels in the metric alone. The classical
+baselines of section~\ref{sec:baselines} are the one exception to the shared
+design; they keep the front end and replace the kernel and the support vector
+machine with their own classifiers.
 
 \subsection{Data and preprocessing}
 
@@ -401,6 +405,58 @@ therefore sweeps the register size with no change of method, a property we
 exploit in section~\ref{sec:concentration}.
 
 \subsection{Density-matrix kernels}
+\label{sec:densitykernels}
+
+Figure~\ref{fig:families} sets the three kernel families side by side. Each
+lane receives the covariance matrices of figure~\ref{fig:overview} and returns
+a Gram matrix of the same form, so every family is paired with the same
+support vector machine and the same tuning budget. Lane~1, defined in this
+section and the next, forms density matrices from the covariances, in the
+sensor frame or referred to a reference state, and compares them with a
+quantum-information kernel. Lane~2 follows the prevailing approach in the
+literature: it reduces each trial to a few features and embeds them in a
+parameterised circuit (section~\ref{sec:circuitkernels}). Lane~3 is the
+control on which the argument rests, a classical kernel on the same
+covariances in the same frame (section~\ref{sec:baselines}). Lanes~1 and 3
+therefore share everything except the metric, while lane~2 differs from both
+in its features as well as its kernel.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{architecture_v5_kernel_families.pdf}
+\caption{\label{fig:families}The three kernel families of
+figure~\ref{fig:overview}, expanded. Every lane receives the covariance
+matrices $C$ from the left and produces a Gram matrix $K$ on the right for the
+same support vector machine; one kernel is used per run.
+(1)~Quantum density-matrix kernels. Each covariance is referred to a
+reference state, $\tilde C = WCW$ with $W=M^{-1/2}$, where $M$ is the
+Fr\'echet mean of the training covariances (section~\ref{sec:reference}); the
+sensor frame is the special case $W=I$. Dividing by the trace gives a density
+matrix $\rho=\tilde C/\mathrm{tr}\,\tilde C$, with $\rho\succ0$ and
+$\mathrm{tr}\,\rho=1$, on three qubits for the eight-channel montage. The
+kernel $k(\rho_i,\rho_j)$ is the Hilbert--Schmidt overlap, the Uhlmann
+fidelity, or one of the bandwidth-parameterised HS-RBF, Bures-RBF and QRE-RBF
+kernels.
+(2)~Quantum circuit kernels. Covariances are projected to the Riemannian
+tangent space, standardised, reduced by principal component analysis to four
+features and scaled to rotation angles $x\in[0,\pi]^4$, which parameterise a
+four-qubit feature map with output state $|\psi(x)\rangle$. The kernel is the
+state overlap $k(x_i,x_j)=|\langle\psi(x_j)|\psi(x_i)\rangle|^2$. The IQP map
+drawn applies a Hadamard gate and a rotation $R_Z(x_i)$ to each qubit, then
+couples neighbouring qubits through a CNOT, a rotation by
+$z_{i,i+1}=(\pi-x_i)(\pi-x_{i+1})$ and a second CNOT; one of its two layers is
+shown, and every angle carries a tuned scale factor. The ring CNOT map
+replaces these couplings with a ring of fixed CNOT gates, and the entanglement
+ablation deletes them, leaving a kernel that factorises over qubits
+(section~\ref{sec:circuitkernels} draws the three circuits gate by gate).
+(3)~Classical twin. The covariances are referred to the same reference state,
+and the Riemannian kernel
+$k(C_i,C_j)=\mathrm{tr}[\log\tilde C_i\,\log\tilde C_j]$ compares them in the
+tangent space at that reference. It differs from lane~1 in the metric alone,
+which makes it the control for every density-matrix comparison. The
+log-Euclidean kernel is reported alongside; it is not invariant under
+congruence and is therefore not a twin.}
+\end{figure}
 
 Equation~(\ref{eq:density}) makes the following quantum-information quantities
 directly available as kernels between trials.
@@ -566,6 +622,7 @@ $\mathrm{tr}(\sigma^{-1}\rho)$ and log-determinants rather than matrix
 logarithms.
 
 \subsection{Circuit embedding kernels and the entanglement ablation}
+\label{sec:circuitkernels}
 
 For comparison with the prevailing approach, we also evaluate
 parameterised-circuit embedding kernels
@@ -605,6 +662,7 @@ cannot drift from the code it documents.}
 \end{figure}
 
 \subsection{Classical baselines and controls}
+\label{sec:baselines}
 
 Five classical baselines represent the genuine state of the art rather than a
 strawman: log-variance with shrinkage LDA; CSP with shrinkage LDA; minimum

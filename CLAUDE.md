@@ -130,8 +130,12 @@ cd paper && latexmk -pdf main.tex
 cross-references, unbalanced environments and missing figures, the things that
 would otherwise only surface on first compile.
 
-**Compiles.** MiKTeX/`latexmk`: 26 pages, 0 warnings, 0 overfull boxes, 14
-tables, 11 figures, 38 references. Run `bash paper/get_iop_class.sh` once
+**Compiles.** 27 pages, 0 undefined references, 0 overfull boxes, 12 tables,
+10 figures, 47 references, plus a 4-page supplement (tectonic, 2026-09-17).
+The study design is two figures since version 5 (`figures/architecture_v5_*`):
+Figure 2, a one-line overview with a Kernel families block, then Figure 3,
+that block's three lanes. The single v4 figure (`figures/architecture.*`) is
+kept but not included. Run `bash paper/get_iop_class.sh` once
 first: it downloads IOP's own `ioplatextemplate.zip` and extracts
 `iopjournal.cls` + `orcid.pdf` (neither is on CTAN).
 

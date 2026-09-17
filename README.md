@@ -21,15 +21,22 @@ reading this file.
 
 ---
 
-## The study in one figure
+## The study in two figures
 
-![Study design](figures/architecture_preview.png)
+![Pipeline overview](figures/architecture_v5_overview_preview.png)
 
-Three datasets reduce to one representation. Each trial's spatial covariance
-`C`, divided by its trace, **is** a quantum density matrix on 3 qubits: an
-identity, not an analogy. Each state is then expressed in two frames. Four
-pipeline families run under one protocol, and the dashed box is the whole
-point: the classical twin and the quantum kernels differ in **one** respect.
+Every kernel pipeline shares the same front end, EEG to covariance matrix, and
+the same back end, kernel matrix to SVM. Only the kernel block in the middle
+changes, and it holds three families:
+
+![Kernel families](figures/architecture_v5_kernel_families_preview.png)
+
+(1) Each trial's spatial covariance `C`, referred to a reference state and
+divided by its trace, **is** a quantum density matrix on 3 qubits: an
+identity, not an analogy. (2) The circuit kernels take the prevailing route
+instead, a few reduced features embedded in a parameterised circuit.
+(3) The classical twin uses the same covariances in the same frame and differs
+from lane 1 in **one** respect, the metric, which is the whole point.
 
 ---
 
@@ -276,7 +283,7 @@ src/qeeg/
   equivalence.py    two one-sided tests against the twin
   figures*.py       every figure
 results/            per-fold CSVs, summaries and figures: the scientific record
-figures/            the architecture figure and its editable .drawio source
+figures/            the two pipeline figures (v5) and their editable .drawio sources
 paper/              the manuscript (IOP, Journal of Neural Engineering)
 scripts/
   reproduce.py      every stage of the study, declared once and run in order

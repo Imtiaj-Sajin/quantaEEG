@@ -140,13 +140,16 @@ def build_zip(dest: Path) -> list[str]:
     # Figures from both documents, deduplicated in case one is ever shared.
     for fig in referenced_figures("main.tex", "supplementary.tex"):
         sources.append((find_figure(fig), Path(fig).name))
-    # The architecture figure's editable source travels with the manuscript, so
-    # a co-author or a later reader can change it rather than being stuck with
+    # The pipeline figures' editable sources travel with the manuscript, so a
+    # co-author or a later reader can change them rather than being stuck with
     # a flat PDF. IOP's file names allow only letters, digits and underscore,
-    # and .drawio is XML, so it ships as architecture_drawio.xml.
-    drawio = ROOT / "figures" / "architecture.drawio"
-    if drawio.exists():
-        sources.append((drawio, "architecture_drawio.xml"))
+    # and .drawio is XML, so each ships as <name>_drawio.xml. Version 5 split
+    # the single design figure into an overview and its kernel families; the
+    # earlier architecture.drawio stays in the repository but not the upload.
+    for name in ("architecture_v5_overview", "architecture_v5_kernel_families"):
+        drawio = ROOT / "figures" / f"{name}.drawio"
+        if drawio.exists():
+            sources.append((drawio, f"{name}_drawio.xml"))
 
     arcs = [arc for _, arc in sources]
     bad = [a for a in arcs if not SAFE_NAME.match(a)]
