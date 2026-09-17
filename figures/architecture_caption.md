@@ -52,14 +52,22 @@ transfer, few-trial calibration, and registers from 3 to 6 qubits.
 
 | File | What it is |
 |---|---|
-| `figures/architecture.drawio` | editable source, 261 native shapes and 69 edges, no embedded images |
+| `figures/architecture.drawio` | editable source, 263 native shapes and 71 edges, no embedded images |
 | `figures/architecture.pdf` | vector, the version the manuscript includes |
 | `figures/architecture.svg` | intermediate, also usable directly |
-| `figures/architecture_preview.png` | 1.2x raster, for checking the output |
+| `figures/architecture_preview.png` | 1.6x raster, for checking the output |
 | `figures/src/scene.py` | the scene graph and its two exporters |
 | `figures/src/make_architecture.py` | builds the figure and writes all outputs |
 
 Regenerate with `python figures/src/make_architecture.py`.
+
+## Why two rows
+
+A single row of five panels composes better on a screen and is illegible on the
+page. At IOP's single-column width of 160 mm a 1560-unit canvas shrinks to
+about 41 mm tall and a 10-unit label renders at 2.9 pt, well below the 6 pt
+most journals require. The same five panels on an 880-unit canvas in two rows
+put body labels at 6.7 pt and panel titles near 8.7 pt.
 
 ## Two portability notes
 
