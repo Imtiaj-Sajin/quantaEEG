@@ -39,7 +39,24 @@ CORE = ["main.tex", "macros_auto.tex", "refs.bib",
 TABLE_GLOB = "tab_*_auto.tex"
 FIGURE_DIRS = [ROOT / "results" / "figures_paper", ROOT / "results" / "figures",
                PAPER / "figures"]
-BBL = PAPER / "build" / "main.bbl"
+def _bbl() -> Path | None:
+    """The bibliography latexmk actually produced, never an empty leftover.
+
+    latexmk is run in paper/, so paper/main.bbl is the live one. A zero-byte
+    paper/build/main.bbl survives from an earlier -outdir attempt, which is the
+    BibTeX path trap paper/README.md documents, and the zip was shipping it: an
+    upload whose bibliography was empty. --check could not catch it, because
+    refs.bib is in the archive and latexmk simply reran BibTeX in the temp
+    directory, so the empty file never mattered there and would have mattered
+    on the journal's system.
+    """
+    for p in (PAPER / "main.bbl", PAPER / "build" / "main.bbl"):
+        if p.exists() and p.stat().st_size > 0:
+            return p
+    return None
+
+
+BBL = _bbl()
 
 # IOP: "only use characters a-z, A-Z, 0-9 and underscore. Do not use spaces."
 SAFE_NAME = re.compile(r"^[A-Za-z0-9_]+\.[A-Za-z0-9]+$")
@@ -73,7 +90,7 @@ def build_zip(dest: Path) -> list[str]:
             f"no {TABLE_GLOB} in {PAPER}; run python paper/make_tables.py first")
     for t in tables:
         sources.append((t, t.name))
-    if BBL.exists():
+    if BBL is not None:
         sources.append((BBL, "main.bbl"))
     # main.tex cites supplementary tables and figures through xr, which reads
     # supplementary.aux; without it every such reference prints as ??.

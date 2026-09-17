@@ -50,6 +50,17 @@ KERNEL_STYLE = {
 }
 
 
+
+def short(name: str) -> str:
+    """Pipeline name without its registry prefix.
+
+    The colour of the bar already says which suite a pipeline belongs to, and
+    the manuscript's tables stopped printing the prefix, so a figure that still
+    says "classical/CSP+LDA" beside a table that says "CSP + LDA" just looks
+    inconsistent.
+    """
+    return name.split("/", 1)[-1]
+
 def _surface() -> str:
     """Actual canvas colour: white for the manuscript, tinted for standalone."""
     return "#ffffff" if PAPER else SURFACE
@@ -252,7 +263,7 @@ def fig_benchmark(results: Path, out: Path, tag: str = "motor8_q4") -> bool:
                     fontsize=8.2, color=INK, fontweight="bold", zorder=5)
 
     ax.set_yticks(ypos)
-    ax.set_yticklabels(s["pipeline"], fontsize=8.4, color=INK)
+    ax.set_yticklabels([short(x) for x in s["pipeline"]], fontsize=8.4, color=INK)
     ax.set_xlabel("Within-subject accuracy  (nested CV, mean over subjects)")
     ax.set_xlim(0.33, xmax)
     ax.set_ylim(-0.8, len(s) - 0.2)
@@ -332,7 +343,7 @@ def fig_paired(results: Path, out: Path, tag: str = "motor8_q4",
                     color=INK, fontweight="bold", zorder=6)
 
     ax.set_yticks(range(len(order)))
-    ax.set_yticklabels(order, fontsize=8.4, color=INK)
+    ax.set_yticklabels([short(x) for x in order], fontsize=8.4, color=INK)
     ax.set_xlabel(f"Accuracy difference vs {reference}   (per subject)")
     ax.set_ylim(-0.8, len(order) - 0.2)
     q_deltas = [deltas[c].mean() for c in order if groups.get(c) == "quantum"]
