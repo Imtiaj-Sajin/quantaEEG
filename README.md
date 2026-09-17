@@ -301,7 +301,7 @@ own README.
 
 1. `python run.py verify`, for the claims and their evidence
 2. [RESEARCH.md](RESEARCH.md), for the argument and the literature
-3. `paper/build/main.pdf`, the manuscript: 29 pages, 47 references
+3. `paper/build/main.pdf`, the manuscript: 27 pages, 47 references
 4. [REVISION.md](REVISION.md), for what a referee asked and what was done
 
 ## Environment notes

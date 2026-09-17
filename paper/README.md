@@ -103,7 +103,7 @@ hand-transcribed manuscript silently rots.
 
 ## Building
 
-**The draft compiles cleanly: 29 pages with 12 tables, 10 figures and 47
+**The draft compiles cleanly: 27 pages with 12 tables, 10 figures and 47
 references, plus a 4-page supplement with 4 tables and 4 figures; 0 undefined
 references, 0 overfull boxes** (tectonic 0.17, 2026-09-17, `iopjournal`;
 `submission.zip` also compiled from a clean unpack). Abstract 290/300 words as
@@ -248,7 +248,7 @@ critiques, and removing it would make the paper indefensible.
 
 ## Status
 
-Complete draft, **compiling to 29 pages** on IOP's `iopjournal` class:
+Complete draft, **compiling to 27 pages** on IOP's `iopjournal` class:
 abstract, introduction, methods, results, discussion, limitations,
 conclusion, structured end matter, twelve tables, ten figures, 47
 references, and a four-page supplement with four tables and four figures.

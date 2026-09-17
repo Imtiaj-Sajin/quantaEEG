@@ -18,6 +18,10 @@
 \usepackage{amsmath,amssymb}
 \usepackage[colorlinks=true,allcolors=blue]{hyperref}
 
+%% A float gets a page of its own only when it fills most of it. LaTeX's
+%% default (half a page) left figures and tables alone on half-empty pages.
+\renewcommand{\floatpagefraction}{0.7}
+
 %% Prefer the paper-mode figures: no in-figure title or note (the \caption
 %% supplies both) and a white canvas. Generate with:
 %%     PYTHONPATH=src python -m qeeg.figures --paper
