@@ -156,11 +156,11 @@ def cmd_verify(args) -> int:
     if eq.exists():
         d = pd.read_csv(eq)
         n_eq = int(d.equivalent.sum())
-        _claim("quantum kernels are equivalent to the metric-matched twin",
+        _claim("quantum kernels match the metric-matched twin, at best",
                f"{n_eq} of {len(d)} comparisons equivalent at the stated "
                f"margin; widest bound {d['bound'].max():.4f}",
-               "equivalence in most comparisons, none exceeding the margin "
-               "by much")
+               "equivalence in most comparisons, and the separations that "
+               "remain are about one accuracy point, in both directions")
         excl = d[(d.ci_low > 0) | (d.ci_high < 0)]
         print(f"       {len(excl)} interval(s) exclude zero"
               + (f": {', '.join(excl.kernel + ' (' + excl.setting + ')')}"

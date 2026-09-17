@@ -251,7 +251,7 @@ def fig_reference(res: Path, out: Path) -> bool:
         "Whitening by the mean spreads the states and reduces the nuisance to "
         "a rotation, which the quantum\ninvariants do not see. (b) That "
         "invariance verified numerically. (c, d) The measured consequence on "
-        "real EEG,\nn = 14 subjects."))
+        f"real EEG,\nn = {gram.subject.nunique()} subjects."))
     F._save(fig, out, "fig6_reference")
     return True
 
@@ -286,9 +286,9 @@ def fig_frame(res: Path, out: Path) -> bool:
     axes = np.atleast_1d(axes)
 
     for ax, (name, per) in zip(axes, blocks):
-        # Per-subject lines for one kernel only. Overlaying all five gives 150
-        # crossing lines that say nothing; Fidelity carries the largest effect
-        # and is representative of the direction.
+        # Per-subject lines for one kernel only. Overlaying all five gives five
+        # times as many crossing lines, which say nothing; Fidelity carries a
+        # large effect and is representative of the direction.
         a0, b0, lab0 = FRAME_PAIRS[0]
         if a0 in per.columns and b0 in per.columns:
             for s in per.index:
@@ -339,11 +339,10 @@ def fig_frame(res: Path, out: Path) -> bool:
 
     F._caption(fig, (
         "Thin lines are individual subjects, shown for the Fidelity kernel "
-        "only; overlaying all five would give 150\ncrossing lines. Every "
-        "kernel improves on every dataset, and on IV-2a every kernel improves "
-        "in every\nsubject. The correction is worth two to three times more on "
-        "IV-2a, where the reference state is estimated\nfrom six times as many "
-        "trials."))
+        "only. Every kernel improves on every dataset,\nand on IV-2a every "
+        "kernel improves in every subject. The correction is worth two to "
+        "three times more on\nIV-2a than on PhysioNet, and least on Cho2017, "
+        "whose sensor-frame kernels start closest to the classical\nbaselines."))
     F._save(fig, out, "fig7_frame")
     return True
 
@@ -421,6 +420,8 @@ def fig_twin(res: Path, out: Path) -> bool:
     fig, ax = plt.subplots(figsize=(7.8, 2.2 + 0.64 * len(settings)))
     labels, ypos, y = [], [], 0.0
     groups = []                       # (name, y_top, y_bottom) for banding
+    excluded = []                     # means of intervals that exclude zero
+    n_total = 0
     for name, per, kernels, twin in settings:
         if twin not in per.columns:
             continue
@@ -432,6 +433,9 @@ def fig_twin(res: Path, out: Path) -> bool:
             m, h = _ci(d)
             # An interval that excludes zero differs in shape as well as colour.
             crosses = abs(m) < h
+            n_total += 1
+            if not crosses:
+                excluded.append(m)
             col = REF_C if crosses else ORANGE
             ax.errorbar(m, y, xerr=h, fmt="o" if crosses else "D",
                         ms=4.6 if crosses else 5.4, lw=1.3, color=col,
@@ -465,11 +469,25 @@ def fig_twin(res: Path, out: Path) -> bool:
     ax.set_ylim(y + 0.6, 1.0)
     F._despine(ax)
 
+    # The caption used to say "Every interval crosses zero" unconditionally;
+    # at n = 104 three do not. It is computed from the intervals drawn.
+    if not excluded:
+        lead = ("Every interval crosses zero: no quantum kernel is "
+                "distinguishable from a classical SPD kernel that differs from "
+                f"it\nonly in the metric, in any of the {len(groups)} settings.")
+    else:
+        pos = sum(m > 0 for m in excluded)
+        neg = len(excluded) - pos
+        lead = (f"{len(excluded)} of the {n_total} intervals exclude zero "
+                f"(diamonds; {pos} favour the quantum kernel, {neg} the twin), "
+                f"none by more than {max(abs(m) for m in excluded):.3f}.\n"
+                f"Across all {len(groups)} settings a quantum kernel's mean "
+                "difference from a classical SPD kernel that differs from it "
+                "only in the metric is about one accuracy point at most.")
     F._caption(fig, (
-        "Every interval crosses zero: no quantum kernel is distinguishable "
-        "from a classical SPD kernel that differs from it\nonly in the metric, "
-        f"in any of the {len(groups)} settings. Note the axis range: the whole "
-        "plot spans eight accuracy\npoints, against a frame effect of up to 22."))
+        lead + " Note the axis range: the whole plot spans eight accuracy "
+        "points,\nagainst a frame effect several times larger "
+        "(fig7_frame)."))
     F._save(fig, out, "fig8_twin")
     return True
 

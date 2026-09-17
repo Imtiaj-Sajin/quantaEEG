@@ -38,5 +38,8 @@
   "inner_cv": "4-fold GridSearchCV",
   "seed": 0,
   "reference": "classical/TS+LR",
-  "total_seconds": 3352.1
+  "total_seconds": 6760.3,
+  "suite": "core",
+  "adopted_from": "raw_folds_bci2a_core16.csv",
+  "note": "published rows kept for the shared pipelines; rows for quantum/QRE-RBF-SVM added from a rerun with the 16-pipeline core suite, whose shared pipelines reproduced the published accuracies exactly (scripts/adopt_bci2a_core16.py)"
 }

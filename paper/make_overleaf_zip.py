@@ -37,6 +37,9 @@ CORE = ["main.tex", "macros_auto.tex", "refs.bib",
 # beside the text that discusses it rather than queued at the top of Results.
 # They are collected by glob because their number changes with the analysis.
 TABLE_GLOB = "tab_*_auto.tex"
+# The supplement's tables are generated under their own prefix, so the
+# main glob does not see them.
+SUPP_TABLE_GLOB = "supp_table_*_auto.tex"
 FIGURE_DIRS = [ROOT / "results" / "figures_paper", ROOT / "results" / "figures",
                PAPER / "figures"]
 def _bbl() -> Path | None:
@@ -62,10 +65,21 @@ BBL = _bbl()
 SAFE_NAME = re.compile(r"^[A-Za-z0-9_]+\.[A-Za-z0-9]+$")
 
 
-def referenced_figures() -> list[str]:
-    tex = (PAPER / "main.tex").read_text(encoding="utf-8")
-    tex = re.sub(r"(?m)%.*$", "", tex)
-    return sorted(set(re.findall(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}", tex)))
+def referenced_figures(*tex_files: str) -> list[str]:
+    """Figures included by the given .tex files, comments stripped.
+
+    Defaults to main.tex. The supplement is passed explicitly, because it
+    includes four figures of its own that main.tex never mentions.
+    """
+    names: set[str] = set()
+    for fname in (tex_files or ("main.tex",)):
+        path = PAPER / fname
+        if not path.exists():
+            continue
+        tex = re.sub(r"(?m)%.*$", "", path.read_text(encoding="utf-8"))
+        names |= set(re.findall(
+            r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}", tex))
+    return sorted(names)
 
 
 def find_figure(name: str) -> Path:
@@ -99,7 +113,32 @@ def build_zip(dest: Path) -> list[str]:
         raise FileNotFoundError(
             f"{supp_aux} missing; build supplementary.tex before packing")
     sources.append((supp_aux, "supplementary.aux"))
-    for fig in referenced_figures():
+
+    # The supplement itself. Shipping only supplementary.aux resolves the
+    # cross-references in main.tex and then sends a paper that cites four
+    # tables and four figures nobody can read: a referee flagged exactly that
+    # on the first submission. The source, its generated tables and the built
+    # PDF all travel, so the supplement can be both read and rebuilt.
+    supp_tex = PAPER / "supplementary.tex"
+    if not supp_tex.exists():
+        raise FileNotFoundError(f"{supp_tex} missing")
+    sources.append((supp_tex, "supplementary.tex"))
+
+    supp_tables = sorted(PAPER.glob(SUPP_TABLE_GLOB))
+    if not supp_tables:
+        raise FileNotFoundError(
+            f"no {SUPP_TABLE_GLOB} in {PAPER}; run python paper/make_tables.py")
+    for t in supp_tables:
+        sources.append((t, t.name))
+
+    supp_pdf = PAPER / "build" / "supplementary.pdf"
+    if not supp_pdf.exists():
+        raise FileNotFoundError(
+            f"{supp_pdf} missing; build supplementary.tex before packing")
+    sources.append((supp_pdf, "supplementary.pdf"))
+
+    # Figures from both documents, deduplicated in case one is ever shared.
+    for fig in referenced_figures("main.tex", "supplementary.tex"):
         sources.append((find_figure(fig), Path(fig).name))
     # The architecture figure's editable source travels with the manuscript, so
     # a co-author or a later reader can change it rather than being stuck with

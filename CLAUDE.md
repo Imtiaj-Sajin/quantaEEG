@@ -71,9 +71,9 @@ src/qeeg/
   data.py           PhysioNet EEGMMIDB + MOABB loaders, epoching, channel sets
   quantum.py        density matrices, HS/fidelity/Bures/QRE kernels,
                     reference_whitener, CircuitKernel
-  pipelines.py      the pipeline registry; suite="core" (the published 15),
-                    "extended" (+8: reference-frame kernels, QRE, SPD-kernel
-                    controls)
+  pipelines.py      the pipeline registry; suite="core" (16 sensor-frame
+                    pipelines), "extended" (+7: reference-frame kernels and
+                    the two SPD-kernel controls)
   reference.py      the invariance proposition + its numerical check, and the
                     sensor-vs-reference concentration diagnostic
   transfer.py       leave-one-subject-out cross-subject transfer
@@ -250,6 +250,16 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
   checkpoints with `--resume` (verified identical to an uninterrupted run).
   Check progress by counting `^  \[` lines in `results/run_*.log`, and check
   for this crash with `grep -l forrtl results/run_*.log`.
+- **A scheduled task runs at BelowNormal priority by default, and on a hybrid
+  CPU that parks it on the efficiency cores.** On 2026-09-17 the i9-14900K
+  rerun of IV-2a used 12 CPU-minutes in its first 35 wall-minutes. Register
+  the task with `-Priority 4` in `New-ScheduledTaskSettingsSet` (Normal), or
+  fix a live run with `(Get-Process -Id PID).PriorityClass = 'Normal'` plus
+  `$t = Get-ScheduledTask NAME; $t.Settings.Priority = 4; Set-ScheduledTask $t`.
+- **Git Bash heredocs on this machine collapse `\\` to `\`.** A Python patch
+  script written through `cat <<'EOF'` loses backslashes in LaTeX strings
+  (`\\ref` arrives as `\ref`, `\\N` as a unicode escape error). Edit
+  manuscript and LaTeX-emitting code with the Edit or Write tools instead.
 - **Transfer at 104 subjects is memory-bound, not just CPU-bound.** Each
   process sits at ~1.3 GB steady but peaks far higher while precomputing the
   five 4680x4680 Gram matrices. Twelve of them do not fit in 24 GB: on
@@ -301,7 +311,8 @@ size is identical at 3 qubits and the datasets are directly comparable.
 3. **More data widens the gap in the sensor frame.** On IV-2a (288 trials) the
    classical-quantum gap is 0.079 versus 0.032 on PhysioNet (45 trials). This
    kills the "the quantum model was starved" defence. Ranking is stable across
-   the two datasets (Spearman 0.882). **Reinterpreted in §4.10:** a kernel with
+   the two datasets (Spearman 0.877 over all 16 core pipelines; it was 0.882
+   over 15 before IV-2a gained QRE-RBF). **Reinterpreted in §4.10:** a kernel with
    the wrong invariance cannot use extra data, while the classical baselines
    can. Give it the right frame and the extra data becomes *more* valuable to
    the quantum kernels than to the classical ones, which is why the frame
@@ -312,24 +323,33 @@ size is identical at 3 qubits and the datasets are directly comparable.
    recentring at 3 qubits). **Settled in §4.12:** the sweep to 6 qubits in
    both frames shows reference-frame variance never falls below its 3-qubit
    value (1.6-2.4× at 6q), so the "run it wider" corollary survives. Say
-   "never falls below", not "rises monotonically": three kernels dip ~7 %
-   from 5q to 6q.
+   "never falls below", not "rises monotonically": at n = 104 three of the
+   four kernels dip, by up to 9 %, between 4 and 5 qubits (it was 5q to 6q at
+   n = 30; the macros find the dip wherever it is).
 5. **The frame is the whole effect (§4.6-§4.14).** Recentring reverses the
-   headline comparison on both datasets, but the metric-matched classical twin
-   matches every quantum kernel at the primary partition: TOST puts the two
-   families within ±0.032 accuracy across all 30 comparisons in six settings.
-   **Under two further seeds (§4.14) the bandwidth-tuned kernels (HS-RBF,
-   Bures-RBF, QRE-RBF) fall significantly behind the twin, never ahead;**
-   the parameter-free Fidelity and HS-overlap stay tied. State it as "matches
-   at best", not "equivalent". The gain is the frame and the
+   headline comparison on all three datasets, but the metric-matched classical
+   twin matches every quantum kernel: at n = 104 TOST puts the two families
+   within ±0.028 accuracy across all 35 comparisons in seven settings. The
+   separations run by kernel family, in both directions. The parameter-free
+   **Fidelity kernel is ahead of the twin by about one point in every
+   PhysioNet partition** (+0.003 to +0.011), significant after per-setting
+   Holm at the primary partition (Holm p = 0.015) and on Cho2017 (0.007); it
+   does not survive if all 25 within-subject twin tests are pooled on
+   PhysioNet (0.070), while Cho2017 still does (0.036). The **bandwidth-tuned
+   kernels fall behind the twin** under other partitions, significantly only
+   before correction. State it as "matches at best, one point either way",
+   never "equivalent" or "tied". The gain is the frame and the
    SPD-kernel-in-an-SVM formulation, neither of which is quantum.
 6. **Cross-session transfer (§4.11) is parity too**, in the setting the paper
    had named as the most promising for a real quantum effect. Sensor-frame
    quantum kernels sit near chance (0.54-0.58) while classical baselines hold
    0.70-0.73; per-session recentring is worth +0.17 to +0.22 (9/9 subjects)
    and then quantum minus twin is within ±0.009, p ≥ 0.5.
-7. **Cho2017, n = 52 (§4.15), holds the one comparison that favours a
-   quantum kernel:** Fidelity-ref beats the twin by +0.010 (p = 0.0015,
+7. **Cho2017, n = 52 (§4.15), holds the strongest comparison that favours a
+   quantum kernel** (PhysioNet has the same one, see 5, and few-trial
+   calibration a third, see §3.10: 11 of 50 at uncorrected p < 0.05, 7 after
+   per-size Holm, 3 pooled, none against):
+   Fidelity-ref beats the twin by +0.010 (p = 0.0015,
    39/52), inside the ±0.02 margin (TOST 5/5), and does *not* beat TS+LR
    (+0.004, p = 0.17), which itself beats the twin there. Frame effect is
    smallest on this dataset (+0.012 to +0.063) because its sensor-frame

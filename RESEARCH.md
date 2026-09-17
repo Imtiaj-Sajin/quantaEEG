@@ -1020,6 +1020,8 @@ the poorly-estimated-reference regime (few-trial calibration).
 
 ### 4.12 The register sweep, redone in both frames (resolves the §4.9 caveat)
 
+*Written at n = 30. Parts are superseded at n = 104: see §4.16.*
+
 `reference.py --gram --channels {motor8,motor16,motor32,all64}`, n = 14
 subjects, PhysioNet; `results/reference_gram_sweep.csv`.
 
@@ -1062,6 +1064,8 @@ scale), not the parity.
 
 ### 4.13 Sixteen channels (4 qubits): the false positive becomes *significant*
 
+*Written at n = 30. Parts are superseded at n = 104: see §4.16.*
+
 Same extended suite, `--channels motor16` (16 sensorimotor channels, one
 density matrix on 4 qubits), n = 30, nested CV, five batches merged into
 `raw_folds_refstate_motor16_q4.csv` (~250 s/subject/process).
@@ -1094,6 +1098,8 @@ density matrix on 4 qubits), n = 30, nested CV, five batches merged into
 ---
 
 ### 4.14 Seeds 1 and 2: the twin comparison is an inequality, not an equivalence
+
+*Written at n = 30. Parts are superseded at n = 104: see §4.16.*
 
 The PhysioNet 3-qubit extended suite re-run with `--seed 1` and `--seed 2`
 (new outer partitions, everything else identical; ~3 min/subject/process,
@@ -1132,6 +1138,8 @@ Do not describe the seed-0 result as "the" PhysioNet result any more; cite
 ---
 
 ### 4.15 Cho2017 (n = 52): the one comparison that favours a quantum kernel
+
+*Written at n = 30. Parts are superseded at n = 104: see §4.16.*
 
 Extended suite on MOTOR_8, 52 subjects, 200 trials each (240 for three),
 six batches of ~9 min/subject (`raw_folds_refstate_cho2017_motor8_q4.csv`).
@@ -1174,6 +1182,62 @@ Cross-dataset picture after all seven settings: quantum − twin ranges from
 −0.028 (PhysioNet seed 2, QRE) to +0.010 (Cho2017, Fidelity). Both
 excursions are significant; neither reaches the best classical pipeline.
 That is the paper's final statement of the twin result.
+
+---
+
+### 4.16 At n = 104: what changed, and what the second review caught (2026-09-17)
+
+§4.6 to §4.15 were written at n = 30 on PhysioNet. The full cohort (104
+subjects) moved several of their readings, and a second referee report
+(minor revision, 8.5/10) found prose in the manuscript still asserting the
+old ones. The numbers below are the n = 104 values; `REVISION.md` has the
+item-by-item record. Where this section and an earlier one disagree, this one
+is current.
+
+- **The fidelity kernel is not "tied" with the twin on PhysioNet (§4.14).** It
+  is ahead in all three partitions, +0.0113, +0.0033 and +0.0061. At the
+  primary partition that survives Holm over the five kernels of the setting
+  (Holm p = 0.015); at seed 2 it is significant only before correction.
+  Pooling all 25 within-subject twin comparisons into one family, PhysioNet
+  no longer survives (0.070) and Cho2017 still does (0.036). The paper
+  reports both families. The sign-flipping differences of §4.14 are the
+  bandwidth kernels, not fidelity, so §4.15's bound (3) was the wrong argument
+  and is gone from the paper. "On one dataset" is now "on two datasets".
+- **The bandwidth kernels are behind the twin under resampling, but at n = 104
+  only one such comparison is significant (HS-RBF, seed 1, uncorrected p =
+  0.021, Holm 0.103).** "Significantly behind, never ahead" (§4.14) is too
+  strong now.
+- **Four qubits (§4.13): the false positive is no longer significant.** The
+  uncontrolled lead is +0.0071, p = 0.097, and the twin is ahead of every one
+  of the five quantum kernels (−0.0088 to −0.0017). The paper had kept "is
+  conventionally significant ... on thirty subjects" from n = 30.
+- **The register-sweep dip (§4.12) moved.** Three of the four
+  reference-frame kernels dip by up to 9 % between 4 and 5 qubits, not 5 and 6.
+  The macro now scans every step, after printing "up to 0 %" once.
+- **Few-trial calibration** counts need their correction stated: 11 of 50
+  kernel-versus-twin comparisons reach uncorrected p < 0.05 in the quantum
+  kernels' favour, 7 survive Holm within each dataset and size, 3 survive
+  Holm pooled over all 50, none favour the twin. The largest equivalence
+  bound, 0.029, is outside the ±0.02 margin; the largest mean difference,
+  +0.016, is inside it. The best kernel clears the best classical pipeline at
+  uncorrected p < 0.05 on Cho2017 at k = 10 and 20 and IV-2a at k = 10, and
+  after Holm over the ten sizes at one of them.
+- **Trial count and the gap (§4.10).** From PhysioNet to IV-2a the classical
+  baselines gained +0.119 to +0.145 and the sensor-frame density-matrix
+  kernels +0.034 to +0.055, not "roughly 0.15" and "about 0.05".
+- **The uncontrolled reversal is largest on PhysioNet** (+0.012) and small on
+  IV-2a and Cho2017 (+0.004 each), so it no longer "grows on the
+  better-powered data".
+- **IV-2a core now has 16 pipelines.** QRE-RBF was added to the core suite
+  after IV-2a had run. The rerun (9 subjects, 1 h 53 min on one core)
+  reproduced the 15 published pipelines' accuracies and selected
+  hyperparameters exactly in all 2,025 fold rows. Four folds of the three
+  circuit kernels differed in AUC by one tied pair of decision values (about
+  0.0012 each), with every pipeline's mean AUC unchanged at three decimals.
+  Only the new pipeline's 135 rows were appended to the published file. The
+  cross-dataset Spearman correlation, now over 16 pipelines, is 0.877 (0.882
+  over 15), and 11 of the 15 IV-2a family comparisons sit at the rank-test
+  floor.
 
 ---
 

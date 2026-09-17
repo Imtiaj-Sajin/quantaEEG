@@ -241,3 +241,59 @@ future change:
 * Six numbers in the concentration section were typed by hand and had gone
   stale; they are macros now.
 * `results/n30/` held the current cohort under the old cohort's name.
+
+## Second review: minor revision, 8.5/10 (2026-09-17)
+
+The referee read the rebuilt PDF and the repository and asked for a
+consistency pass: accept on receipt if items 1 to 12 are addressed, no new
+experiments required. Every item was checked against the source before it was
+touched, and every one was real. Most were prose around generated numbers
+that the rerun had changed underneath, so where a sentence asserted a fact
+about the numbers, the fact is now generated too.
+
+| # | Referee item | What changed | Status |
+|---|---|---|---|
+| 1 | Section 3.2 says neither control is significant, then reports p < 0.001 for both | The verdict is generated from the two p-values (`\ControlsVerdict`) and the paragraph rewritten | done |
+| 2 | The twin is called the second-best pipeline; four are ahead of it | Rank, total and number ahead are generated (`\TwinRank`, `\TwinRankOf`, `\TwinAhead`) | done |
+| 3 | "Widens from 0.028 to 0.022"; Table 8 caption "never in their favour" | Primary-partition bound is its own macro (0.018); the caption is generated per kernel family and labels its significance as uncorrected | done |
+| 4 | Qualifications skip HS-RBF at 4 qubits; "does not survive its family" with no corrected p | All three off-zero intervals are listed with per-setting Holm p. Two survive (Fidelity, PhysioNet 0.015 and Cho2017 0.007), one does not (HS-RBF 4q, 0.242). The pooled 25-test family is also reported: Cho2017 survives (0.036), PhysioNet does not (0.070). The false "changing sign between partitions" argument is replaced by the fact that Fidelity is ahead in all three partitions, significant after Holm in one. "One dataset" is now two | done |
+| 5 | Section 3.6 calls p = 0.097 "conventionally significant", "thirty subjects", "the same picture" | Paragraph rewritten: at four qubits the twin is ahead of every quantum kernel; verdicts and sign are generated | done |
+| 6 | Section 3.10: 0.029 "inside" a 0.02 margin; correction for "11 in favour, 0 against" | 0.029 is the largest bound and is stated as outside the margin; the largest mean difference (+0.016) is the one inside. Counts are given three ways: 11 uncorrected, 7 after per-size Holm, 3 pooled over all 50, none against. "Only at the smallest training set" was also wrong (Cho2017 k = 10 and 20); now generated | done |
+| 7 | Abstract says no kernel beats the best classical pipeline anywhere; Section 3.10 says otherwise | Abstract, introduction, discussion and conclusion now say "no quantum advantage of practical size" and name the few-trial exception. Abstract 297 words | done |
+| 8 | Two "third candidate"s in Section 4.4 | The second is now the second; the section also names both datasets with the fidelity separation | done |
+| 9 | Figure 7 axis says 30 subjects; Table 3 has 15 IV-2a rows against 16 claimed | Axis label is read from the result files. IV-2a rerun with the 16-pipeline core suite; `scripts/adopt_bci2a_core16.py` requires the 15 shared pipelines to reproduce the published accuracies exactly before adding the QRE-RBF rows. They did, in all 2,025 fold rows (four circuit-kernel folds differ in AUC by one tied pair); the 135 new rows were appended to the published bytes. Table 3 has 16 rows, Spearman 0.877 over 16 | done |
+| 10 | Figure 2 caption: "one-second window", "five evaluation settings" | Each dataset's own window is described; the settings count is the generated macro | done |
+| 11 | "p <= < 0.001", "up to 0 %", "pre-specified +-0.02 margin" | Max-p macros carry their own relation; the dip is found at whichever register step it occurs; the caption says not pre-registered. `check_tex.py` now fails on all of these (verified against the committed version, which it rejects on six counts) | done |
+| 12 | References [6], [8], [9], [13] incomplete | Completed from Crossref and PubMed. QEEGNet was typed `@article` so its SiPS venue was silently dropped; Carter et al is ahead of print and marked in press with its DOI. The check also found wrong first names in three entries (initials unchanged) and quEEGNet misspelled as qEEGNet | done |
+| 13 | Garg and Garg paragraph out of place in Results | Moved to Discussion, section 4.2 | done |
+
+Found while fixing these, and fixed with them:
+
+* **`submission.zip` did not contain the supplement.** It carried
+  `supplementary.aux` so the cross-references resolved, but not the
+  supplement's source, tables, PDF or its four figures. The referee
+  guessed as much ("make sure the supplement actually arrived").
+* The IV-2a rank-floor paragraph typed "ten of the fourteen" and multiplied the
+  floor by a hard-coded 14 while quoting PhysioNet's family size. Generated now.
+* Section 3.5 and the Discussion both claimed the reversal was "a publishable
+  claim of quantum advantage at p = 0.095" with the effect "growing on the
+  better-powered" dataset. At n = 104 it is not significant and is largest on
+  PhysioNet. The duplicate in Section 3.5 is gone; the Discussion version is
+  corrected.
+* Negative numbers quoted in running text printed with a hyphen; the macros
+  now carry a true minus.
+* `use_local_datasets.py` crashed on a fresh clone outside Windows, and the
+  README called it optional when it must run before the download to keep the
+  data in `datasets/`.
+
+Deliberately not done, and why (for the response letter):
+
+* **The 15 % length cut.** Not an acceptance condition. The genuine duplication
+  in Section 3.5 was removed instead.
+* **Moving Figure 2 to the supplement.** The referee wrote "could"; it is the
+  reader's only map of the design.
+* **Removing CLAUDE.md.** It stays. An AI-use disclosure is the right response
+  and needs the corresponding author's wording.
+
+Still needing the corresponding author: the AI-use disclosure statement, the
+title, `\funding{}`, and (suggested) a Zenodo DOI for a tagged release.

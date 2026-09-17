@@ -168,6 +168,70 @@ for h in dash_hits[:20]:
 if dash_hits:
     problems.append(f"em-dashes present: {len(dash_hits)}")
 
+# ------------------------------------------------- rendering regressions
+# Each of these shipped in a clean build and was quoted back by a referee.
+# They are prose around generated numbers, so no macro could catch them.
+print("\nrendering regressions:")
+macro_val = dict(re.findall(r"(?m)^" + re.escape(BS + "newcommand{" + BS)
+                            + r"(\w+)\}\{(.*)\}\s*$", mac))
+prose = _strip_tex_comments(tex)
+regress: list[str] = []
+
+
+def _num(v: str) -> float | None:
+    v = v.replace(BS + "ensuremath{-}", "-")
+    m = re.fullmatch(r"\s*[+-]?\d+(?:\.\d+)?\s*", v)
+    return float(v) if m else None
+
+
+# 1. A relation typed in front of a macro that already carries one, which
+#    renders "all p <= < 0.001".
+for rel, name in re.findall(r"(\\le\b|\\leq\b|\\ge\b|\\geq\b|=|<|>)\s*"
+                            + re.escape(BS) + r"(\w+)", prose):
+    v = macro_val.get(name, "")
+    if v.startswith(BS + "ensuremath{") and re.search(r"[<>=]|\\le|\\ge", v[:30]):
+        regress.append(f"relation '{rel}' typed before \\{name}, which already "
+                       f"carries one ({v})")
+
+# 2. "up to \Macro" where the macro is zero: "dipping by up to 0 %".
+for name in re.findall(r"up to\s+" + re.escape(BS) + r"(\w+)", prose):
+    x = _num(macro_val.get(name, ""))
+    if x is not None and x == 0:
+        regress.append(f"'up to \\{name}' renders as up to 0")
+
+# 3. The equivalence margin described as pre-specified; section 2.9 and the
+#    TOST tables say it was not pre-registered.
+for text, where in ((prose, "main.tex"), (gen, "generated tables")):
+    if re.search(r"pre-?specified[^.]{0,60}margin|pre-?specified\s*\$?\\pm",
+                 text, re.I):
+        regress.append(f"{where}: the equivalence margin is called pre-specified")
+
+# 4. A generated quantity said to be inside the margin when it is not:
+#    "The largest difference, 0.029, is inside the +-0.02 margin".
+margin = _num(macro_val.get("EquivMargin", ""))
+for name in re.findall(re.escape(BS) + r"(\w+)(?:\{\})?,?\s+(?:is|lies|stays)\s+"
+                       r"inside\s+the\s+\$\\pm\\EquivMargin", prose):
+    x = _num(macro_val.get(name, ""))
+    if margin is not None and x is not None and abs(x) >= margin:
+        regress.append(f"\\{name} = {x} is described as inside the "
+                       f"+-{margin:g} margin")
+
+# 5. "conventionally significant" right after a p-value that is not.
+for name, after in re.findall(r"\$p" + re.escape(BS) + r"(\w+)\$(.{0,160})",
+                              prose.replace("\n", " ")):
+    v = macro_val.get(name, "")
+    m = re.search(r"(\d+\.\d+)\s*$", v)
+    if (m and "=" in v and float(m.group(1)) >= 0.05
+            and re.search(r"\bconventionally significant", after)
+            and not re.search(r"\bnot\b", after.split("significant")[0])):
+        regress.append(f"p = {m.group(1)} (\\{name}) is called conventionally "
+                       f"significant")
+
+print(f"  {'none found' if not regress else str(len(regress)) + ' found'}")
+for r in regress:
+    print(f"    {r}")
+problems.extend(regress)
+
 # ------------------------------------------------------------- figures
 figs = set(re.findall(re.escape(BS + "includegraphics") + r"(?:\[[^\]]*\])?\{([^}]*)\}", tex))
 print(f"\nfigures referenced                : {sorted(figs)}")

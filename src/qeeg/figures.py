@@ -61,6 +61,33 @@ def short(name: str) -> str:
     """
     return name.split("/", 1)[-1]
 
+def _dataset_label(results: Path, tag: str, name: str) -> str:
+    """Two-line tick label: dataset name, then its subject and trial counts.
+
+    Both counts are read from the run itself (summary for subjects, metadata for
+    trials per subject), so the label cannot disagree with the data plotted
+    above it.
+    """
+    import json
+
+    subj = trials = None
+    summ = results / f"summary_{tag}.csv"
+    if summ.exists():
+        subj = int(pd.read_csv(summ)["n_subjects"].max())
+    meta = results / f"meta_{tag}.json"
+    if meta.exists():
+        counts = set(json.loads(meta.read_text()).get(
+            "n_trials_per_subject", {}).values())
+        if len(counts) == 1:
+            trials = counts.pop()
+    parts = []
+    if subj is not None:
+        parts.append(f"{subj} subjects")
+    if trials is not None:
+        parts.append(f"{trials} trials each")
+    return name + ("\n" + ", ".join(parts) if parts else "")
+
+
 def _surface() -> str:
     """Actual canvas colour: white for the manuscript, tinted for standalone."""
     return "#ffffff" if PAPER else SURFACE
@@ -448,8 +475,13 @@ def fig_crossdataset(results: Path, out: Path) -> bool:
 
     ax.axhline(0.5, color=INK_MUTED, linewidth=1.0, linestyle="--", zorder=1)
     ax.set_xticks([x0, x1])
-    ax.set_xticklabels(["PhysioNet EEGMMIDB\n30 subjects, 45 trials each",
-                        "BCI Competition IV-2a\n9 subjects, 288 trials each"],
+    # Subject and trial counts come from the run's own summary and metadata.
+    # They were typed here once, and survived the rerun from 30 to 104
+    # subjects unchanged: a referee found "30 subjects" printed under a figure
+    # whose data was n = 104.
+    ax.set_xticklabels([_dataset_label(results, "motor8_q4", "PhysioNet EEGMMIDB"),
+                        _dataset_label(results, "bci2a_motor8_q4",
+                                       "BCI Competition IV-2a")],
                        fontsize=9, color=INK)
     ax.set_xlim(-0.06, 1.62)
     ax.set_ylabel("Within-subject accuracy")
@@ -464,11 +496,14 @@ def fig_crossdataset(results: Path, out: Path) -> bool:
     ]
     ax.legend(handles=handles, loc="upper left", fontsize=8.4)
 
+    rho = (pa.loc[common, "acc_mean"].rank()
+           .corr(pb.loc[common, "acc_mean"].rank(), method="spearman"))
     _caption(fig, (
         "Identical pipelines, channels, protocol and tuning budget on both "
         "datasets; only the data differs.\n"
-        "Dashed line marks chance. Spearman rank correlation between the two "
-        "orderings is 0.882."
+        f"Dashed line marks chance. Spearman rank correlation between the two "
+        f"orderings, over the {len(common)} pipelines both datasets share, "
+        f"is {rho:.3f}."
     ))
     _save(fig, out, "fig4_crossdataset")
     return True

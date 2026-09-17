@@ -24,10 +24,31 @@ def fmt_p_eq(p):
     val = "0.001" if p < 0.001 else f"{p:.3f}"
     return r"\ensuremath{{}" + rel + r"{}}" + val
 
+
+def fmt_p_max(p):
+    r"""The largest of several p-values, relation included, for "all $p\Macro$".
+
+    The prose used to write ``all $p\le\Macro$`` around a bare ``fmt_p``
+    value, which rendered "all p <= < 0.001" whenever the largest p fell below
+    0.001: a referee quoted it back twice. Carrying the relation here gives
+    "all p < 0.001" or "all p <= 0.009" from the same sentence.
+    """
+    if p < 0.001:
+        return r"\ensuremath{{}<{}}0.001"
+    return r"\ensuremath{{}\le{}}" + f"{p:.3f}"
+
+
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+# Small counts read better as words in running prose ("three of the four").
+NUMBER_WORDS = {0: "none", 1: "one", 2: "two", 3: "three", 4: "four",
+                5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine"}
+ORDINAL_WORDS = {1: "best", 2: "second-best", 3: "third", 4: "fourth",
+                 5: "fifth", 6: "sixth", 7: "seventh", 8: "eighth",
+                 9: "ninth", 10: "tenth"}
 
 # Sensor-frame pipeline paired with its reference-frame counterpart.
 FRAME_PAIRS = [
@@ -362,6 +383,40 @@ Equiv. & Bound \\
     return True
 
 
+def _family_holm_table(res: Path) -> dict:
+    """(setting, kernel label) -> (raw p, Holm p) for the twin difference test.
+
+    Holm is applied within each setting over its five quantum kernels, which is
+    the family section 2.9 fixes for the metric-matched twin comparisons. Only
+    the within-subject settings are covered: those are the ones whose
+    difference tests the prose quotes.
+    """
+    from make_tables import paired  # same paired test as every other table
+
+    d = load(res)
+    label = {b: lab for _, b, lab in FRAME_PAIRS}
+    fb_label = {b: lab for _, b, lab in FB_FRAME_PAIRS}
+    settings = [
+        ("PhysioNet, 3 qubits", d.get("phys_per"), REF_KERNELS, TWINS, label),
+        ("PhysioNet, 4 qubits", d.get("m16_per"), REF_KERNELS, TWINS, label),
+        ("PhysioNet, 5 qubits", d.get("fb_per"), FB_REF_KERNELS, FB_TWINS, fb_label),
+        ("BCI IV-2a, 3 qubits", d.get("bci_per"), REF_KERNELS, TWINS, label),
+        ("Cho2017, 3 qubits", d.get("cho_per"), REF_KERNELS, TWINS, label),
+    ]
+    out = {}
+    for name, per, kernels, twins, lab in settings:
+        if per is None:
+            continue
+        twin = _best_twin(per, twins)
+        ks = [k for k in kernels if k in per.columns]
+        if twin is None or not ks:
+            continue
+        raw = [paired(per, k, twin)["p"] for k in ks]
+        for k, r, a in zip(ks, raw, holm(raw)):
+            out[(name, lab[k])] = (r, a)
+    return out
+
+
 def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
     p = res / "equivalence_twin.csv"
     if not p.exists():
@@ -411,6 +466,36 @@ def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
         defs[f"Equiv{prefix}Pass"] = f"{int(sub.equivalent.sum())}"
         defs[f"Equiv{prefix}N"] = f"{len(sub)}"
         defs[f"Equiv{prefix}Worst"] = f"{sub['bound'].max():.4f}"
+    # The comparisons that miss the margin, and why. At the primary partition
+    # they are all in the nine-subject cross-session setting with intervals
+    # that contain zero, which is a power problem, not a difference; the prose
+    # used to call a 2-to-1 split "balanced", which a referee rightly queried.
+    fails = d[~d.equivalent]
+    nf = len(fails)
+    fq = int((fails["mean"] > 0).sum())
+    fc = int((fails["mean"] < 0).sum())
+    w = lambda k: NUMBER_WORDS.get(k, str(k))
+    if nf == 0:
+        defs["EquivFailSentence"] = (
+            f"First, every comparison meets the $\\pm{margin:g}$ margin.")
+    else:
+        s = (f"First, {w(nf)} {'comparison misses' if nf == 1 else 'comparisons miss'} "
+             f"the $\\pm{margin:g}$ margin, {w(fq)} in the quantum kernel's favour "
+             f"set against {w(fc)} in the twin's.")
+        zero_in = bool(((fails.ci_low < 0) & (fails.ci_high > 0)).all())
+        if fails.setting.nunique() == 1 and zero_in:
+            nsub = int(fails.n.iloc[0])
+            s += (f" {'It is' if nf == 1 else ('Both are' if nf == 2 else 'All ' + w(nf) + ' are')} "
+                  f"in the {fails.setting.iloc[0]} setting, which has only "
+                  f"{w(nsub)} subjects, and "
+                  f"{'its interval contains' if nf == 1 else 'every one of their intervals contains'} zero: "
+                  f"{'it fails' if nf == 1 else 'they fail'} for want of subjects, "
+                  f"not because the kernels differ.")
+        elif zero_in:
+            s += (" Every one of their intervals contains zero, so they fail "
+                  "for want of precision, not because the kernels differ.")
+        defs["EquivFailSentence"] = s
+
     # Grammar that follows the count, so a caption written once stays correct
     # whether the new cohort leaves zero, one or several intervals off zero.
     n_ze = len(zero_excl)
@@ -437,12 +522,120 @@ def equivalence_macros(res: Path, out: list[str], margin: float = 0.02) -> None:
             "all of them on the quantum side" if (zero_excl["mean"] > 0).all()
             else "all of them on the twin's side" if (zero_excl["mean"] < 0).all()
             else "mixed in sign")
+
+        # Each interval's difference test, Holm-corrected within its own
+        # family. Section 2.9 fixes the family as the five kernels compared
+        # with the twin in one setting, and argues against pooling families
+        # because that would make the null results easier to reach. The prose
+        # used to say the PhysioNet fidelity result "does not survive its
+        # family" without showing a corrected p; under that rule it does
+        # survive (Holm p = 0.015), and a referee rightly asked to see it.
+        fam = _family_holm_table(res)
+        survive, fall = [], []
+        survive_sets, survive_kernels = set(), set()
+        for _, x in zero_excl.iterrows():
+            key = (x["setting"], x["kernel"])
+            if key not in fam:
+                continue
+            raw, adj = fam[key]
+            where = x["setting"].replace(", 3 qubits", "")
+            clause = (f"{x['kernel']} on {where} "
+                      f"(${x['mean']:+.4f}$, Holm $p={adj:.3f}$)")
+            (survive if adj < 0.05 else fall).append((x["mean"], clause))
+            if adj < 0.05:
+                survive_sets.add(x["setting"].split(",")[0])
+                survive_kernels.add(x["kernel"])
+
+        def _join(cl):
+            cl = [c for _, c in cl]
+            return (cl[0] if len(cl) == 1
+                    else ", ".join(cl[:-1]) + " and " + cl[-1])
+
+        defs["EquivZeroSurviveN"] = NUMBER_WORDS.get(len(survive), str(len(survive)))
+        defs["EquivZeroFallN"] = NUMBER_WORDS.get(len(fall), str(len(fall)))
+        defs["EquivZeroSurviveList"] = _join(survive) if survive else "none"
+        defs["EquivZeroFallList"] = _join(fall) if fall else "none"
+        both = "both" if len(survive) == 2 else "all"
+        defs["EquivZeroSurviveSide"] = (
+            f"{both} in the quantum kernel's favour"
+            if survive and all(m > 0 for m, _ in survive)
+            else f"{both} in the twin's favour"
+            if survive and all(m < 0 for m, _ in survive)
+            else "mixed in sign" if survive else "none")
+        defs["EquivZeroSurviveVerb"] = "survives" if len(survive) == 1 else "survive"
+        defs["EquivZeroFallVerb"] = "does not" if len(fall) == 1 else "do not"
+        defs["EquivZeroSurviveDatasets"] = NUMBER_WORDS.get(
+            len(survive_sets), str(len(survive_sets)))
+        # Whether every surviving interval is the same kernel: the prose
+        # names it once rather than asserting it.
+        defs["EquivZeroSurviveKernel"] = (
+            next(iter(survive_kernels)) if len(survive_kernels) == 1 else "")
+        prose_name = {"Fidelity": "parameter-free fidelity kernel",
+                      "HS-overlap": "parameter-free Hilbert-Schmidt overlap kernel"}
+        n_sd = NUMBER_WORDS.get(len(survive_sets), str(len(survive_sets)))
+        if len(survive_kernels) == 1 and len(survive) > 1:
+            k = next(iter(survive_kernels))
+            defs["EquivZeroSurviveSame"] = (
+                f"{'Both' if len(survive) == 2 else 'All'} are the "
+                f"{prose_name.get(k, k + ' kernel')}, on {n_sd} different datasets.")
+        elif len(survive) == 1:
+            k = next(iter(survive_kernels))
+            defs["EquivZeroSurviveSame"] = f"It is the {prose_name.get(k, k + ' kernel')}."
+        else:
+            defs["EquivZeroSurviveSame"] = (
+                f"They involve {NUMBER_WORDS.get(len(survive_kernels))} "
+                f"different kernels on {n_sd} datasets." if survive else "")
+
+        # The same intervals under a stricter family: every within-subject twin
+        # comparison pooled into one. Section 2.9 argues for the per-setting
+        # family, but a reader who prefers the pooled one should not have to
+        # recompute it, and the old prose had quietly relied on it.
+        keys = list(fam)
+        pooled = dict(zip(keys, holm([fam[k][0] for k in keys])))
+        keep_p, fall_p = [], []
+        for _, x in zero_excl.iterrows():
+            key = (x["setting"], x["kernel"])
+            if key not in fam or fam[key][1] >= 0.05:
+                continue
+            where = x["setting"].split(",")[0]
+            (keep_p if pooled[key] < 0.05 else fall_p).append(
+                f"the {where} one (Holm $p={pooled[key]:.3f}$)")
+        n_pool = len(keys)
+        if keep_p and fall_p:
+            defs["EquivZeroPooledSentence"] = (
+                f"Pooling all {n_pool} within-subject twin comparisons into a "
+                f"single family is stricter: {_join([(0, c) for c in keep_p])} "
+                f"still survives it, and {_join([(0, c) for c in fall_p])} "
+                f"does not.")
+        elif keep_p:
+            defs["EquivZeroPooledSentence"] = (
+                f"{'Both' if len(keep_p) == 2 else 'All'} still survive when "
+                f"all {n_pool} within-subject twin comparisons are pooled into "
+                f"a single family.")
+        elif fall_p:
+            defs["EquivZeroPooledSentence"] = (
+                f"{'Neither' if len(fall_p) == 2 else 'None'} survives if all "
+                f"{n_pool} within-subject twin comparisons are pooled into a "
+                f"single family.")
+        else:
+            defs["EquivZeroPooledSentence"] = ""
+        # How many settings hold a separation that survives its own family.
+        # The twin paragraph used to say "only one", a count typed by hand.
+        sig_sets = {s for (s, _), (_, a) in fam.items() if a < 0.05}
+        ns_sig = len(sig_sets)
+        defs["EquivSigSettingsPhrase"] = (
+            "in none of them is a separation significant after Holm correction"
+            if ns_sig == 0 else
+            f"in only {w(ns_sig)}, discussed below, is a separation significant "
+            f"after Holm correction")
     else:
         defs["EquivZeroExclList"] = "none"
         defs["EquivZeroExclName"] = "none"
         defs["EquivZeroExclDelta"] = "n/a"
         defs["EquivZeroExclAllQuantum"] = "n/a"
         defs["EquivZeroExclSide"] = "none"
+        defs["EquivSigSettingsPhrase"] = (
+            "in none of them is a separation significant after Holm correction")
     out.append("\n%% ------------------------------ equivalence macros\n")
     for k, v in defs.items():
         out.append(f"\\newcommand{{\\{k}}}{{{v}}}")
@@ -570,6 +763,55 @@ def table_seeds(d: dict, paired, fmt_p, esc, out: list[str],
     if len(seeds) < 2:
         return False
 
+    # What the partitions actually did, per kernel family, so the caption can
+    # say it. The caption used to mention only the bandwidth-parameterised
+    # kernels ("never in their favour") while the text reported significant
+    # results in the quantum kernels' favour. Both were true: those were the
+    # parameter-free fidelity kernel. Reported separately, they stop looking
+    # like a contradiction.
+    n_seeds = 0
+    free_sig_q = 0      # partitions where a parameter-free kernel beats the twin
+    free_ahead = 0      # ... where the best parameter-free kernel is ahead at all
+    bw_sig_q = 0        # ... where a bandwidth kernel significantly beats it
+    bw_sig_t = 0        # ... where a bandwidth kernel significantly trails it
+    for seed, per in sorted(seeds.items()):
+        twin = _best_twin(per, TWINS)
+        ks = [k for k in REF_KERNELS if k in per.columns]
+        if twin is None or not ks:
+            continue
+        n_seeds += 1
+        st = {k: paired(per, k, twin) for k in ks}
+        free = [v for k, v in st.items() if "RBF" not in k]
+        free_ahead += bool(free) and max(v["delta"] for v in free) > 0
+        free_sig_q += any(v["p"] < 0.05 and v["delta"] > 0
+                          for k, v in st.items() if "RBF" not in k)
+        bw_sig_q += any(v["p"] < 0.05 and v["delta"] > 0
+                        for k, v in st.items() if "RBF" in k)
+        bw_sig_t += any(v["p"] < 0.05 and v["delta"] < 0
+                        for k, v in st.items() if "RBF" in k)
+    w = NUMBER_WORDS
+    if bw_sig_q == 0:
+        bw_clause = (f"the bandwidth-parameterised kernels never beat the twin "
+                     f"significantly, and trail it significantly in "
+                     f"{w.get(bw_sig_t, bw_sig_t)} of the {w.get(n_seeds, n_seeds)}")
+    else:
+        bw_clause = (f"the bandwidth-parameterised kernels beat the twin "
+                     f"significantly in {w.get(bw_sig_q, bw_sig_q)} and trail "
+                     f"it in {w.get(bw_sig_t, bw_sig_t)} of the "
+                     f"{w.get(n_seeds, n_seeds)}")
+    if free_ahead == n_seeds:
+        free_clause = (f"the best parameter-free kernel is ahead of the twin in "
+                       f"every partition, significantly so in "
+                       f"{w.get(free_sig_q, free_sig_q)}")
+    else:
+        free_clause = (f"the best parameter-free kernel is ahead of the twin in "
+                       f"{w.get(free_ahead, free_ahead)} of them, significantly "
+                       f"so in {w.get(free_sig_q, free_sig_q)}")
+    family_sentence = (
+        f"Under resampling {bw_clause} partitions, while {free_clause}. "
+        f"Significance here is uncorrected $p<0.05$; the text gives the "
+        f"Holm-corrected counts.")
+
     out.append(r"""
 %% ------------------------------------------------------ Table: seeds
 \begin{table}[htbp]
@@ -580,11 +822,9 @@ state and every other element are unchanged. Columns give the frame effect
 (range over the five kernels), the best reference-frame quantum kernel and
 the classical twin, the quantum-minus-twin difference (range over the five
 kernels), the smallest $p$ against the twin, and how many of the five
-comparisons pass two one-sided tests at the pre-specified $\pm""" + f"{margin:g}" + r"""$
-margin, with the largest bound. The frame effect and the uncontrolled
-reversal reproduce in every partition; the twin comparison moves against the
-bandwidth-parameterised quantum kernels under the other two partitions and
-never in their favour (see text).}
+comparisons pass two one-sided tests at a $\pm""" + f"{margin:g}" + r"""$
+margin, which was not pre-registered, with the largest bound. The frame effect
+and the uncontrolled reversal reproduce in every partition. """ + family_sentence + r"""}
 \begin{tabular}{@{}lcccccc@{}}
 \hline
 Seed & Frame $\Delta$ & Quantum & Twin & Quantum $-$ twin & $\min p$ &
@@ -733,7 +973,7 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
         defs[prefix + "FrameMin"] = f"{min(deltas):+.3f}"
         defs[prefix + "FrameMax"] = f"{max(deltas):+.3f}"
         defs[prefix + "FrameBestKernel"] = best[0]
-        defs[prefix + "FrameMaxP"] = fmt_p(max(s["p"] for _, s in rows))
+        defs[prefix + "FrameMaxP"] = fmt_p_max(max(s["p"] for _, s in rows))
         defs[prefix + "FrameAllBetter"] = (
             "yes" if all(s["n_better"] == s["n"] for _, s in rows) else "no")
         defs[prefix + "FrameN"] = f"{rows[0][1]['n']}"
@@ -752,6 +992,15 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
             st = {k: paired(per, k, twin) for k in ks}
             defs["TwinName"] = esc(twin)
             defs["TwinAcc"] = f"{per[twin].mean():.3f}"
+            # The twin's place in the whole extended suite. The manuscript
+            # called it "the second-best pipeline", typed at n=30; at n=104 it
+            # is fifth, behind three quantum kernels and the log-Euclidean
+            # kernel, and a referee caught it. Generated from the same means.
+            order = per.mean().sort_values(ascending=False)
+            rank = int(list(order.index).index(twin)) + 1
+            defs["TwinRank"] = ORDINAL_WORDS.get(rank, f"{rank}th")
+            defs["TwinRankOf"] = str(len(order))
+            defs["TwinAhead"] = NUMBER_WORDS.get(rank - 1, str(rank - 1))
             defs["TwinDeltaMin"] = f"{min(v['delta'] for v in st.values()):+.4f}"
             defs["TwinDeltaMax"] = f"{max(v['delta'] for v in st.values()):+.4f}"
             defs["TwinMinP"] = fmt_p_eq(min(v["p"] for v in st.values()))
@@ -790,6 +1039,15 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
         defs[prefix + "TwinDeltaMin"] = f"{min(v['delta'] for v in st.values()):+.4f}"
         defs[prefix + "TwinDeltaMax"] = f"{max(v['delta'] for v in st.values()):+.4f}"
         defs[prefix + "TwinMinP"] = fmt_p_eq(min(v["p"] for v in st.values()))
+        defs[prefix + "TwinHolmMinP"] = fmt_p_eq(min(holm([st[k]["p"] for k in ks])))
+        # Which side of the twin the kernels fall on, as a clause. The
+        # four-qubit paragraph called its result "the same picture" as three
+        # qubits after every difference there had turned negative.
+        deltas = [v["delta"] for v in st.values()]
+        defs[prefix + "TwinSignPhrase"] = (
+            "the twin is ahead of every quantum kernel" if max(deltas) < 0
+            else "every quantum kernel is ahead of the twin" if min(deltas) > 0
+            else "the quantum kernels fall on both sides of the twin")
         defs[prefix + "NSubjects"] = f"{len(per)}"
         # The kernel that leads the twin by most, with its own test, so the
         # prose can name it without hand-typing anything.
@@ -819,6 +1077,13 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
             defs[prefix + "TwinHeadDelta"] = f"{t['delta']:+.4f}"
             defs[prefix + "TwinHeadP"] = fmt_p_eq(t["p"])
             defs[prefix + "TwinHeadBetter"] = f"{t['n_better']}/{t['n']}"
+            # Verdicts in words, so no sentence can call p = 0.097 significant.
+            defs[prefix + "HeadRefVerdict"] = (
+                "which is significant at this sample size" if s["p"] < 0.05
+                else "which is not significant")
+            defs[prefix + "TwinHeadCompare"] = (
+                "by more" if t["delta"] > s["delta"]
+                else "by less" if t["delta"] < s["delta"] else "by as much")
 
     # 16 channels = 4 qubits, same suite, same pipeline names.
     if d["m16_per"] is not None:
@@ -863,6 +1128,7 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
         # hyperparameter tuned on 45 trials) behave differently from the
         # parameter-free overlap kernels under resampling, and the prose says so.
         rbf, ovl, sig = [], [], []
+        sig_holm, fid_holm = [], 0
         for seed, per in sorted(seeds.items()):
             twin = _best_twin(per, TWINS)
             ks = [k for k in REF_KERNELS if k in per.columns]
@@ -874,21 +1140,60 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
             dl_all += [v["delta"] for v in st.values()]
             p_all += [v["p"] for v in st.values()]
             bounds += [_tost_bound((per[k] - per[twin]).dropna()) for k in ks]
+            # Holm within the partition's five kernels, the same family as the
+            # primary analysis, so "significant" in the prose can say which kind.
+            adj = dict(zip(ks, holm([st[k]["p"] for k in ks])))
             for k, v in st.items():
                 (rbf if "RBF" in k else ovl).append((v["delta"], v["p"]))
                 if v["p"] < 0.05:
                     sig.append(v["delta"])
+                if adj[k] < 0.05:
+                    sig_holm.append((seed, k, v["delta"]))
+                    if k == "quantum/Fidelity-ref-SVM" and v["delta"] > 0:
+                        fid_holm += 1
             cl = [c for c in per.columns if c.startswith("classical/")]
             if cl:
                 bc = per[cl].mean().idxmax()
                 bq = max(ks, key=lambda k: per[k].mean())
                 heads.append(paired(per, bq, bc)["delta"])
+        # The fidelity kernel on its own, across partitions. The prose used to
+        # dismiss its lead by pointing at differences "changing sign between
+        # partitions"; those were the bandwidth and HS-overlap kernels. The
+        # fidelity kernel's own difference has one sign in every partition.
+        fid = "quantum/Fidelity-ref-SVM"
+        fid_d = [paired(per, fid, _best_twin(per, TWINS))
+                 for _, per in sorted(seeds.items())
+                 if fid in per.columns and _best_twin(per, TWINS)]
+        if fid_d:
+            ahead = sum(v["delta"] > 0 for v in fid_d)
+            defs["SeedFidAheadN"] = NUMBER_WORDS.get(ahead, str(ahead))
+            defs["SeedFidAheadAll"] = "every" if ahead == len(fid_d) else "not every"
+            defs["SeedFidSigN"] = NUMBER_WORDS.get(
+                sum(v["p"] < 0.05 and v["delta"] > 0 for v in fid_d), "0")
+            defs["SeedFidDeltaMin"] = f"{min(v['delta'] for v in fid_d):+.4f}"
+            defs["SeedFidDeltaMax"] = f"{max(v['delta'] for v in fid_d):+.4f}"
         defs["SeedRbfWorst"] = f"{min(x for x, _ in rbf):+.4f}"
         defs["SeedRbfMinP"] = fmt_p_eq(min(p for _, p in rbf))
         defs["SeedOverlapDeltaMin"] = f"{min(x for x, _ in ovl):+.4f}"
         defs["SeedOverlapDeltaMax"] = f"{max(x for x, _ in ovl):+.4f}"
         defs["SeedOverlapMinP"] = fmt_p_eq(min(p for _, p in ovl))
         defs["SeedSigCount"] = f"{len(sig)}"
+        defs["SeedSigHolmCount"] = NUMBER_WORDS.get(len(sig_holm), str(len(sig_holm)))
+        defs["SeedFidHolmN"] = NUMBER_WORDS.get(fid_holm, str(fid_holm))
+        lab = {b: l for _, b, l in FRAME_PAIRS}
+        who = [f"the {lab.get(k, k).replace('Fidelity', 'fidelity')} kernel "
+               f"{'ahead' if dl > 0 else 'behind'} at "
+               f"{'the primary partition' if sd == 0 else f'seed {sd}'}"
+               for sd, k, dl in sig_holm]
+        if not who:
+            defs["SeedHolmSentence"] = "none survives"
+        else:
+            defs["SeedHolmSentence"] = (
+                f"{NUMBER_WORDS.get(len(who), str(len(who)))} "
+                f"{'survives' if len(who) == 1 else 'survive'}: "
+                + (who[0] if len(who) == 1
+                   else ", ".join(who[:-1]) + " and " + who[-1]))
+        defs["SeedNWord"] = NUMBER_WORDS.get(len(seeds), str(len(seeds)))
         defs["SeedSigN"] = f"{len(rbf) + len(ovl)}"
         defs["SeedSigFavourQuantum"] = f"{sum(x > 0 for x in sig)}"
         defs["SeedSigFavourTwin"] = f"{sum(x < 0 for x in sig)}"
@@ -901,6 +1206,22 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
         defs["SeedEquivPass"] = f"{sum(b < 0.02 for b in bounds)}"
         defs["SeedEquivN"] = f"{len(bounds)}"
         defs["SeedWorstBound"] = f"{max(bounds):.3f}"
+        # The same bound restricted to the primary partition (seed 0), for the
+        # sentence that says how far it moves under resampling. That sentence
+        # was quoting EquivWorstBound, the worst bound across all six settings,
+        # so it read "widens from 0.028 to 0.022", which is a narrowing.
+        primary = seeds.get(0)
+        if primary is not None:
+            ptwin = _best_twin(primary, TWINS)
+            pks = [k for k in REF_KERNELS if k in primary.columns]
+            if ptwin and pks:
+                pb = max(_tost_bound((primary[k] - primary[ptwin]).dropna())
+                         for k in pks)
+                defs["SeedPrimaryBound"] = f"{pb:.3f}"
+                wb = max(bounds)
+                defs["SeedBoundMove"] = (
+                    "widens" if wb > pb + 1e-9 else
+                    "narrows" if wb < pb - 1e-9 else "stays")
         if heads:
             defs["SeedHeadRefMin"] = f"{min(heads):+.4f}"
             defs["SeedHeadRefMax"] = f"{max(heads):+.4f}"
@@ -955,7 +1276,7 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
             fr = {k: (ref[k] - sen[k]).dropna() for k in qk}
             defs["CsFrameQMin"] = f"{min(v.mean() for v in fr.values()):+.3f}"
             defs["CsFrameQMax"] = f"{max(v.mean() for v in fr.values()):+.3f}"
-            defs["CsFrameQMaxP"] = fmt_p(max(float(wilcoxon(v).pvalue) for v in fr.values()))
+            defs["CsFrameQMaxP"] = fmt_p_max(max(float(wilcoxon(v).pvalue) for v in fr.values()))
             defs["CsFrameQAllBetter"] = (
                 "yes" if all((v > 0).all() for v in fr.values()) else "no")
             defs["CsSensorQMin"] = f"{min(sen[k].mean() for k in qk):.3f}"
@@ -1012,10 +1333,36 @@ def macros(d: dict, paired, fmt_p, esc, out: list[str]) -> None:
         mono = all(sw[sw.kernel == k].sort_values("qubits").ref_var.is_monotonic_increasing
                    for k in sw.kernel.unique())
         defs["SweepRefMonotone"] = "every" if mono else "not every"
-        # The largest 5q->6q dip in the reference frame, as a fraction.
-        five = sw[sw.qubits == hi - 1].set_index("kernel")
-        dip = (1 - b.ref_var / five.ref_var).clip(lower=0)
-        defs["SweepRefDipMax"] = f"{100 * dip.max():.0f}"
+        # Where, and by how much, the reference-frame variance is not monotone.
+        # This used to measure the 5q->6q step only, because at n = 30 that is
+        # where the dips were. At n = 104 they moved to 4q->5q and every kernel
+        # rises from 5q to 6q, so the fixed step found nothing and the paper
+        # printed "dipping by up to 0 %". Scan every consecutive step instead
+        # and report the one with the largest dip, so the sentence names the
+        # transition the data actually shows.
+        dips = []  # (fraction, kernel, from_q, to_q)
+        for k in sw.kernel.unique():
+            s = sw[sw.kernel == k].sort_values("qubits")
+            q, v = s.qubits.to_list(), s.ref_var.to_list()
+            for i in range(1, len(q)):
+                if v[i] < v[i - 1]:
+                    dips.append((1 - v[i] / v[i - 1], k, int(q[i - 1]), int(q[i])))
+        if dips:
+            worst = max(dips)
+            step = (worst[2], worst[3])
+            n_dip = len({k for _, k, a_, b_ in dips if (a_, b_) == step})
+            defs["SweepRefDipMax"] = f"{100 * worst[0]:.0f}"
+            defs["SweepRefDipFrom"] = str(step[0])
+            defs["SweepRefDipTo"] = str(step[1])
+            defs["SweepRefDipKernels"] = NUMBER_WORDS.get(n_dip, str(n_dip))
+            defs["SweepRefDipKernelsTotal"] = NUMBER_WORDS.get(
+                sw.kernel.nunique(), str(sw.kernel.nunique()))
+        else:
+            defs["SweepRefDipMax"] = "0"
+            defs["SweepRefDipFrom"] = defs["SweepRefDipTo"] = ""
+            defs["SweepRefDipKernels"] = "none"
+            defs["SweepRefDipKernelsTotal"] = NUMBER_WORDS.get(
+                sw.kernel.nunique(), str(sw.kernel.nunique()))
 
     if d["gram"] is not None:
         g = d["gram"]

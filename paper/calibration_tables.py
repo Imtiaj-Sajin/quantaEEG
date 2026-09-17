@@ -143,6 +143,72 @@ def macros(d: dict, fmt_p_eq, esc, out: list[str]) -> None:
     defs["CalibNSigQuantum"] = f"{len(any_sig_pos)}"
     defs["CalibNSigTwin"] = f"{len(any_sig_neg)}"
     defs["CalibWorstBound"] = f"{worst_bound:.3f}"
+
+    # The same count under correction. "11 in favour, 0 against" was an
+    # uncorrected tally over every kernel, size and dataset, and a referee
+    # asked which correction applied. Two families are reported: the five
+    # kernels at one dataset and size (the family every other twin comparison
+    # in the paper uses) and all comparisons pooled into one.
+    from reference_tables import holm
+    rows = []                          # (delta, raw p, per-family Holm p, bound)
+    for key, (label, per) in d.items():
+        for k in per.index.get_level_values(0).unique():
+            pk = per.loc[k]
+            ks = [q for q in REF_KERNELS if q in pk.columns]
+            if TWIN not in pk.columns or not ks:
+                continue
+            st = [_paired(pk, q, TWIN) for q in ks]
+            st = [x for x in st if not np.isnan(x["p"])]
+            for x, a in zip(st, holm([x["p"] for x in st])):
+                rows.append((x["delta"], x["p"], a, x["bound"]))
+    pooled = holm([r[1] for r in rows])
+    defs["CalibNComparisons"] = f"{len(rows)}"
+    defs["CalibNSigQuantumHolm"] = f"{sum(r[2] < 0.05 and r[0] > 0 for r in rows)}"
+    defs["CalibNSigTwinHolm"] = f"{sum(r[2] < 0.05 and r[0] < 0 for r in rows)}"
+    defs["CalibNSigQuantumPooled"] = f"{sum(q < 0.05 and r[0] > 0 for r, q in zip(rows, pooled))}"
+    defs["CalibNSigTwinPooled"] = f"{sum(q < 0.05 and r[0] < 0 for r, q in zip(rows, pooled))}"
+    # The largest mean difference is what sits inside the margin; the largest
+    # bound (CalibWorstBound) does not, and the prose had conflated the two.
+    big = max(rows, key=lambda r: abs(r[0]))
+    defs["CalibMaxDelta"] = f"{big[0]:+.4f}"
+    defs["CalibNEquiv"] = f"{sum(r[3] < 0.02 for r in rows)}"
+
+    # Where the best reference-frame kernel beats the best classical pipeline.
+    # "Only at the smallest training set" was typed by hand; on Cho2017 the
+    # uncorrected test also passes at the second-smallest.
+    beats, head_p = [], []
+    for key, (label, per) in d.items():
+        for k in sorted(per.index.get_level_values(0).unique()):
+            pk = per.loc[k]
+            ks = [q for q in REF_KERNELS if q in pk.columns]
+            cl = [c for c in pk.columns if c.startswith("classical/")]
+            if not ks or not cl:
+                continue
+            bq = max(ks, key=lambda q: pk[q].mean())
+            bc = pk[cl].mean().idxmax()
+            x = _paired(pk, bq, bc)
+            if np.isnan(x["p"]):
+                continue
+            head_p.append((label, int(k), x["delta"], x["p"]))
+    head_adj = holm([h[3] for h in head_p])
+    by_set: dict[str, list[str]] = {}
+    for (label, k, dl, pv), a in zip(head_p, head_adj):
+        if pv < 0.05 and dl > 0:
+            by_set.setdefault(label, []).append(k)
+
+    def _sizes(v):
+        v = [f"${x}$" for x in v]
+        v[0] = "$k=" + v[0][1:]
+        return v[0] if len(v) == 1 else ", ".join(v[:-1]) + " and " + v[-1]
+
+    parts = [f"on {lab} at {_sizes(v)}" for lab, v in by_set.items()]
+    defs["CalibBeatClassicalList"] = (
+        "nowhere" if not parts else parts[0] if len(parts) == 1
+        else ", ".join(parts[:-1]) + ", and " + parts[-1])
+    n_h = sum(a < 0.05 and dl > 0 for (_, _, dl, _), a in zip(head_p, head_adj))
+    small = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}
+    defs["CalibBeatClassicalHolm"] = small.get(n_h, str(n_h)) if n_h else "none"
+    defs["CalibNHeadComparisons"] = f"{len(head_p)}"
     out.append("\n%% ------------------------------ calibration macros\n")
     for key, value in defs.items():
         out.append(f"\\newcommand{{\\{key}}}{{{value}}}")

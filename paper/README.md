@@ -103,9 +103,11 @@ hand-transcribed manuscript silently rots.
 
 ## Building
 
-**The draft compiles cleanly: 26 pages, 14 tables, 11 figures, 38
-references, 0 LaTeX warnings, 0 overfull boxes, 0 BibTeX warnings**
-(MiKTeX/`latexmk`, 2026-09-15, `iopjournal`). Abstract 296/300 words.
+**The draft compiles cleanly: 28 pages with 12 tables, 9 figures and 47
+references, plus a 4-page supplement with 4 tables and 4 figures; 0 undefined
+references, 0 overfull boxes** (tectonic 0.17, 2026-09-17, `iopjournal`;
+`submission.zip` also compiled from a clean unpack). Abstract 293/300 words as
+rendered.
 
 ### Upload archive
 
@@ -239,10 +241,10 @@ critiques, and removing it would make the paper indefensible.
 
 ## Status
 
-Complete draft, **compiling to 26 pages** on IOP's `iopjournal` class:
+Complete draft, **compiling to 28 pages** on IOP's `iopjournal` class:
 abstract, introduction, methods, results, discussion, limitations,
-conclusion, structured end matter, fourteen tables, eleven figures, 38
-references.
+conclusion, structured end matter, twelve tables, nine figures, 47
+references, and a four-page supplement with four tables and four figures.
 
 The argument is a **negative result with an identified mechanism**, and the
 mechanism changed on 2026-09-03. It is no longer kernel concentration but an

@@ -4,7 +4,7 @@
 
 A controlled benchmark of quantum and quantum-inspired kernels for
 brain-computer interface classification, on 3 public datasets, 165 subjects and
-268,497 cross-validated fold scores.
+268,632 cross-validated fold scores.
 
 The short answer: **almost all of the apparent benefit is a coordinate frame,
 not quantum geometry.** This repository contains the control that shows it, and
@@ -39,16 +39,16 @@ point: the classical twin and the quantum kernels differ in **one** respect.
 |---|---|---|
 | 1 | **The usual comparison is rigged, and not subtly.** Density-matrix kernels are invariant only under *orthogonal* congruence; EEG's nuisances act by the *full* congruence group, which is exactly what the classical Riemannian baselines are invariant to. | one random congruence moves the sensor-frame kernels by **0.17 to 0.35** and the reference-frame ones by **1e-15** |
 | 2 | **Fixing the frame produces a large, real gain.** Referring each state to a label-free reference state restores exact invariance. | **+0.064 to +0.102** on PhysioNet, **+0.164 to +0.187** on IV-2a; Gram variance up **4.7 to 9.2x** |
-| 3 | **Published as-is, that would be a quantum-advantage paper.** The headline comparison reverses: classical ahead by 0.0635 becomes quantum ahead by 0.0120. | this is what our own experiments supported at that stage |
-| 4 | **The control kills it.** A classical Riemannian kernel, same covariances, same SVM, same tuning budget, same frame, differing only in metric, matches every quantum kernel. | **32 of 35** comparisons equivalent at ±0.02; worst bound **0.028** across 7 settings |
+| 3 | **It looks like a quantum advantage.** The headline comparison reverses on all three datasets: on PhysioNet, classical ahead by 0.0635 becomes quantum ahead by 0.0120. | not significant (p = 0.095), but the size and shape this literature reports as an advantage |
+| 4 | **The control kills it.** A classical Riemannian kernel, same covariances, same SVM, same tuning budget, same frame, differing only in metric, matches the quantum kernels to about one accuracy point either way. | **32 of 35** comparisons equivalent at ±0.02; worst bound **0.028** across 7 settings; the fidelity kernel's one-point lead on PhysioNet and Cho2017 never reaches the best classical pipeline |
 | 5 | **Entanglement makes things worse, measurably.** Deleting the entanglers *slows* the concentration collapse. | slopes **-0.86** vs **-0.32** per qubit: a **2.7x** faster collapse with entanglement |
 | 6 | **Four classes sharpen it.** Chance is 0.25 and the sensor-frame kernels barely clear it. | recentring worth **+0.246 to +0.288**, every kernel in 9/9 subjects; twin still ahead afterwards |
 | 7 | **One regime does favour the quantum side.** With few calibration trials the reference-frame kernels lead the twin. | **+0.005 to +0.009** at 10 trials on 52 subjects; gone by 80 |
 | 8 | **And it costs about 3x the wall clock.** | reported, not hidden |
 
 Finding 7 is the one the paper predicted **in advance**, and it is reported at
-its real size: inside the equivalence margin, clearing the best classical
-pipeline only at the smallest training set, and the analysis we pre-specified
+its real size: a mean inside the equivalence margin, clearing the best classical
+pipeline only at the smallest training sets, and the analysis we pre-specified
 for it does not survive correction. The manuscript says all of that in the same
 breath as the result.
 
@@ -87,7 +87,7 @@ manufactured:
 | `control/riemann-kernel-SVM`, a **metric-matched twin** | crediting the frame or the SVM to quantum geometry |
 | `control/IQP-no-entangle`, the same circuit with entanglers deleted | crediting "quantumness" for what the encoding does |
 | `control/PCA-matched-*` on the same 4-D features | confounding with dimensionality reduction |
-| Paired per-subject Wilcoxon, Holm corrected within pre-specified families | multiplicity |
+| Paired per-subject Wilcoxon, Holm corrected within families fixed by the design | multiplicity |
 | Two one-sided tests, not merely a non-significant difference | reading absence of evidence as evidence of absence |
 | Exact state-vector simulation, no gate noise | an idealisation that can only help the quantum side |
 
@@ -104,7 +104,7 @@ quantum-information-**geometric** modelling. **No speedup is claimed anywhere.**
 | Datasets | 3: PhysioNet EEGMMIDB, BCI Competition IV-2a, Cho2017 |
 | Subjects | 104 + 9 + 52 |
 | Pipelines | 16 core, 23 extended |
-| Cross-validated fold scores | **268,497** |
+| Cross-validated fold scores | **268,632** |
 | Evaluation settings | within-subject, cross-subject (leave-one-out), cross-session, few-trial calibration, four-class, filter bank, registers 3 to 6 qubits |
 | Equivalence comparisons | 35 two-one-sided tests across 7 settings |
 | Robustness | 3 outer-CV partitions, 2 register sizes, 3 datasets |
@@ -121,13 +121,22 @@ it tries.
 ### The whole study, one command
 
 ```bash
-git clone https://github.com/<user>/quantaEEG && cd quantaEEG
+git clone https://github.com/Imtiaj-Sajin/quantaEEG && cd quantaEEG
 python run.py setup                      # dependencies + the IOP class files
-python scripts/use_local_datasets.py --move   # optional: keep 12 GB off C:
+python scripts/use_local_datasets.py --move   # download into ./datasets (run before the next line)
 python run.py reproduce --run --force    # download, then every stage in order
 ```
 
-That last command is the whole project: it downloads the three datasets, runs
+**Where the 12 GB go.** By default MNE and MOABB download into `~/mne_data`,
+usually on the system drive. The `use_local_datasets.py --move` line points
+them at a `datasets/` folder inside the repository instead (gitignored). On a
+fresh clone there is nothing to move yet: it only sets `MNE_DATA` and
+`MNE_DATASETS_EEGBCI_PATH` to `<repo>/datasets`, so it must run **before** the
+first download. Skip it if you are happy with `~/mne_data`. If you already
+downloaded the data there, the same command moves it (Windows only; see
+[Datasets](#datasets)).
+
+`reproduce --run --force` is the whole project: it downloads the three datasets, runs
 all 124 jobs in the order they were originally run, and ends by rebuilding the
 tables, the figures, the PDF and re-verifying every claim. Nothing else needs
 to be invoked by hand.
@@ -231,12 +240,14 @@ and the datasets are directly comparable.
 | BCI Competition IV-2a | 9 | 288, two sessions | more trials per subject; cross-session transfer; four-class |
 | Cho2017 | 52 | 200 | statistical power on the frame and twin comparisons |
 
-They download to MNE's cache. To keep them inside the project instead of on the
-system drive:
+They download to MNE's cache, `~/mne_data` unless configured otherwise. To keep
+them inside the project in `datasets/`, run this once, before the first
+download (it then only sets the config), or later to move a cache you already
+have:
 
 ```bash
-python scripts/use_local_datasets.py --check
-python scripts/use_local_datasets.py --move
+python scripts/use_local_datasets.py --check   # where is the cache now?
+python scripts/use_local_datasets.py --move    # point it (and move it) to ./datasets
 ```
 
 `datasets/` is gitignored. The move is hardlink-aware: MOABB builds a
@@ -270,7 +281,7 @@ paper/              the manuscript (IOP, Journal of Neural Engineering)
 scripts/
   reproduce.py      every stage of the study, declared once and run in order
   fetch_data.py     download all three datasets in parallel, resumable
-  use_local_datasets.py  move the 12 GB cache inside the project
+  use_local_datasets.py  put the 12 GB cache in ./datasets (before or after download)
   archive/          the original job queues, kept as the historical record
 RESEARCH.md         the full research document: literature, gap, every finding
 REVISION.md         referee items and their status

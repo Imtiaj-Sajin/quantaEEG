@@ -108,7 +108,10 @@ def macros(per, fmt_p_eq, out: list[str]) -> None:
         "FourClassSensorMax": f"{max(per[a].mean() for a, _, _ in PAIRS):.3f}",
         "FourClassFrameMin": f"{min(d for d, _, _ in frame):+.4f}",
         "FourClassFrameMax": f"{max(d for d, _, _ in frame):+.4f}",
-        "FourClassFrameMaxP": fmt_p_eq(max(p for _, p, _ in frame)),
+        # The largest of five p-values, quoted as "all $p\Macro$": the
+        # relation is an upper bound, so it must read <=, not =.
+        "FourClassFrameMaxP": fmt_p_eq(max(p for _, p, _ in frame)).replace(
+            "{}={}", r"{}\le{}"),
         "FourClassFrameAllBetter": "yes" if all(
             b == len(per) for _, _, b in frame) else "no",
         # Signs matter here: every one of these is negative, i.e. the twin is

@@ -21,11 +21,12 @@
 \newcommand{\AblationBetter}{68/104}
 \newcommand{\DimDelta}{+0.0246}
 \newcommand{\DimP}{\ensuremath{{}<{}}0.001}
+\newcommand{\ControlsVerdict}{and at this sample size both are significant on accuracy}
 \newcommand{\NSurviveHolm}{8}
 \newcommand{\NUncorrectedSig}{9}
 \newcommand{\NUncorrectedSigAgainst}{8}
 \newcommand{\NQuantumAheadSig}{0}
-\newcommand{\QuantumBestDelta}{-0.0153}
+\newcommand{\QuantumBestDelta}{\ensuremath{-}0.0153}
 \newcommand{\QuantumBestAbs}{0.0153}
 \newcommand{\NFamilyTests}{15}
 \newcommand{\FastestName}{logvar\,+\,LDA}
@@ -37,11 +38,13 @@
 \newcommand{\ConcNSubjects}{104}
 \newcommand{\ConcEntFactor}{0.424}
 \newcommand{\ConcProdFactor}{0.727}
-\newcommand{\ConcEntSlope}{-0.859}
-\newcommand{\ConcProdSlope}{-0.319}
+\newcommand{\ConcEntSlope}{\ensuremath{-}0.859}
+\newcommand{\ConcProdSlope}{\ensuremath{-}0.319}
 \newcommand{\ConcSlopeRatio}{2.7}
 \newcommand{\ConcEntLoss}{30}
 \newcommand{\ConcProdLoss}{3.5}
+\newcommand{\ConcRawFactorMin}{1.64}
+\newcommand{\ConcRawFactorMax}{1.71}
 \newcommand{\ConcOffDiagHS}{0.982}
 \newcommand{\ConcOffDiagHSSD}{0.018}
 \newcommand{\ConcOffDiagFid}{0.981}
@@ -51,7 +54,7 @@
 
 \newcommand{\BciNSubjects}{9}
 \newcommand{\BciNTrials}{288}
-\newcommand{\BciNFoldScores}{2\,025}
+\newcommand{\BciNFoldScores}{2\,160}
 \newcommand{\BciBestClassicalAcc}{0.763}
 \newcommand{\BciBestQuantumAcc}{0.685}
 \newcommand{\BciWorstQuantumAcc}{0.580}
@@ -59,7 +62,7 @@
 \newcommand{\GapBci}{0.079}
 \newcommand{\GapWorstPhysio}{0.099}
 \newcommand{\GapWorstBci}{0.183}
-\newcommand{\SpearmanRho}{0.851}
+\newcommand{\SpearmanRho}{0.877}
 \newcommand{\BciPrimaryDelta}{+0.066}
 \newcommand{\BciPrimaryP}{\ensuremath{{}={}}0.004}
 \newcommand{\BciPrimaryDz}{1.14}
@@ -71,7 +74,16 @@
 \newcommand{\FisherDensP}{\ensuremath{{}<{}}0.001}
 \newcommand{\FisherAblationP}{\ensuremath{{}<{}}0.001}
 \newcommand{\BciWilcoxonFloor}{0.0039}
-\newcommand{\BciHolmFloor}{0.0547}
+\newcommand{\GainClassicalMin}{+0.119}
+\newcommand{\GainClassicalMax}{+0.145}
+\newcommand{\GainDensityMin}{+0.034}
+\newcommand{\GainDensityMax}{+0.055}
+\newcommand{\PhysBottomSixQuantum}{five}
+\newcommand{\BottomQuantumN}{five}
+\newcommand{\BottomQuantumShift}{no kernel moving more than one place}
+\newcommand{\BciNFamilyTests}{fifteen}
+\newcommand{\BciNAtFloor}{Eleven}
+\newcommand{\BciHolmFloor}{0.0586}
 
 
 %% ------------------------------ four-class macros
@@ -82,10 +94,10 @@
 \newcommand{\FourClassSensorMax}{0.382}
 \newcommand{\FourClassFrameMin}{+0.2455}
 \newcommand{\FourClassFrameMax}{+0.2875}
-\newcommand{\FourClassFrameMaxP}{\ensuremath{{}={}}0.004}
+\newcommand{\FourClassFrameMaxP}{\ensuremath{{}\le{}}0.004}
 \newcommand{\FourClassFrameAllBetter}{yes}
-\newcommand{\FourClassTwinDeltaMin}{-0.0123}
-\newcommand{\FourClassTwinDeltaMax}{-0.0022}
+\newcommand{\FourClassTwinDeltaMin}{\ensuremath{-}0.0123}
+\newcommand{\FourClassTwinDeltaMax}{\ensuremath{-}0.0022}
 \newcommand{\FourClassTwinMinP}{\ensuremath{{}={}}0.098}
 \newcommand{\FourClassTwinAhead}{yes}
 \newcommand{\FourClassTwinAcc}{0.636}
@@ -106,7 +118,7 @@
 \newcommand{\CalibChoSmallMinP}{\ensuremath{{}={}}0.003}
 \newcommand{\CalibChoSmallTwinAcc}{0.566}
 \newcommand{\CalibChoSmallQuantumAcc}{0.575}
-\newcommand{\CalibChoLargeDeltaMin}{-0.0130}
+\newcommand{\CalibChoLargeDeltaMin}{\ensuremath{-}0.0130}
 \newcommand{\CalibChoLargeDeltaMax}{+0.0090}
 \newcommand{\CalibChoLargeMinP}{\ensuremath{{}={}}0.107}
 \newcommand{\CalibChoLargeTwinAcc}{0.642}
@@ -117,7 +129,7 @@
 \newcommand{\CalibBciSmallMinP}{\ensuremath{{}={}}0.035}
 \newcommand{\CalibBciSmallTwinAcc}{0.671}
 \newcommand{\CalibBciSmallQuantumAcc}{0.685}
-\newcommand{\CalibBciLargeDeltaMin}{-0.0081}
+\newcommand{\CalibBciLargeDeltaMin}{\ensuremath{-}0.0081}
 \newcommand{\CalibBciLargeDeltaMax}{+0.0036}
 \newcommand{\CalibBciLargeMinP}{\ensuremath{{}={}}0.195}
 \newcommand{\CalibBciLargeTwinAcc}{0.745}
@@ -125,6 +137,16 @@
 \newcommand{\CalibNSigQuantum}{11}
 \newcommand{\CalibNSigTwin}{0}
 \newcommand{\CalibWorstBound}{0.029}
+\newcommand{\CalibNComparisons}{50}
+\newcommand{\CalibNSigQuantumHolm}{7}
+\newcommand{\CalibNSigTwinHolm}{0}
+\newcommand{\CalibNSigQuantumPooled}{3}
+\newcommand{\CalibNSigTwinPooled}{0}
+\newcommand{\CalibMaxDelta}{+0.0162}
+\newcommand{\CalibNEquiv}{30}
+\newcommand{\CalibBeatClassicalList}{on Cho2017 at $k=10$ and $20$, and on IV-2a at $k=10$}
+\newcommand{\CalibBeatClassicalHolm}{one}
+\newcommand{\CalibNHeadComparisons}{10}
 
 
 %% ------------------------------ reference-frame macros
@@ -134,19 +156,22 @@
 \newcommand{\PhysFrameMin}{+0.064}
 \newcommand{\PhysFrameMax}{+0.102}
 \newcommand{\PhysFrameBestKernel}{HS overlap}
-\newcommand{\PhysFrameMaxP}{\ensuremath{<}0.001}
+\newcommand{\PhysFrameMaxP}{\ensuremath{{}<{}}0.001}
 \newcommand{\PhysFrameAllBetter}{no}
 \newcommand{\PhysFrameN}{104}
 \newcommand{\TwinName}{riemann-kernel-SVM}
 \newcommand{\TwinAcc}{0.630}
-\newcommand{\TwinDeltaMin}{-0.0012}
+\newcommand{\TwinRank}{fifth}
+\newcommand{\TwinRankOf}{23}
+\newcommand{\TwinAhead}{four}
+\newcommand{\TwinDeltaMin}{\ensuremath{-}0.0012}
 \newcommand{\TwinDeltaMax}{+0.0113}
 \newcommand{\TwinMinP}{\ensuremath{{}={}}0.003}
 \newcommand{\HeadBestClassical}{CSP\,+\,LDA}
 \newcommand{\HeadSensorDelta}{+0.0635}
 \newcommand{\HeadSensorP}{\ensuremath{{}<{}}0.001}
 \newcommand{\HeadSensorBetter}{70/104}
-\newcommand{\HeadRefDelta}{-0.0120}
+\newcommand{\HeadRefDelta}{\ensuremath{-}0.0120}
 \newcommand{\HeadRefLead}{0.0120}
 \newcommand{\HeadRefP}{\ensuremath{{}={}}0.095}
 \newcommand{\HeadRefBetter}{44/104}
@@ -154,29 +179,31 @@
 \newcommand{\BciFrameMin}{+0.164}
 \newcommand{\BciFrameMax}{+0.187}
 \newcommand{\BciFrameBestKernel}{Fidelity}
-\newcommand{\BciFrameMaxP}{0.004}
+\newcommand{\BciFrameMaxP}{\ensuremath{{}\le{}}0.004}
 \newcommand{\BciFrameAllBetter}{yes}
 \newcommand{\BciFrameN}{9}
 \newcommand{\FourQFrameMin}{+0.066}
 \newcommand{\FourQFrameMax}{+0.103}
 \newcommand{\FourQFrameBestKernel}{HS overlap}
-\newcommand{\FourQFrameMaxP}{\ensuremath{<}0.001}
+\newcommand{\FourQFrameMaxP}{\ensuremath{{}<{}}0.001}
 \newcommand{\FourQFrameAllBetter}{no}
 \newcommand{\FourQFrameN}{104}
 \newcommand{\FourQTwinName}{riemann-kernel-SVM}
 \newcommand{\FourQTwinAcc}{0.634}
 \newcommand{\FourQBestKernel}{Bures-RBF-ref-SVM}
 \newcommand{\FourQBestAcc}{0.632}
-\newcommand{\FourQTwinDeltaMin}{-0.0088}
-\newcommand{\FourQTwinDeltaMax}{-0.0017}
+\newcommand{\FourQTwinDeltaMin}{\ensuremath{-}0.0088}
+\newcommand{\FourQTwinDeltaMax}{\ensuremath{-}0.0017}
 \newcommand{\FourQTwinMinP}{\ensuremath{{}={}}0.048}
+\newcommand{\FourQTwinHolmMinP}{\ensuremath{{}={}}0.242}
+\newcommand{\FourQTwinSignPhrase}{the twin is ahead of every quantum kernel}
 \newcommand{\FourQNSubjects}{104}
 \newcommand{\FourQTwinTopKernel}{Bures-RBF-ref-SVM}
-\newcommand{\FourQTwinTopDelta}{-0.0017}
+\newcommand{\FourQTwinTopDelta}{\ensuremath{-}0.0017}
 \newcommand{\FourQTwinTopP}{\ensuremath{{}={}}0.848}
 \newcommand{\FourQTwinTopBetter}{45/104}
-\newcommand{\FourQTwinRestDeltaMin}{-0.0088}
-\newcommand{\FourQTwinRestDeltaMax}{-0.0029}
+\newcommand{\FourQTwinRestDeltaMin}{\ensuremath{-}0.0088}
+\newcommand{\FourQTwinRestDeltaMax}{\ensuremath{-}0.0029}
 \newcommand{\FourQTwinRestMinP}{\ensuremath{{}={}}0.048}
 \newcommand{\FourQBestClassical}{TS\,+\,LR}
 \newcommand{\FourQBestClassicalAcc}{0.625}
@@ -186,25 +213,29 @@
 \newcommand{\FourQTwinHeadDelta}{+0.0088}
 \newcommand{\FourQTwinHeadP}{\ensuremath{{}={}}0.090}
 \newcommand{\FourQTwinHeadBetter}{53/104}
+\newcommand{\FourQHeadRefVerdict}{which is not significant}
+\newcommand{\FourQTwinHeadCompare}{by more}
 \newcommand{\ChoFrameMin}{+0.012}
 \newcommand{\ChoFrameMax}{+0.063}
 \newcommand{\ChoFrameBestKernel}{HS overlap}
-\newcommand{\ChoFrameMaxP}{0.009}
+\newcommand{\ChoFrameMaxP}{\ensuremath{{}\le{}}0.009}
 \newcommand{\ChoFrameAllBetter}{no}
 \newcommand{\ChoFrameN}{52}
 \newcommand{\ChoTwinName}{riemann-kernel-SVM}
 \newcommand{\ChoTwinAcc}{0.638}
 \newcommand{\ChoBestKernel}{Fidelity-ref-SVM}
 \newcommand{\ChoBestAcc}{0.648}
-\newcommand{\ChoTwinDeltaMin}{-0.0008}
+\newcommand{\ChoTwinDeltaMin}{\ensuremath{-}0.0008}
 \newcommand{\ChoTwinDeltaMax}{+0.0100}
 \newcommand{\ChoTwinMinP}{\ensuremath{{}={}}0.001}
+\newcommand{\ChoTwinHolmMinP}{\ensuremath{{}={}}0.007}
+\newcommand{\ChoTwinSignPhrase}{the quantum kernels fall on both sides of the twin}
 \newcommand{\ChoNSubjects}{52}
 \newcommand{\ChoTwinTopKernel}{Fidelity-ref-SVM}
 \newcommand{\ChoTwinTopDelta}{+0.0100}
 \newcommand{\ChoTwinTopP}{\ensuremath{{}={}}0.001}
 \newcommand{\ChoTwinTopBetter}{39/52}
-\newcommand{\ChoTwinRestDeltaMin}{-0.0008}
+\newcommand{\ChoTwinRestDeltaMin}{\ensuremath{-}0.0008}
 \newcommand{\ChoTwinRestDeltaMax}{+0.0041}
 \newcommand{\ChoTwinRestMinP}{\ensuremath{{}={}}0.128}
 \newcommand{\ChoBestClassical}{TS\,+\,LR}
@@ -212,33 +243,46 @@
 \newcommand{\ChoHeadRefDelta}{+0.0039}
 \newcommand{\ChoHeadRefP}{\ensuremath{{}={}}0.174}
 \newcommand{\ChoHeadRefBetter}{31/52}
-\newcommand{\ChoTwinHeadDelta}{-0.0061}
+\newcommand{\ChoTwinHeadDelta}{\ensuremath{-}0.0061}
 \newcommand{\ChoTwinHeadP}{\ensuremath{{}={}}0.010}
 \newcommand{\ChoTwinHeadBetter}{18/52}
+\newcommand{\ChoHeadRefVerdict}{which is not significant}
+\newcommand{\ChoTwinHeadCompare}{by less}
 \newcommand{\ChoNTrialsMin}{200}
 \newcommand{\ChoNTrialsMax}{240}
 \newcommand{\ChoNTrialsMaxCount}{3}
 \newcommand{\ChoHeadSensorDelta}{+0.0152}
 \newcommand{\ChoHeadSensorP}{\ensuremath{{}<{}}0.001}
 \newcommand{\ChoSensorBestQuantum}{QRE-RBF-SVM}
-\newcommand{\SeedRbfWorst}{-0.0133}
+\newcommand{\SeedFidAheadN}{three}
+\newcommand{\SeedFidAheadAll}{every}
+\newcommand{\SeedFidSigN}{two}
+\newcommand{\SeedFidDeltaMin}{+0.0033}
+\newcommand{\SeedFidDeltaMax}{+0.0113}
+\newcommand{\SeedRbfWorst}{\ensuremath{-}0.0133}
 \newcommand{\SeedRbfMinP}{\ensuremath{{}={}}0.021}
-\newcommand{\SeedOverlapDeltaMin}{-0.0023}
+\newcommand{\SeedOverlapDeltaMin}{\ensuremath{-}0.0023}
 \newcommand{\SeedOverlapDeltaMax}{+0.0113}
 \newcommand{\SeedOverlapMinP}{\ensuremath{{}={}}0.003}
 \newcommand{\SeedSigCount}{3}
+\newcommand{\SeedSigHolmCount}{one}
+\newcommand{\SeedFidHolmN}{one}
+\newcommand{\SeedHolmSentence}{one survives: the fidelity kernel ahead at the primary partition}
+\newcommand{\SeedNWord}{three}
 \newcommand{\SeedSigN}{15}
 \newcommand{\SeedSigFavourQuantum}{2}
 \newcommand{\SeedSigFavourTwin}{1}
 \newcommand{\SeedN}{3}
 \newcommand{\SeedFrameMin}{+0.060}
 \newcommand{\SeedFrameMax}{+0.102}
-\newcommand{\SeedTwinDeltaMin}{-0.0133}
+\newcommand{\SeedTwinDeltaMin}{\ensuremath{-}0.0133}
 \newcommand{\SeedTwinDeltaMax}{+0.0113}
 \newcommand{\SeedTwinMinP}{\ensuremath{{}={}}0.003}
 \newcommand{\SeedEquivPass}{14}
 \newcommand{\SeedEquivN}{15}
 \newcommand{\SeedWorstBound}{0.022}
+\newcommand{\SeedPrimaryBound}{0.018}
+\newcommand{\SeedBoundMove}{widens}
 \newcommand{\SeedHeadRefMin}{+0.0120}
 \newcommand{\SeedHeadRefMax}{+0.0177}
 \newcommand{\SeedHeadReversals}{3}
@@ -253,7 +297,7 @@
 \newcommand{\FbFrameMin}{+0.110}
 \newcommand{\FbFrameMax}{+0.128}
 \newcommand{\FbFrameBestKernel}{Fidelity}
-\newcommand{\FbFrameMaxP}{\ensuremath{<}0.001}
+\newcommand{\FbFrameMaxP}{\ensuremath{{}<{}}0.001}
 \newcommand{\FbFrameAllBetter}{no}
 \newcommand{\FbFrameN}{104}
 \newcommand{\FbcspDelta}{+0.0141}
@@ -270,7 +314,7 @@
 \newcommand{\CsTrialsPerSession}{144}
 \newcommand{\CsFrameQMin}{+0.169}
 \newcommand{\CsFrameQMax}{+0.217}
-\newcommand{\CsFrameQMaxP}{0.008}
+\newcommand{\CsFrameQMaxP}{\ensuremath{{}\le{}}0.008}
 \newcommand{\CsFrameQAllBetter}{no}
 \newcommand{\CsSensorQMin}{0.542}
 \newcommand{\CsSensorQMax}{0.578}
@@ -286,7 +330,7 @@
 \newcommand{\CsBestClassicalAcc}{0.738}
 \newcommand{\CsTwinName}{riemann-kernel-SVM}
 \newcommand{\CsTwinAcc}{0.755}
-\newcommand{\CsTwinDeltaMin}{-0.0085}
+\newcommand{\CsTwinDeltaMin}{\ensuremath{-}0.0085}
 \newcommand{\CsTwinDeltaMax}{+0.0054}
 \newcommand{\CsTwinMinP}{\ensuremath{{}={}}0.500}
 \newcommand{\CsTwinAbsMax}{0.0085}
@@ -304,7 +348,11 @@
 \newcommand{\SweepGainHiMax}{3.2}
 \newcommand{\SweepRefAboveBase}{every}
 \newcommand{\SweepRefMonotone}{not every}
-\newcommand{\SweepRefDipMax}{0}
+\newcommand{\SweepRefDipMax}{9}
+\newcommand{\SweepRefDipFrom}{4}
+\newcommand{\SweepRefDipTo}{5}
+\newcommand{\SweepRefDipKernels}{three}
+\newcommand{\SweepRefDipKernelsTotal}{four}
 \newcommand{\GramGainMin}{4.7}
 \newcommand{\GramGainMax}{9.2}
 \newcommand{\GramNSubjects}{104}
@@ -344,6 +392,7 @@
 \newcommand{\EquivChoPass}{5}
 \newcommand{\EquivChoN}{5}
 \newcommand{\EquivChoWorst}{0.0153}
+\newcommand{\EquivFailSentence}{First, three comparisons miss the $\pm0.02$ margin, two in the quantum kernel's favour set against one in the twin's. All three are in the IV-2a cross-session setting, which has only nine subjects, and every one of their intervals contains zero: they fail for want of subjects, not because the kernels differ.}
 \newcommand{\EquivZeroExclWord}{intervals}
 \newcommand{\EquivZeroExclVerb}{exclude}
 \newcommand{\EquivZeroExclMarker}{orange diamonds}
@@ -352,3 +401,15 @@
 \newcommand{\EquivZeroExclList}{Fidelity on PhysioNet at $+0.0113$, HS-RBF on PhysioNet, 4 qubits at $-0.0088$ and Fidelity on Cho2017 at $+0.0100$}
 \newcommand{\EquivZeroExclAllQuantum}{no}
 \newcommand{\EquivZeroExclSide}{mixed in sign}
+\newcommand{\EquivZeroSurviveN}{two}
+\newcommand{\EquivZeroFallN}{one}
+\newcommand{\EquivZeroSurviveList}{Fidelity on PhysioNet ($+0.0113$, Holm $p=0.015$) and Fidelity on Cho2017 ($+0.0100$, Holm $p=0.007$)}
+\newcommand{\EquivZeroFallList}{HS-RBF on PhysioNet, 4 qubits ($-0.0088$, Holm $p=0.242$)}
+\newcommand{\EquivZeroSurviveSide}{both in the quantum kernel's favour}
+\newcommand{\EquivZeroSurviveVerb}{survive}
+\newcommand{\EquivZeroFallVerb}{does not}
+\newcommand{\EquivZeroSurviveDatasets}{two}
+\newcommand{\EquivZeroSurviveKernel}{Fidelity}
+\newcommand{\EquivZeroSurviveSame}{Both are the parameter-free fidelity kernel, on two different datasets.}
+\newcommand{\EquivZeroPooledSentence}{Pooling all 25 within-subject twin comparisons into a single family is stricter: the Cho2017 one (Holm $p=0.036$) still survives it, and the PhysioNet one (Holm $p=0.070$) does not.}
+\newcommand{\EquivSigSettingsPhrase}{in only two, discussed below, is a separation significant after Holm correction}

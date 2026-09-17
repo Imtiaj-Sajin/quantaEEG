@@ -268,6 +268,16 @@ def macros(df: pd.DataFrame, summary: pd.DataFrame, tests: pd.DataFrame,
         "AblationBetter": f"{abl['n_better']}/{abl['n']}",
         "DimDelta": f"{dim['delta']:+.4f}",
         "DimP": fmt_p_eq(dim["p"]),
+        # The verdict on the two controls, generated rather than typed. At
+        # n=30 neither was significant and the text said so; the rerun at
+        # n=104 made both significant and the sentence survived unchanged, which
+        # a referee caught. A claim about significance is a function of the
+        # data, so it is produced here with the p-values it describes.
+        "ControlsVerdict": {
+            2: "and at this sample size both are significant on accuracy",
+            1: ("but only one of them reaches significance on accuracy"),
+            0: "but neither reaches significance on accuracy",
+        }[int(abl["p"] < 0.05) + int(dim["p"] < 0.05)],
         "NSurviveHolm": f"{int((tests.p_holm < 0.05).sum())}",
         # How many reach significance before correction, and whether any of
         # them favours a quantum kernel. The manuscript stated "only two, and
@@ -386,6 +396,14 @@ def main(argv=None) -> int:
             "ConcEntLoss": f"{e.variance_first / e.variance_last:.0f}",
             "ConcProdLoss": f"{q.variance_first / q.variance_last:.1f}",
         }
+        # The parameter-free overlap kernels, whose variance grows with the
+        # register instead of decaying. The range was typed as 1.45--1.52,
+        # the n=30 values; at n=104 it is 1.64--1.71.
+        raw = [k for k in ("Fidelity", "HS-overlap") if k in dec.index]
+        if raw:
+            f = dec.loc[raw, "variance_factor_per_qubit"]
+            cm["ConcRawFactorMin"] = f"{f.min():.2f}"
+            cm["ConcRawFactorMax"] = f"{f.max():.2f}"
         for k, v in cm.items():
             mac.append(f"\\newcommand{{\\{k}}}{{{v}}}")
     gram_p = res / "reference_gram_motor8.csv"
@@ -476,7 +494,14 @@ def main(argv=None) -> int:
     def _tidy(line: str) -> str:
         m = re.match(r"(\\newcommand\{\\[A-Za-z]+\}\{)"
                      r"((?:classical|quantum|control)/[^}]*)(\})$", line)
-        return f"{m.group(1)}{pretty(m.group(2))}{m.group(3)}" if m else line
+        if m:
+            return f"{m.group(1)}{pretty(m.group(2))}{m.group(3)}"
+        # A negative number quoted in running text, e.g. "(twin minus TS+LR:
+        # \ChoTwinHeadDelta)", typesets as a hyphen, "-0.0061", while the same
+        # value inside $...$ gets a true minus. \ensuremath gives the minus in
+        # both places.
+        return re.sub(r"^(\\newcommand\{\\[A-Za-z]+\}\{)-(?=\d)",
+                      r"\1\\ensuremath{-}", line)
 
     mdest.write_text("\n".join(_tidy(x) for x in mac), encoding="utf-8")
     print(f"wrote {mdest}  ({len(mac)} lines)")

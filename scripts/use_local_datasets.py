@@ -87,8 +87,11 @@ def _other_pythons() -> int:
     """Count live python processes other than this one.
 
     tasklist under Git Bash has returned empty output on this machine, so ask
-    PowerShell, which has been reliable.
+    PowerShell, which has been reliable. Elsewhere there is no PowerShell to
+    ask, and the check is skipped rather than crashing a fresh-clone setup.
     """
+    if os.name != "nt":
+        return 0
     out = _ps("(Get-CimInstance Win32_Process -Filter \"Name='python.exe'\")"
               ".ProcessId -join ','")
     pids = {int(x) for x in out.strip().split(",") if x.strip().isdigit()}
@@ -186,6 +189,13 @@ def move(force: bool = False) -> int:
     if src.resolve() == DEST.resolve():
         print("already pointed at the project folder; nothing to move")
         return 0
+    # The move itself uses robocopy and PowerShell, so it is Windows-only. On
+    # a fresh clone there is nothing to move and only the config is written,
+    # which works on any platform.
+    if os.name != "nt" and any((src / n).exists() for n in REAL + (LINKED,)):
+        print(f"moving an existing cache needs Windows (robocopy); move "
+              f"{src} to {DEST} by hand, preserving hardlinks, then rerun")
+        return 1
     links = _links(src)
     print(f"recorded {len(links)} hardlinks under {LINKED}/ before moving")
     DEST.mkdir(parents=True, exist_ok=True)

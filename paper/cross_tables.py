@@ -48,17 +48,47 @@ def fisher(pvals) -> tuple[float, float]:
     return stat, float(chi2.sf(stat, 2 * len(pv)))
 
 
+NUM_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+             "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
+             "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"]
+
+
+def bottom_quantum(summary_p, summary_b) -> tuple[int, int]:
+    """How many of the lowest positions the same quantum kernels hold on both.
+
+    Returns (k, shift): the largest k for which the k lowest pipelines are
+    quantum on both datasets and are the same set, and the largest rank move
+    of any of them between the datasets. "The four lowest positions ... with
+    zero rank shift" was typed by hand; with QRE-RBF in both core suites it is
+    the five lowest, and two of them swap places.
+    """
+    op = list(summary_p.sort_values("acc_mean")["pipeline"])
+    ob = list(summary_b.sort_values("acc_mean")["pipeline"])
+    grp = dict(zip(summary_p.pipeline, summary_p.group))
+    grp.update(dict(zip(summary_b.pipeline, summary_b.group)))
+    k = 0
+    for i in range(1, min(len(op), len(ob)) + 1):
+        if (set(op[:i]) == set(ob[:i])
+                and all(grp.get(p) == "quantum" for p in op[:i])):
+            k = i
+    shift = max((abs(op.index(p) - ob.index(p)) for p in op[:k]), default=0)
+    return k, shift
+
+
 def table_bci(summary_b, summary_p, out, esc, group_label) -> None:
     """Accuracy on IV-2a with the PhysioNet figure alongside."""
     pa = summary_p.set_index("pipeline")["acc_mean"]
+    k, _ = bottom_quantum(summary_p, summary_b)
+    n_b = int(summary_b["n_subjects"].max())
+    lowest = (f"Quantum kernels occupy the {NUM_WORDS[k]}\n"
+              "lowest positions on both datasets." if k else "")
     out.append(
         "\n%% ---------------------------------------------------------------- Table 5\n"
         r"\begin{table}[htbp]" "\n"
         r"\caption{\label{tab:bci}Replication on BCI Competition IV-2a "
-        "(9 subjects, 288 trials each), with the PhysioNet result repeated for\n"
+        f"({n_b} subjects, 288 trials each), with the PhysioNet result repeated for\n"
         "comparison. Protocol, channels, tuning budget and pipelines are\n"
-        "identical; only the data differs. Quantum kernels occupy the four\n"
-        "lowest positions on both datasets.}\n"
+        f"identical; only the data differs. {lowest}}}\n"
         r"" "\n"
         # Group is its own column rather than a prefix on every name. It was
         # dropped once because the prefixed names overflowed the text block;
@@ -183,8 +213,47 @@ def cross_macros(summary_p, summary_b, per_p, per_b, df_b,
         "FisherDensP": fmt_p_eq(fisher([dens_p["p"], dens_b["p"]])[1]),
         "FisherAblationP": fmt_p_eq(fisher([abl_p["p"], abl_b["p"]])[1]),
         "BciWilcoxonFloor": f"{wilcoxon_floor(n_b):.4f}",
-        "BciHolmFloor": f"{min(1.0, wilcoxon_floor(n_b) * 14):.4f}",
     }
+    # The IV-2a correction family: every pipeline against the reference. Its
+    # size was typed as 14, and the sentence around it quoted PhysioNet's
+    # family size and "ten of the fourteen" by hand, all of which moved when
+    # the IV-2a core suite gained its sixteenth pipeline.
+    # What the six-fold increase in trials was worth to each family. The prose
+    # said "roughly 0.15" and "about 0.05"; at n=104 the ranges are narrower
+    # than either figure suggests, so they are quoted as ranges.
+    acc_p = summary_p.set_index("pipeline")["acc_mean"]
+    acc_b = summary_b.set_index("pipeline")["acc_mean"]
+    gain = (acc_b - acc_p).dropna()
+    cls = [p for p in gain.index if p.startswith("classical/")]
+    dens = [p for p in gain.index if p.startswith("quantum/")
+            and "kernel-SVM" not in p]          # not the IQP and CNOT circuits
+    if cls and dens:
+        defs["GainClassicalMin"] = f"{gain[cls].min():+.3f}"
+        defs["GainClassicalMax"] = f"{gain[cls].max():+.3f}"
+        defs["GainDensityMin"] = f"{gain[dens].min():+.3f}"
+        defs["GainDensityMax"] = f"{gain[dens].max():+.3f}"
+
+    bottom6 = summary_p.sort_values("acc_mean").head(6)
+    defs["PhysBottomSixQuantum"] = NUM_WORDS[int((bottom6.group == "quantum").sum())]
+    k_low, shift = bottom_quantum(summary_p, summary_b)
+    defs["BottomQuantumN"] = NUM_WORDS[k_low]
+    defs["BottomQuantumShift"] = (
+        "in the same order" if shift == 0 else
+        "no kernel moving more than one place" if shift == 1 else
+        f"no kernel moving more than {NUM_WORDS[shift]} places")
+
+    ref = "classical/TS+LR"
+    fam = [c for c in per_b.columns if c != ref]
+    fam_p = [paired(per_b, c, ref)["p"] for c in fam]
+    floor = wilcoxon_floor(n_b)
+    at_floor = sum(bool(np.isclose(x, floor)) for x in fam_p)
+    words = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+             "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
+             "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"]
+    defs["BciNFamilyTests"] = words[len(fam)] if len(fam) < len(words) else str(len(fam))
+    defs["BciNAtFloor"] = (words[at_floor] if at_floor < len(words)
+                           else str(at_floor)).capitalize()
+    defs["BciHolmFloor"] = f"{min(1.0, floor * len(fam)):.4f}"
     out.append("\n%% -------------------------------- cross-dataset macros\n")
     for k, v in defs.items():
         out.append("\\newcommand{\\" + k + "}{" + v + "}")

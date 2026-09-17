@@ -258,7 +258,8 @@ def main(argv=None) -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--suite", type=str, default="core",
                     choices=("core", "extended", "filterbank"),
-                    help="core reproduces the published 15-pipeline run; "
+                    help="core is the 16 sensor-frame pipelines of the "
+                         "paper's first table; "
                          "extended adds the reference-state quantum kernels, "
                          "the quantum relative-entropy kernel and the "
                          "Riemannian/log-Euclidean kernel controls; "
