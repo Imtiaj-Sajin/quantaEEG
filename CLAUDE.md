@@ -130,7 +130,7 @@ cd paper && latexmk -pdf main.tex
 cross-references, unbalanced environments and missing figures, the things that
 would otherwise only surface on first compile.
 
-**Compiles.** 28 pages, 0 undefined references, 0 overfull boxes, 12 tables,
+**Compiles.** 29 pages, 0 undefined references, 0 overfull boxes, 12 tables,
 10 figures, 47 references, plus a 4-page supplement (tectonic, 2026-09-17).
 The study design is two figures since version 5 (`figures/architecture_v5_*`):
 Figure 2, a one-line overview with a Kernel families block, then Figure 3,
@@ -376,8 +376,11 @@ is needed for the argument; they close the "one seed, two datasets" objection.
 
 Outstanding, in order:
 
-Authors and CRediT roles are final as of 2026-09-15 (order: Sajin, Suva,
-Abha, Saif, Chayon; roles set by the corresponding author, see `\roles{}`).
+Authors as of 2026-09-17: Sajin, Saif, Chayon (supervisor last); CRediT roles
+set by the corresponding author, see `\roles{}`. Suva and Abha are on hold
+until they confirm authorship; `paper/AUTHORS_ON_HOLD.md` has everything
+needed to put them back. Do not re-add them unless the corresponding author
+says so.
 
 1. **`\funding{}`** currently states no specific grant. Correct it if that is
    wrong; IOP parse that section.

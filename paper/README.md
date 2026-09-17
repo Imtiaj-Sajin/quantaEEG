@@ -103,7 +103,7 @@ hand-transcribed manuscript silently rots.
 
 ## Building
 
-**The draft compiles cleanly: 28 pages with 12 tables, 10 figures and 47
+**The draft compiles cleanly: 29 pages with 12 tables, 10 figures and 47
 references, plus a 4-page supplement with 4 tables and 4 figures; 0 undefined
 references, 0 overfull boxes** (tectonic 0.17, 2026-09-17, `iopjournal`;
 `submission.zip` also compiled from a clean unpack). Abstract 290/300 words as
@@ -213,6 +213,13 @@ standalone viewing, and writes to `results/figures/`.
 - [ ] **Complete the `\ack` section** (funding, compute).
 - [x] **Co-authors added**, 2026-09-15: Sajin, Suva, Abha, Saif, Chayon, in
       that order, with CRediT roles set by the corresponding author.
+- [x] **Two co-authors on hold**, 2026-09-17: Suva and Abha had not confirmed
+      authorship, so they were removed before submission. The author list is
+      now Sajin, Saif, Chayon. Their details, roles and the exact LaTeX to
+      restore them are in [AUTHORS_ON_HOLD.md](AUTHORS_ON_HOLD.md).
+- [x] **AI-use statement**, 2026-09-17: in the Acknowledgements, as IOP's
+      policy asks, naming the model (Claude Opus 5, via Claude Code) and what
+      it was used for, in wording chosen by the corresponding author.
 - [x] **Single-anonymous review chosen**, 2026-09-15: one manuscript and
       one `submission.zip`.
 - [x] **Read the PDF end to end.** Done after every rebuild since 2026-09-14.
@@ -241,7 +248,7 @@ critiques, and removing it would make the paper indefensible.
 
 ## Status
 
-Complete draft, **compiling to 28 pages** on IOP's `iopjournal` class:
+Complete draft, **compiling to 29 pages** on IOP's `iopjournal` class:
 abstract, introduction, methods, results, discussion, limitations,
 conclusion, structured end matter, twelve tables, ten figures, 47
 references, and a four-page supplement with four tables and four figures.
