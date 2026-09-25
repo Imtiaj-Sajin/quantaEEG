@@ -291,7 +291,9 @@ scripts/
   use_local_datasets.py  put the 12 GB cache in ./datasets (before or after download)
   archive/          the original job queues, kept as the historical record
 RESEARCH.md         the full research document: literature, gap, every finding
-REVISION.md         referee items and their status
+docs/
+  project-context.md  orientation: the rules the results depend on, how to
+                      run the study, and the environment traps already hit
 ```
 
 `results/`, `figures/`, `results/n30/` and `scripts/archive/` each carry their
@@ -302,7 +304,8 @@ own README.
 1. `python run.py verify`, for the claims and their evidence
 2. [RESEARCH.md](RESEARCH.md), for the argument and the literature
 3. `paper/build/main.pdf`, the manuscript: 27 pages, 47 references
-4. [REVISION.md](REVISION.md), for what a referee asked and what was done
+4. [docs/project-context.md](docs/project-context.md), for the methodology
+   rules the results depend on and how to rerun any stage
 
 ## Environment notes
 

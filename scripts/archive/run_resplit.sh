@@ -7,7 +7,7 @@
 #
 #   powershell:
 #     $a = New-ScheduledTaskAction -Execute "C:\Program Files\Git\bin\bash.exe" `
-#         -Argument '-lc "cd /g/codes/Ass/quantaEEG && bash scripts/run_resplit.sh"' `
+#         -Argument '-lc "cd /g/codes/quantaEEG && bash scripts/run_resplit.sh"' `
 #         -WorkingDirectory "G:\codes\Ass\quantaEEG"
 #     Register-ScheduledTask -TaskName "quantaEEG_resplit" -Action $a -Settings $s -Force
 #     Start-ScheduledTask -TaskName "quantaEEG_resplit"

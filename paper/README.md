@@ -211,12 +211,8 @@ standalone viewing, and writes to `results/figures/`.
       cannot see.
 - [x] **Affiliation filled** (AIUB, Dhaka), 2026-09-03.
 - [ ] **Complete the `\ack` section** (funding, compute).
-- [x] **Co-authors added**, 2026-09-15: Sajin, Suva, Abha, Saif, Chayon, in
-      that order, with CRediT roles set by the corresponding author.
-- [x] **Two co-authors on hold**, 2026-09-17: Suva and Abha had not confirmed
-      authorship, so they were removed before submission. The author list is
-      now Sajin, Saif, Chayon. Their details, roles and the exact LaTeX to
-      restore them are in [AUTHORS_ON_HOLD.md](AUTHORS_ON_HOLD.md).
+- [x] **Author list and CRediT roles finalised** by the corresponding author,
+      2026-09-17: Sajin, Saif, Chayon, in that order.
 - [x] **AI-use statement**, 2026-09-17: in the Acknowledgements, as IOP's
       policy asks, naming the model (Claude Opus 5, via Claude Code) and what
       it was used for, in wording chosen by the corresponding author.

@@ -1,17 +1,16 @@
-# CLAUDE.md: project context
+# Project context
 
-Auto-loaded at the start of every Claude Code session. Keep it current; it is
-what makes a fresh session on any machine immediately useful.
+Orientation for anyone picking this project up, on any machine: what it is,
+the rules the results depend on, how to run it, and the traps already hit.
+Keep it current.
 
-## House rules (set by the corresponding author, apply everywhere)
+## House style (set by the corresponding author, applies everywhere)
 
-1. **No em-dashes, ever.** Not in the manuscript, docs, code comments, commit
-   messages or chat. That means no U+2014 character, no LaTeX `---`, no
+1. **No em-dashes, ever.** Not in the manuscript, the docs, code comments or
+   commit messages. That means no U+2014 character, no LaTeX `---`, no
    `\textemdash`, and no spaced double hyphen used as punctuation. Use a
    comma, colon, parentheses or a new sentence. En-dashes in numeric ranges
    (`8--30 Hz`) are fine. `python paper/check_tex.py` fails if one appears.
-2. **Never add Claude as a co-author on commits.** No `Co-Authored-By:` trailer
-   naming Claude or Anthropic, in any commit message or PR description.
 
 ## What this project is
 
@@ -24,7 +23,7 @@ field is full of "PCA to 8 features → ZZFeatureMap → QSVM → 85%" papers wi
 weak baselines and no controls. The contribution here is rigour plus a
 principled representation.
 
-**Read [RESEARCH.md](RESEARCH.md) first**: it holds the feasibility verdict,
+**Read [RESEARCH.md](../RESEARCH.md) first**: it holds the feasibility verdict,
 the literature review, the identified gap, all findings, and the publication
 strategy. This file is only orientation.
 
@@ -97,7 +96,7 @@ paper/              journal manuscript (see below)
 RESEARCH.md         the actual research document
 ```
 
-**The central finding, so a fresh session does not re-derive it.** The
+**The central finding, so nobody re-derives it.** The
 density-matrix kernels were being evaluated in the *sensor* frame while every
 strong classical baseline is invariant under congruence `C → ACAᵀ`, the group
 EEG's nuisances actually generate. Referring states to a training-set
@@ -238,7 +237,7 @@ PYTHONPATH=src python -m qeeg.merge --pattern "raw_folds_batch*.csv"
 
   ```powershell
   $a = New-ScheduledTaskAction -Execute "C:\Program Files\Git\bin\bash.exe" `
-      -Argument '-lc "cd /g/codes/Ass/quantaEEG && bash scripts/archive/run_revision.sh"' `
+      -Argument '-lc "cd /g/codes/quantaEEG && bash scripts/archive/run_revision.sh"' `
       -WorkingDirectory "G:\codes\Ass\quantaEEG"
   $s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries `
       -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) `

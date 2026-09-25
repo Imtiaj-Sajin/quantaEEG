@@ -1188,11 +1188,9 @@ That is the paper's final statement of the twin result.
 ### 4.16 At n = 104: what changed, and what the second review caught (2026-09-17)
 
 §4.6 to §4.15 were written at n = 30 on PhysioNet. The full cohort (104
-subjects) moved several of their readings, and a second referee report
-(minor revision, 8.5/10) found prose in the manuscript still asserting the
-old ones. The numbers below are the n = 104 values; `REVISION.md` has the
-item-by-item record. Where this section and an earlier one disagree, this one
-is current.
+subjects) moved several of their readings, and a review of the manuscript
+found prose still asserting the old ones. The numbers below are the n = 104
+values. Where this section and an earlier one disagree, this one is current.
 
 - **The fidelity kernel is not "tied" with the twin on PhysioNet (§4.14).** It
   is ahead in all three partitions, +0.0113, +0.0033 and +0.0061. At the

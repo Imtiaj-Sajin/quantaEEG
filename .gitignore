@@ -61,3 +61,14 @@ paper/harvard.sty
 # them invites quoting a 2-subject pilot as if it were the n=30 result.
 results/*_smoke.csv
 results/exp_*.csv
+
+# Working notes that belong to the authors, not to the public record:
+# correspondence trackers, authorship bookkeeping and local tool config.
+private/
+/CLAUDE.md
+presentation.zip
+# Talk slides and the plain-language explainer: made for the authors'
+# own use, not part of the public record.
+presentation/
+# Correspondence with the journal: not part of the public record.
+paper/cover_letter.tex

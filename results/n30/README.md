@@ -22,7 +22,7 @@ The live results are one directory up.
 
 The conclusions did not change. They tightened: the frame effect grew, the
 equivalence bounds narrowed, and one comparison that had been one-sided became
-two-sided (see REVISION.md).
+two-sided.
 
 ## A caution about this folder's history
 

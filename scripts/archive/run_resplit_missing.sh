@@ -13,7 +13,7 @@
 #
 # Launch through the scheduler, never from an editor or agent session:
 #   schtasks.exe /create /tn "quantaEEG_missing" /f /sc once /st HH:MM \
-#     /tr "'C:\Program Files\Git\bin\bash.exe' -lc \"cd /g/codes/Ass/quantaEEG && bash scripts/run_resplit_missing.sh\""
+#     /tr "'C:\Program Files\Git\bin\bash.exe' -lc \"cd /g/codes/quantaEEG && bash scripts/run_resplit_missing.sh\""
 #   schtasks.exe /run /tn "quantaEEG_missing"
 set -u
 cd "$(dirname "$0")/.."

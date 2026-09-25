@@ -4,11 +4,11 @@
 #   stage 2  transfer, Gram, concentration and shots on 104 subjects, then
 #            few-trial calibration and four-class IV-2a
 #
-# Launch it detached from any editor or Claude Code session, so closing the
+# Launch it detached from any editor or terminal session, so closing the
 # session cannot kill it (that happened once, on 2026-09-16):
 #
 #   powershell: Invoke-CimMethod -ClassName Win32_Process -MethodName Create `
-#       -Arguments @{CommandLine='"C:\Program Files\Git\bin\bash.exe" -lc "cd /g/codes/Ass/quantaEEG && bash scripts/run_revision.sh"'}
+#       -Arguments @{CommandLine='"C:\Program Files\Git\bin\bash.exe" -lc "cd /g/codes/quantaEEG && bash scripts/run_revision.sh"'}
 #
 # Safe to relaunch at any time: finished jobs skip themselves and unfinished
 # benchmark batches resume from their per-subject checkpoints.
